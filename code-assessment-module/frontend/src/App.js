@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import WelcomePage from './pages/WelcomePage';
 import UploadGithubUrl from './pages/UploadGithubUrl';
 import AddSubmission from './pages/AddSubmission';
+import StudentsSubmissions from './pages/StudentsSubmissions';
 import Home from './pages/Home';
 
 const App = () => {
@@ -16,6 +17,7 @@ const App = () => {
 
                 <Route path='/' element={<WelcomePage/>}/>
                 <Route path='/upload-submission' element={<AddSubmission/>}/>
+                <Route path='/students-submissions' element={<StudentsSubmissions/>}/>
                 <Route
                     path="/upload"
                     element={
