@@ -1,10 +1,24 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import requests
 import os
 
 repo_routes = Blueprint('repo_routes', __name__)
 GITHUB_API_BASE = "https://api.github.com"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+
+@repo_routes.route('/api/submit', methods=['POST'])
+def submit_student_project():
+    data = request.json
+    required_fields = ['github_url', 'student_name', 'student_id', 'year', 'semester', 'module_name', 'module_code']
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+     # Access the database from the app configuration
+    db = current_app.config['DB']
+    # Insert into MongoDB
+    db.student_projects.insert_one(data)
+    return jsonify({"message": "Data saved successfully"}), 201
+
 
 @repo_routes.route('/api/repo', methods=['GET'])
 def get_repo_details():

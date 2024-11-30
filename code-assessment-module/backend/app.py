@@ -10,6 +10,9 @@ db = client['projects']
 app = Flask(__name__)
 CORS(app)
 
+# Pass the database instance to blueprints
+app.config['DB'] = db
+
 app.register_blueprint(repo_routes)
 
 @app.route('/')
