@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import WelcomePage from './pages/WelcomePage';
 import UploadGithubUrl from './pages/UploadGithubUrl';
 import AddSubmission from './pages/AddSubmission';
 import Home from './pages/Home';
@@ -11,8 +12,10 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Navigate to="/upload" replace />} />
-                
+                {/* <Route path="/" element={<Navigate to="/upload" replace />} /> */}
+
+                <Route path='/' element={<WelcomePage/>}/>
+                <Route path='/upload-submission' element={<AddSubmission/>}/>
                 <Route
                     path="/upload"
                     element={
