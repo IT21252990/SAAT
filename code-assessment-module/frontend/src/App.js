@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import UploadGithubUrl from './pages/UploadGithubUrl';
+import AddSubmission from './pages/AddSubmission';
 import Home from './pages/Home';
 
 const App = () => {
@@ -15,12 +16,13 @@ const App = () => {
                 <Route
                     path="/upload"
                     element={
-                        <UploadGithubUrl
-                            onRepoSelect={(url, data) => {
-                                setRepoUrl(url);
-                                setRepoData(data);
-                            }}
-                        />
+                        // <UploadGithubUrl
+                        //     onRepoSelect={(url, data) => {
+                        //         setRepoUrl(url);
+                        //         setRepoData(data);
+                        //     }}
+                        // />
+                        <AddSubmission/>
                     }
                 />
                 <Route
