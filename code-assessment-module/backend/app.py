@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from pymongo import MongoClient
 from routes.repo_routes import repo_routes
 
 app = Flask(__name__)
