@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AddSubmission = () => {
+
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         github_url: "",
         student_name: "",
@@ -29,12 +33,16 @@ const AddSubmission = () => {
         }
     };
 
+    const handleCancel = () => {
+        navigate("/"); // Navigate back to welcome page
+    };
+
     const formStyle = {
         display: "flex",
         flexDirection: "column",
         maxWidth: "500px",
         margin: "auto",
-        marginTop: "60px",
+        marginTop: "30px",
         padding: "20px",
         backgroundColor: "#f9f9f9",
         borderRadius: "10px",
@@ -47,7 +55,7 @@ const AddSubmission = () => {
         borderRadius: "5px",
         border: "1px solid #ccc",
         fontSize: "16px",
-        width: "100%",
+        width: "95%",
     };
 
     const labelStyle = {
@@ -70,6 +78,12 @@ const AddSubmission = () => {
     const buttonHoverStyle = {
         ...buttonStyle,
         backgroundColor: "#489fcb",
+    };
+
+    const cancelButtonStyle = {
+        ...buttonStyle,
+        marginTop:"10px",
+        backgroundColor: "#f44336",
     };
 
     return (
@@ -96,6 +110,9 @@ const AddSubmission = () => {
             >
                 Submit
             </button>
+            <button type="button" style={cancelButtonStyle} onClick={handleCancel}>
+                    Cancel
+                </button>
         </form>
     );
 };
