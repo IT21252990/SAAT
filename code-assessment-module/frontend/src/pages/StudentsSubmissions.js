@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import SubmissionCard from "./SubmissionCard";
+import SubmissionCard from "../components/SubmissionCard";
 
 const StudentsSubmissions = () => {
     const [submissions, setSubmissions] = useState([]);

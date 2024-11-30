@@ -66,7 +66,7 @@ const WelcomePage = () => {
                     style={hoveredButton === "review" ? buttonHoverStyle : buttonStyle}
                     onMouseEnter={() => setHoveredButton("review")}
                     onMouseLeave={() => setHoveredButton(null)}
-                    onClick={() => alert("Navigating to Review Submission")}
+                    onClick={() => navigate("/students-submissions")}
                 >
                     Review Submission
                 </button>
