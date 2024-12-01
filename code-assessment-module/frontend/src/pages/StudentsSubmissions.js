@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SubmissionCard from "../components/SubmissionCard";
 
-const StudentsSubmissions = () => {
+const StudentsSubmissions = ({onRepoSelect}) => {
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -55,7 +55,7 @@ const StudentsSubmissions = () => {
             <h1 style={headerStyle}>Students' Submissions</h1>
             <div style={submissionsContainerStyle}>
                 {submissions.map((submission, index) => (
-                    <SubmissionCard key={index} submission={submission} />
+                    <SubmissionCard key={index} submission={submission} onRepoSelect={onRepoSelect} />
                 ))}
             </div>
         </div>

@@ -1,8 +1,22 @@
 import React from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import axios from 'axios';
 
-const SubmissionCard = ({ submission }) => {
+const SubmissionCard = ({ submission , onRepoSelect}) => {
     const navigate = useNavigate(); // Hook for navigation
+
+    const handleFetchRepo = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/repo`, {
+                params: { repo_url: submission.github_url },
+            });
+            onRepoSelect(submission.github_url, response.data); // Pass repo data to parent
+            navigate('/cam-home'); // Navigate to Home page
+        } catch (error) {
+            console.error('Error fetching repository:', error);
+            alert('Failed to fetch the repository. Please check the URL.');
+        }
+    };
 
     const formatDateTime = (timestamp) => {
         const date = new Date(timestamp);
@@ -105,9 +119,7 @@ const SubmissionCard = ({ submission }) => {
                 <p>{formatDateTime(submission.created_at)}</p>
                 <button
                     style={buttonStyle}
-                    onClick={() =>
-                        navigate("/home", { state: { repoUrl: submission.github_url } })
-                    }
+                    onClick={handleFetchRepo}
                 >
                     Review
                 </button>

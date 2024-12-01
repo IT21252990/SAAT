@@ -13,21 +13,23 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                {/* <Route path="/" element={<Navigate to="/upload" replace />} /> */}
-
-                <Route path='/' element={<WelcomePage/>}/>
-                <Route path='/upload-submission' element={<AddSubmission/>}/>
-                <Route path='/students-submissions' element={<StudentsSubmissions/>}/>
-                <Route
-                    path="/upload"
+                <Route 
+                    path='/' 
+                    element={<WelcomePage/>}
+                />
+                <Route 
+                    path='/upload-submission' 
+                    element={<AddSubmission/>}
+                />
+                <Route 
+                    path='/students-submissions' 
                     element={
-                        // <UploadGithubUrl
-                        //     onRepoSelect={(url, data) => {
-                        //         setRepoUrl(url);
-                        //         setRepoData(data);
-                        //     }}
-                        // />
-                        <AddSubmission/>
+                        <StudentsSubmissions   
+                            onRepoSelect={(url, data) => {
+                                setRepoUrl(url);
+                                setRepoData(data);
+                            }}
+                        />
                     }
                 />
                 <Route
