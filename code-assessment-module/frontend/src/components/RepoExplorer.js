@@ -12,10 +12,10 @@ import {
   FaCaretRight,
   FaCaretDown,
   FaTimes,
-  FaInfoCircle 
+  FaInfoCircle,
 } from "react-icons/fa";
-import "../index.css"
-import "../styles/editor.styles.css"
+import "../index.css";
+import "../styles/editor.styles.css";
 
 const RepoExplorer = ({ repoUrl }) => {
   const [contents, setContents] = useState({});
@@ -135,7 +135,8 @@ const RepoExplorer = ({ repoUrl }) => {
                       fontWeight: "bold",
                     }}
                   >
-                    {isExpanded ? <FaCaretDown /> : <FaCaretRight />} {item.name}
+                    {isExpanded ? <FaCaretDown /> : <FaCaretRight />}{" "}
+                    {item.name}
                   </span>
                   {isExpanded && renderTree(contents[itemPath], itemPath)}
                 </>
@@ -247,75 +248,56 @@ const RepoExplorer = ({ repoUrl }) => {
     const decorations = [];
     const fileComments = lineComments[activeTab.path] || {};
 
-    // Inject the CSS into the document head with Monaco specificity
-    const commentIconStyle = `
-        .monaco-editor .my-comment-icon {
-            color: blue; /* Default color */
-            cursor: pointer;
-            font-size: 16px;
-            transition: color 0.3s ease;
-        }
-        .monaco-editor .my-comment-icon:hover {
-            color: green; /* Hover color */
-        }
-    `;
-
-    // Inject the CSS into the document head
-    if (!document.getElementById('my-comment-icon-style')) {
-        const styleElement = document.createElement('style');
-        styleElement.id = 'my-comment-icon-style';
-        styleElement.type = 'text/css';
-        styleElement.appendChild(document.createTextNode(commentIconStyle));
-        document.head.appendChild(styleElement);
-    }
-
     for (const line of Object.keys(fileComments)) {
-        decorations.push({
-            range: new monaco.Range(Number(line), 1, Number(line), 1),
-            options: {
-                isWholeLine: true,
-                glyphMarginClassName: "my-comment-icon", // Custom icon class
-                glyphMarginHoverMessage: {
-                    value: `**Comment**: ${fileComments[line]}`, // Show the comment on hover
-                },
-            },
-        });
+      decorations.push({
+        range: new monaco.Range(Number(line), 1, Number(line), 1),
+        options: {
+          isWholeLine: true,
+          glyphMarginClassName: "my-comment-icon", // Custom icon class
+          glyphMarginHoverMessage: {
+            value: `**Comment**: ${fileComments[line]}`, // Show the comment on hover
+          },
+        },
+      });
     }
 
     // Add hoverable icons for lines without comments
     const totalLines = editorInstance.getModel()?.getLineCount() || 0;
     for (let line = 1; line <= totalLines; line++) {
-        if (!fileComments[line]) {
-            decorations.push({
-                range: new monaco.Range(line, 1, line, 1),
-                options: {
-                    glyphMarginClassName: "my-comment-icon", // Custom icon class
-                    glyphMarginHoverMessage: {
-                        value: "Click here to add a comment",
-                    },
-                },
-            });
-        }
+      if (!fileComments[line]) {
+        decorations.push({
+          range: new monaco.Range(line, 1, line, 1),
+          options: {
+            glyphMarginClassName: "my-comment-icon", // Custom icon class
+            glyphMarginHoverMessage: {
+              value: "Click here to add a comment",
+            },
+          },
+        });
+      }
     }
 
     editorInstance.deltaDecorations([], decorations);
-};
+  };
 
-  
   editorInstance?.onMouseDown((event) => {
-    if (event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+    if (
+      event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN
+    ) {
       const lineNumber = event.target.position.lineNumber;
       handleEditorClick(lineNumber);
     }
   });
-  
 
   useEffect(() => {
     if (editorInstance) {
       applyLineDecorations();
 
       editorInstance.onMouseDown((event) => {
-        if (event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+        if (
+          event.target.type ===
+          monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN
+        ) {
           const lineNumber = event.target.position.lineNumber;
           handleEditorClick(lineNumber);
         }
@@ -347,7 +329,8 @@ const RepoExplorer = ({ repoUrl }) => {
               onClick={() => setActiveTab(tab)}
               style={{
                 padding: "5px 10px",
-                backgroundColor: activeTab?.path === tab.path ? "#0078d4" : "#f0f0f0",
+                backgroundColor:
+                  activeTab?.path === tab.path ? "#0078d4" : "#f0f0f0",
                 color: activeTab?.path === tab.path ? "#fff" : "#000",
                 cursor: "pointer",
                 borderRadius: "4px",
@@ -371,23 +354,21 @@ const RepoExplorer = ({ repoUrl }) => {
         </div>
         {activeTab && (
           <Editor
-          height="90vh"
-          theme="vs-dark"
-          options={{
-            readOnly: true, // Enable adding comments
-            wordWrap: "on",
-            minimap: { enabled: true },
-            glyphMargin: true, // Enable margin for the icons
-          }}
-          language={language}
-          value={fileContents[activeTab.path]}
-          onMount={(editor) => setEditorInstance(editor)}
-        />
-        
+            height="90vh"
+            theme="vs-dark"
+            options={{
+              readOnly: true, // Enable adding comments
+              wordWrap: "on",
+              minimap: { enabled: true },
+              glyphMargin: true, // Enable margin for the icons
+            }}
+            language={language}
+            value={fileContents[activeTab.path]}
+            onMount={(editor) => setEditorInstance(editor)}
+          />
         )}
       </div>
 
-      {/* Comment Popup */}
       {showCommentPopup && (
         <div
           style={{
@@ -396,31 +377,65 @@ const RepoExplorer = ({ repoUrl }) => {
             left: "50%",
             transform: "translateX(-50%)",
             backgroundColor: "#fff",
-            border: "1px solid #ccc",
+            border: "1px solid #ddd",
             padding: "20px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
             zIndex: 999,
-            width: "300px",
+            width: "350px",
+            borderRadius: "8px", // Rounded corners
+            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
           }}
         >
-          <h4>Add Comment to the {currentLine}th line in {activeTab?.name}</h4>
+          <h4
+            style={{
+              marginBottom: "15px",
+              fontSize: "18px",
+              color: "#333",
+              fontWeight: "600",
+              textAlign: "center",
+            }}
+          >
+            Add Comment to Line {currentLine} in {activeTab?.name}
+          </h4>
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Enter your comment"
-            style={{ width: "100%", height: "100px", padding: "8px" }}
+            style={{
+              width: "100%",
+              height: "120px",
+              padding: "12px",
+              fontSize: "14px",
+              border: "1px solid #ccc",
+              borderRadius: "6px",
+              resize: "none", // Prevent resizing
+              boxSizing: "border-box", // Ensure padding is included in width/height
+              marginBottom: "15px",
+              fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            }}
           />
-          <div style={{ marginTop: "10px", textAlign: "right" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "15px",
+            }}
+          >
             <button
               onClick={handleCommentSubmit}
               style={{
                 backgroundColor: "#0078d4",
                 color: "#fff",
                 border: "none",
-                padding: "5px 10px",
-                borderRadius: "4px",
+                padding: "10px 20px",
+                borderRadius: "6px",
                 cursor: "pointer",
+                fontSize: "14px",
+                width: "45%",
+                transition: "background-color 0.3s",
               }}
+              onMouseOver={(e) => (e.target.style.backgroundColor = "#005a8c")}
+              onMouseOut={(e) => (e.target.style.backgroundColor = "#0078d4")}
             >
               Submit
             </button>
@@ -430,11 +445,15 @@ const RepoExplorer = ({ repoUrl }) => {
                 backgroundColor: "#ccc",
                 color: "#000",
                 border: "none",
-                padding: "5px 10px",
-                borderRadius: "4px",
+                padding: "10px 20px",
+                borderRadius: "6px",
                 cursor: "pointer",
-                marginLeft: "10px",
+                fontSize: "14px",
+                width: "45%",
+                transition: "background-color 0.3s",
               }}
+              onMouseOver={(e) => (e.target.style.backgroundColor = "#999")}
+              onMouseOut={(e) => (e.target.style.backgroundColor = "#ccc")}
             >
               Cancel
             </button>
