@@ -111,3 +111,33 @@ def get_file_content():
         return jsonify(response.json()), 200
     else:
         return jsonify({"error": "Failed to fetch file content", "status_code": response.status_code}), response.status_code
+
+
+@repo_routes.route('/api/save-line-comment', methods=['POST'])
+def save_line_comment():
+    data = request.json
+    # Required fields for saving a comment
+    required_fields = ['repo_url', 'file_name', 'line_number', 'comment_text']
+
+    # Validate required fields
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Add timestamp to the comment
+    comment_data = {
+        "repo_url": data['repo_url'],
+        "file_name": data['file_name'],
+        "line_number": data['line_number'],
+        "comment_text": data['comment_text'],
+        "created_at": datetime.now()
+    }
+
+    # Access the database from the app configuration
+    db = current_app.config['DB']
+
+    try:
+        # Insert the comment into MongoDB
+        db.comments.insert_one(comment_data)
+        return jsonify({"message": "Comment saved successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": f"Failed to save comment: {str(e)}"}), 500

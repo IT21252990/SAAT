@@ -395,12 +395,12 @@ const RepoExplorer = ({ repoUrl }) => {
               textAlign: "center",
             }}
           >
-            Add Comment to Line {currentLine} in {activeTab?.name}
+            Add Feedback to Line {currentLine} in {activeTab?.name}
           </h4>
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Enter your comment"
+            placeholder="Enter your Feedback"
             style={{
               width: "100%",
               height: "120px",
