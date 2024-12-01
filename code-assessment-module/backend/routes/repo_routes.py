@@ -19,6 +19,20 @@ def submit_student_project():
     db.student_projects.insert_one(data)
     return jsonify({"message": "Data saved successfully"}), 201
 
+@repo_routes.route('/api/projects', methods=['GET'])
+def get_all_projects():
+    # Access the database from the app configuration
+    db = current_app.config['DB']
+    
+    # Fetch all documents from the collection
+    projects = list(db.student_projects.find({}))
+    
+    # Convert ObjectId to string and prepare the response
+    for project in projects:
+        project['_id'] = str(project['_id'])
+    
+    return jsonify(projects), 200
+
 
 @repo_routes.route('/api/repo', methods=['GET'])
 def get_repo_details():

@@ -9,7 +9,7 @@ const StudentsSubmissions = () => {
     useEffect(() => {
         const fetchSubmissions = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/submissions");
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/projects`);
                 setSubmissions(response.data);
                 setLoading(false);
             } catch (error) {

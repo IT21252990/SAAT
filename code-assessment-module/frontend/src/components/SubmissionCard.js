@@ -30,6 +30,7 @@ const SubmissionCard = ({ submission }) => {
         color: "#50c5ff",
         textDecoration: "none",
         fontWeight: "bold",
+        fontSize: "12px",
     };
 
     return (
@@ -39,7 +40,7 @@ const SubmissionCard = ({ submission }) => {
             <p style={detailStyle}>Semester: {submission.semester}</p>
             <p style={detailStyle}>Module: {submission.module_name} ({submission.module_code})</p>
             <a href={submission.github_url} style={linkStyle} target="_blank" rel="noopener noreferrer">
-                View GitHub Repository
+            {submission.github_url}
             </a>
         </div>
     );

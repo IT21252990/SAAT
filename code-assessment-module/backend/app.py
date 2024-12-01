@@ -5,7 +5,7 @@ from routes.repo_routes import repo_routes
 
 # MongoDB setup
 client = MongoClient("mongodb://localhost:27017")
-db = client['projects']
+db = client['saat']
 
 app = Flask(__name__)
 CORS(app)
