@@ -39,6 +39,7 @@ const StudentsSubmissions = () => {
         display: "flex",
         flexWrap: "wrap",
         justifyContent: "center",
+        scrollbars: "auto",
     };
 
     if (loading) {
