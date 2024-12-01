@@ -5,7 +5,7 @@ import { MdFeedback } from "react-icons/md";
 import { FaFileSignature } from "react-icons/fa6";
 import { RiAccountPinCircleFill } from "react-icons/ri";
 import RepoExplorer from "../components/RepoExplorer"; // Import your RepoExplorer component
-import "../index.css"; // Include custom CSS if needed
+import "../index.css";
 
 const Home = ({repoUrl, repoData}) => {
   const [activeSection, setActiveSection] = useState("explorer");

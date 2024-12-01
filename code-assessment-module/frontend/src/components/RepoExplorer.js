@@ -15,6 +15,7 @@ import {
   FaInfoCircle 
 } from "react-icons/fa";
 import "../index.css"
+import "../styles/editor.styles.css"
 
 const RepoExplorer = ({ repoUrl }) => {
   const [contents, setContents] = useState({});
@@ -46,15 +47,6 @@ const RepoExplorer = ({ repoUrl }) => {
     };
     fetchRootContents();
   }, [repoUrl]);
-
-  const CommentIcon = ({ onClick }) => {
-    return (
-      <FaInfoCircle
-        className="my-comment-icon" // Apply the class for styling
-        onClick={onClick} // Handle click event
-      />
-    );
-  };
 
   const fetchSubdirectoryContents = async (itemPath) => {
     try {
@@ -248,44 +240,6 @@ const RepoExplorer = ({ repoUrl }) => {
       setShowCommentPopup(false);
     }
   };
-
-  // const applyLineDecorations = () => {
-  //   if (!editorInstance || !activeTab) return;
-  
-  //   const decorations = [];
-  //   const fileComments = lineComments[activeTab.path] || {};
-  
-  //   for (const line of Object.keys(fileComments)) {
-  //     decorations.push({
-  //       range: new monaco.Range(Number(line), 1, Number(line), 1),
-  //       options: {
-  //         isWholeLine: true,
-  //         glyphMarginClassName: "my-comment-icon", // Custom icon class
-  //         glyphMarginHoverMessage: {
-  //           value: `**Comment**: ${fileComments[line]}`, // Show the comment on hover
-  //         },
-  //       },
-  //     });
-  //   }
-  
-  //   // Add hoverable icons for lines without comments
-  //   const totalLines = editorInstance.getModel()?.getLineCount() || 0;
-  //   for (let line = 1; line <= totalLines; line++) {
-  //     if (!fileComments[line]) {
-  //       decorations.push({
-  //         range: new monaco.Range(line, 1, line, 1),
-  //         options: {
-  //           glyphMarginClassName: "my-comment-icon", // Custom icon class
-  //           glyphMarginHoverMessage: {
-  //             value: "Click here to add a comment",
-  //           },
-  //         },
-  //       });
-  //     }
-  //   }
-  
-  //   editorInstance.deltaDecorations([], decorations);
-  // };
 
   const applyLineDecorations = () => {
     if (!editorInstance || !activeTab) return;
