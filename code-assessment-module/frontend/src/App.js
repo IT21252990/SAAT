@@ -4,6 +4,7 @@ import WelcomePage from './pages/WelcomePage';
 import SubmissionMethod from './pages/SubmissionMethod';
 import UploadGithubUrl from './pages/UploadGithubUrl';
 import AddSubmission from './pages/AddSubmission';
+import ProjectFileSubmission from './pages/ProjectFileSubmission';
 import StudentsSubmissions from './pages/StudentsSubmissions';
 import Home from './pages/Home';
 
@@ -25,6 +26,10 @@ const App = () => {
                 <Route 
                     path='/upload-submission' 
                     element={<AddSubmission/>}
+                />
+                <Route 
+                    path='/upload--file-submission' 
+                    element={<ProjectFileSubmission/>}
                 />
                 <Route 
                     path='/students-submissions' 
