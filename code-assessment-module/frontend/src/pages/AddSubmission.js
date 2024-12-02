@@ -34,7 +34,7 @@ const AddSubmission = () => {
     };
 
     const handleCancel = () => {
-        navigate("/"); // Navigate back to welcome page
+        navigate("/submisson-type"); // Navigate back
     };
 
     const formStyle = {
