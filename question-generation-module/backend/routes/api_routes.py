@@ -5,27 +5,34 @@ from transformers import pipeline
 api = Blueprint('api', __name__)
 
 # Load the question generation model
-question_generation_model = pipeline("text2text-generation", model="t5-small")
+# question_generation_model = pipeline("text2text-generation", model="t5-small")
+question_generation_model = pipeline("text2text-generation", model="valhalla/t5-small-qg-prepend")
 
-def generate_questions_with_llm(prompt):
+def generate_questions(content):
     """
-    Generate questions dynamically using the LLM with beam search to support multiple sequences.
-    :param prompt: The text input to the LLM.
-    :return: A list of generated questions.
+    Generate questions from the provided content using the model.
+    :param content: Text input for the model.
+    :return: A list of questions.
     """
-    result = question_generation_model(
-        prompt,
-        max_length=50,
-        num_return_sequences=3,
-        num_beams=3,  # Enables beam search for multiple outputs
-    )
-    questions = [res['generated_text'] for res in result]
-    return questions
+    try:
+        # Pass the content directly to the model
+        result = question_generation_model(
+            content,
+            max_length=128,
+            num_return_sequences=3,  # Generate three questions in one go
+            num_beams=3
+        )
+        # Extract the questions from the model output
+        questions = [res["generated_text"] for res in result]
+        return questions
+    except Exception as e:
+        raise Exception(f"Error generating questions: {str(e)}")
+
 
 @api.route('/generate-question', methods=['POST'])
 def generate_question():
     """
-    API route for generating questions based on submission type and content.
+    API route to generate viva questions.
     """
     data = request.json
     submission_type = data.get('type', 'generic')
@@ -34,19 +41,9 @@ def generate_question():
     if not submission_content:
         return jsonify({"error": "Submission content is required"}), 400
 
-    # Generate prompts based on submission type
-    if submission_type == 'code':
-        prompt = f"Generate viva questions for the following code snippet: {submission_content}"
-    elif submission_type == 'report':
-        prompt = f"Generate viva questions based on this report content: {submission_content}"
-    elif submission_type == 'video':
-        prompt = f"Generate viva questions based on this video metadata: {submission_content}"
-    else:
-        prompt = f"Generate viva questions for this generic submission: {submission_content}"
-
+    # Directly pass the submission content to the model
     try:
-        questions = generate_questions_with_llm(prompt)
+        questions = generate_questions(submission_content)
+        return jsonify({"questions": questions}), 200
     except Exception as e:
-        return jsonify({"error": f"LLM processing failed: {str(e)}"}), 500
-
-    return jsonify({"questions": questions})
+        return jsonify({"error": str(e)}), 500
