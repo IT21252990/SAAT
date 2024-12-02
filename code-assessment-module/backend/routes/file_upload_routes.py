@@ -70,3 +70,56 @@ def upload_repo_and_save_data():
         "message": "File uploaded, extracted, and student data saved successfully",
         "extract_path": extract_path
     }), 201
+
+@file_upload_routes.route('/api/local-contents', methods=['GET'])
+def get_local_contents():
+    """
+    API endpoint to list contents of a directory within the extracted_repos folder.
+    """
+    relative_path = request.args.get('path', '').strip()
+    absolute_path = os.path.join(EXTRACT_FOLDER, relative_path)
+
+    # Validate if the path exists and is under the base directory
+    if not os.path.exists(absolute_path):
+        return jsonify({"error": "Directory not found"}), 404
+
+    if not os.path.isdir(absolute_path):
+        return jsonify({"error": "Path is not a directory"}), 400
+
+    try:
+        # List contents of the directory
+        items = []
+        for item in os.listdir(absolute_path):
+            item_path = os.path.join(relative_path, item)  # Relative path for API response
+            item_absolute_path = os.path.join(absolute_path, item)  # Absolute path for validation
+            items.append({
+                "name": item,
+                "path": item_path,
+                "type": "dir" if os.path.isdir(item_absolute_path) else "file"
+            })
+        return jsonify(items), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@file_upload_routes.route('/api/local-file-content', methods=['GET'])
+def get_local_file_content():
+    """
+    API endpoint to fetch the content of a file within the extracted_repos folder.
+    """
+    relative_path = request.args.get('path', '').strip()
+    absolute_path = os.path.join(EXTRACT_FOLDER, relative_path)
+
+    # Validate if the path exists and is a file
+    if not os.path.exists(absolute_path):
+        return jsonify({"error": "File not found"}), 404
+
+    if not os.path.isfile(absolute_path):
+        return jsonify({"error": "Path is not a file"}), 400
+
+    try:
+        with open(absolute_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        return jsonify({"content": content}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
