@@ -6,6 +6,9 @@ const SubmissionCard = ({ submission , onRepoSelect}) => {
     const navigate = useNavigate(); // Hook for navigation
 
     const handleFetchRepo = async () => {
+        if(!submission.github_url){
+            navigate('/cam-home'); 
+       }else{
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/repo`, {
                 params: { repo_url: submission.github_url },
@@ -16,6 +19,7 @@ const SubmissionCard = ({ submission , onRepoSelect}) => {
             console.error('Error fetching repository:', error);
             alert('Failed to fetch the repository. Please check the URL.');
         }
+       }   
     };
 
     const formatDateTime = (timestamp) => {
