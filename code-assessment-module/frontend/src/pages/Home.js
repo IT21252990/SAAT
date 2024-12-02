@@ -4,7 +4,8 @@ import { FaSitemap, FaSearch, FaCodeBranch, FaPuzzlePiece, FaHome } from "react-
 import { MdFeedback } from "react-icons/md";
 import { FaFileSignature } from "react-icons/fa6";
 import { RiAccountPinCircleFill } from "react-icons/ri";
-import RepoExplorer from "../components/RepoExplorer"; // Import your RepoExplorer component
+import RepoExplorer from "../components/RepoExplorer"; 
+import LocalFileExplorer from "../components/LocalFileExplorer";
 import "../index.css";
 
 const Home = ({repoUrl, repoData}) => {
@@ -13,8 +14,13 @@ const Home = ({repoUrl, repoData}) => {
 
   const renderActiveSection = () => {
     switch (activeSection) {
-      case "explorer":
-        return <RepoExplorer repoUrl={repoUrl}/>;
+      case "explorer":{
+         if(repoUrl){
+          return <RepoExplorer repoUrl={repoUrl}/> 
+        }if(!repoUrl){
+          return <LocalFileExplorer/>
+        }
+      }
       case "search":
         return <div>search section</div>
       case "sourceControl":
