@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WelcomePage from './pages/WelcomePage';
+import SubmissionMethod from './pages/SubmissionMethod';
 import UploadGithubUrl from './pages/UploadGithubUrl';
 import AddSubmission from './pages/AddSubmission';
 import StudentsSubmissions from './pages/StudentsSubmissions';
@@ -16,6 +17,10 @@ const App = () => {
                 <Route 
                     path='/' 
                     element={<WelcomePage/>}
+                />
+                <Route
+                    path='/submisson-type'
+                    element={<SubmissionMethod/>}
                 />
                 <Route 
                     path='/upload-submission' 
