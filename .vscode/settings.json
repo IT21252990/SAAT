@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./question-generation-module/backend/routes"
+    ]
+}
