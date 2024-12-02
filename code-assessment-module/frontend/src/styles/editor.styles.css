@@ -1,0 +1,14 @@
+/* Custom CSS for the icon */
+.monaco-editor .my-comment-icon {
+    cursor: pointer;
+}
+
+/* Font Awesome icon in the gutter */
+.monaco-editor .my-comment-icon:hover::before {
+    content: "\f27a "; /* FaInfoCircle Unicode */
+    font-family: "Font Awesome 5 Free"; /* Font Awesome */
+    font-weight: 600; /* Solid icon weight */
+    color: rgb(238, 111, 111); /* Default color */
+    font-size: 16px;
+    margin-left: 20px;
+}
