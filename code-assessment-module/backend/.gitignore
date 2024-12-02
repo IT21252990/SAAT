@@ -11,6 +11,10 @@ yarn-error.log*
 node_modules/
 venv/
 
+# Ignore folders for uploaded and extracted files
+uploads/
+extracted_repos/
+
 # Environment variables
 .env
 
