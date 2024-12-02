@@ -211,23 +211,23 @@ const RepoExplorer = ({ repoUrl }) => {
     return extensionMapping[extension] || "plaintext";
   };
 
-  const addCommentToLine = (lineNumber, comment) => {
-    const path = activeTab?.path;
-    if (!path) return;
+  // const addCommentToLine = (lineNumber, comment) => {
+  //   const path = activeTab?.path;
+  //   if (!path) return;
 
-    setLineComments((prev) => {
-      const newComments = { ...prev };
-      newComments[path] = {
-        ...(newComments[path] || {}),
-        [lineNumber]: comment,
-      };
-      return newComments;
-    });
+  //   setLineComments((prev) => {
+  //     const newComments = { ...prev };
+  //     newComments[path] = {
+  //       ...(newComments[path] || {}),
+  //       [lineNumber]: comment,
+  //     };
+  //     return newComments;
+  //   });
 
-    alert(
-      `Comment added to file: ${activeTab?.name}\nLine number: ${lineNumber}\nComment: ${comment}`
-    );
-  };
+  //   alert(
+  //     `Comment added to file: ${activeTab?.name}\nLine number: ${lineNumber}\nComment: ${comment}`
+  //   );
+  // };
 
   const handleEditorClick = (lineNumber) => {
     setCurrentLine(lineNumber);
@@ -236,7 +236,23 @@ const RepoExplorer = ({ repoUrl }) => {
 
   const handleCommentSubmit = () => {
     if (currentLine != null && commentText.trim() !== "") {
-      addCommentToLine(currentLine, commentText.trim());
+      // addCommentToLine(currentLine, commentText.trim());
+      axios
+        .post(`${process.env.REACT_APP_BACKEND_URL}/api/save-line-comment`, {
+          repo_url: repoUrl, // Pass the active repository URL
+          file_name: activeTab?.name, // File name from the active tab
+          line_number: currentLine, // Line number
+          comment_text: commentText, // Text of the comment
+        })
+        .then((response) => {
+          console.log(response.data.message);
+          alert("Comment saved successfully!");
+        })
+        .catch((error) => {
+          console.error("Error saving comment:", error);
+          alert("Failed to save the comment. Please try again.");
+        });
+
       setCommentText("");
       setShowCommentPopup(false);
     }
