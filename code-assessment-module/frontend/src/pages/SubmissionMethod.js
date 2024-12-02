@@ -64,7 +64,7 @@ const SubmissionMethod = () => {
           style={hoveredButton === "review" ? buttonHoverStyle : buttonStyle}
           onMouseEnter={() => setHoveredButton("review")}
           onMouseLeave={() => setHoveredButton(null)}
-          // onClick={() => navigate("/students-submissions")}
+          onClick={() => navigate("/upload--file-submission")}
         >
           Add Submission by Zipped File
         </button>

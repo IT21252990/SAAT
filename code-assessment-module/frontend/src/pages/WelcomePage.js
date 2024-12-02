@@ -58,7 +58,7 @@ const WelcomePage = () => {
                     style={hoveredButton === "add" ? buttonHoverStyle : buttonStyle}
                     onMouseEnter={() => setHoveredButton("add")}
                     onMouseLeave={() => setHoveredButton(null)}
-                    onClick={() => navigate("/submisson-type")}
+                    onClick={() => navigate("/submission-type")}
                 >
                     Add Submission
                 </button>

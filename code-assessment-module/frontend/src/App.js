@@ -20,7 +20,7 @@ const App = () => {
                     element={<WelcomePage/>}
                 />
                 <Route
-                    path='/submisson-type'
+                    path='/submission-type'
                     element={<SubmissionMethod/>}
                 />
                 <Route 
