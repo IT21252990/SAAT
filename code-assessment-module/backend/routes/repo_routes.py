@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 import requests
 import os
+import re
 from datetime import datetime
 
 repo_routes = Blueprint('repo_routes', __name__)
@@ -141,3 +142,71 @@ def save_line_comment():
         return jsonify({"message": "Comment saved successfully"}), 201
     except Exception as e:
         return jsonify({"error": f"Failed to save comment: {str(e)}"}), 500
+
+
+# -----------------------
+
+@repo_routes.route('/api/repo/contributors', methods=['GET'])
+def get_repo_contributors():
+    repo_url = request.args.get('repo_url')
+    if not repo_url:
+        return jsonify({"error": "Missing required parameter: repo_url"}), 400
+
+    try:
+        parts = repo_url.rstrip('/').split('/')
+        owner = parts[-2]
+        repo = parts[-1].replace('.git', '')  # Remove .git if present
+    except IndexError:
+        return jsonify({"error": "Invalid GitHub repository URL"}), 400
+
+    url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/contributors"
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return jsonify(response.json()), 200
+    else:
+        return jsonify({"error": "Failed to fetch contributors"}), response.status_code
+
+
+@repo_routes.route('/api/repo/commits', methods=['GET'])
+def get_contributor_commits():
+    repo_url = request.args.get('repo_url')
+    contributor_login = request.args.get('contributor_login')
+    page = request.args.get('page', 1, type=int)
+
+    if not repo_url or not contributor_login:
+        return jsonify({"error": "Missing required parameters: repo_url or contributor_login"}), 400
+
+    try:
+        parts = repo_url.rstrip('/').split('/')
+        owner = parts[-2]
+        repo = parts[-1].replace('.git', '')  # Remove .git if present
+    except IndexError:
+        return jsonify({"error": "Invalid GitHub repository URL"}), 400
+
+    url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/commits"
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+    params = {"author": contributor_login, "page": page, "per_page": 10}
+
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        commits = response.json()
+        total_commits = response.headers.get("X-Total-Count", len(commits))  # Fallback to current page count if absent
+
+        links = {}
+        if "Link" in response.headers:
+            link_header = response.headers["Link"]
+            for link in link_header.split(","):
+                match = re.search(r'<(.+)>; rel="(\w+)"', link)
+                if match:
+                    links[match.group(2)] = match.group(1)
+
+        return jsonify({
+            "commits": commits,
+            "total_commits": total_commits,
+            "pagination": links
+        }), 200
+    else:
+        return jsonify({"error": "Failed to fetch commits", "status_code": response.status_code}), response.status_code
