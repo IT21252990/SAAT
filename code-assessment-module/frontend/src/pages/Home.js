@@ -6,6 +6,7 @@ import { FaFileSignature } from "react-icons/fa6";
 import { RiAccountPinCircleFill } from "react-icons/ri";
 import RepoExplorer from "../components/RepoExplorer"; 
 import LocalFileExplorer from "../components/LocalFileExplorer";
+import ContributorCommitHistory from "../components/ContributorCommitHistory";
 import "../index.css";
 
 const Home = ({repoUrl, repoData}) => {
@@ -24,7 +25,7 @@ const Home = ({repoUrl, repoData}) => {
       case "search":
         return <div>search section</div>
       case "sourceControl":
-        return <div>search section</div>
+        return <ContributorCommitHistory repoUrl={repoUrl} />
       case "extensions":
         return <div>search section</div>
       default:
