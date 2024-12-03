@@ -1,0 +1,23 @@
+      {error && <p>{error}</p>}
+      <ul>
+        {submissions.map((submission) => (
+          <li key={submission._id}>
+            <h3>{submission.submissionName}</h3>
+            <p>Module: {submission.moduleName} ({submission.moduleCode})</p>
+            <p>Due Date: {new Date(submission.dueDate).toLocaleDateString()}</p>
+            <p>Status: {submission.status}</p>
+            {submission.markingScheme && (
+              <p>
+                Marking Scheme:{" "}
+                <a
+                  href={`http://localhost:5002/${submission.markingScheme}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Download/View
+                </a>
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
