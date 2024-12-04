@@ -42,9 +42,9 @@ def generate_question():
     if submission_type == 'video':
         prompt = f"Based on this video transcript, generate three questions:\n{submission_content}"
     elif submission_type == 'code':
-        prompt = f"Based on this code snippet, generate three technical questions:\n{submission_content}"
+        prompt = f"Based on this code snippet, generate three questions:\n{submission_content}"
     elif submission_type == 'report':
-        prompt = f"Based on this report, generate three questions for review or discussion:\n{submission_content}"
+        prompt = f"Based on this report, generate three questions for review:\n{submission_content}"
     else:
         return jsonify({"error": "Invalid or missing 'type'. Must be 'video', 'code', or 'report'"}), 400
 
