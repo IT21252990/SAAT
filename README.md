@@ -43,7 +43,7 @@ SAAT is a state-of-the-art assignment assessment platform that leverages Large L
 
 ---
 ## Contribution
-- **Jayathilaka A G K D** 
-- **Rathnayake R M U V** 
-- **Gunasekara W M A S** 
-- **Liyanage U S P** 
+- **IT21252990 : Jayathilaka A G K D - Code Assessment Toolkit** 
+- **IT21271182 : Rathnayake R M U V - Prompt Creation Engine** 
+- **IT21373916 : Gunasekara W M A S - Video Analysis Module** 
+- **IT21306754 : Liyanage U S P - Report Analyzer** 
