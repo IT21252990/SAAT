@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider } from "../../firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
@@ -15,7 +15,7 @@ const Login = () => {
       const user = userCredential.user;
   
       // Get user role from Flask API
-      const response = await fetch(`http://127.0.0.1:5000/getUserRole/${user.uid}`);
+      const response = await fetch(`http://127.0.0.1:5000/user/getUserRole/${user.uid}`);
       const data = await response.json();
       const userRole = data.role;
   
