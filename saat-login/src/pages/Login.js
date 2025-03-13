@@ -13,12 +13,18 @@ const Login = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      // Redirect based on role (Fetch role from Firebase Firestore)
-      navigate(user.role === "student" ? "/student-home" : "/teacher-home");
+  
+      // Get user role from Flask API
+      const response = await fetch(`http://127.0.0.1:5000/getUserRole/${user.uid}`);
+      const data = await response.json();
+      const userRole = data.role;
+  
+      navigate(userRole === "student" ? "/student-home" : "/teacher-home");
     } catch (error) {
       alert(error.message);
     }
   };
+  
 
   const handleGoogleLogin = async () => {
     try {

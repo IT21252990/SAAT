@@ -14,17 +14,21 @@ const Register = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      // Save role to Firebase Firestore
-      await fetch("http://localhost:5000/saveUserRole", {
+  
+      // Save role in Firestore using Flask API
+      await fetch("http://127.0.0.1:5000/saveUserRole", {
         method: "POST",
         body: JSON.stringify({ uid: user.uid, role }),
         headers: { "Content-Type": "application/json" },
       });
+  
+      // Redirect based on role
       navigate(role === "student" ? "/student-home" : "/teacher-home");
     } catch (error) {
       alert(error.message);
     }
   };
+  
 
   return (
     <div>
