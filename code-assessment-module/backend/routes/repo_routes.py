@@ -1,81 +1,92 @@
 from flask import Blueprint, request, jsonify, current_app
 import requests
 import os
+from dotenv import load_dotenv
 import re
 from datetime import datetime
+import firebase_admin
+from firebase_admin import credentials, firestore
 
+load_dotenv()  # Load environment variables from .env
+
+# Get Firebase credentials path from environment
+firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS")
+
+# Initialize Firebase
+if not firebase_admin._apps:
+    cred = credentials.Certificate(firebase_credentials_path)
+    firebase_admin.initialize_app(cred)
+
+# Initialize Firestore
+db = firestore.client()
+
+# Define Routes
 repo_routes = Blueprint('repo_routes', __name__)
 GITHUB_API_BASE = "https://api.github.com"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
+
 @repo_routes.route('/api/submit', methods=['POST'])
 def submit_student_project():
+    """ Save student project details to Firestore """
     data = request.json
     required_fields = ['github_url', 'student_name', 'student_id', 'year', 'semester', 'module_name', 'module_code']
+    
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
-    
-    # Add the created_at field with the current timestamp
-    data['created_at'] = datetime.now()
 
-    # Access the database from the app configuration
-    db = current_app.config['DB']
-    # Insert into MongoDB
-    db.student_projects.insert_one(data)
-    return jsonify({"message": "Data saved successfully"}), 201
+    data['created_at'] = datetime.utcnow().isoformat()  # Store timestamps as ISO format
+    
+    try:
+        db.collection("student_projects").add(data)
+        return jsonify({"message": "Data saved successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @repo_routes.route('/api/projects', methods=['GET'])
 def get_all_projects():
-    # Access the database from the app configuration
-    db = current_app.config['DB']
-    
-    # Fetch all documents from the collection
-    projects = list(db.student_projects.find({}))
-    
-    # Convert ObjectId to string and prepare the response
-    for project in projects:
-        project['_id'] = str(project['_id'])
-    
-    return jsonify(projects), 200
+    """ Fetch all student projects from Firestore """
+    try:
+        projects_ref = db.collection("student_projects").stream()
+        projects = [{**doc.to_dict(), "id": doc.id} for doc in projects_ref]
+        return jsonify(projects), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @repo_routes.route('/api/repo', methods=['GET'])
 def get_repo_details():
+    """ Fetch GitHub repository details """
     repo_url = request.args.get('repo_url')
     if not repo_url:
         return jsonify({"error": "Missing required parameter: repo_url"}), 400
 
-    # Extract owner and repo from the GitHub URL
     try:
         parts = repo_url.rstrip('/').split('/')
-        owner = parts[-2]
-        repo = parts[-1].replace('.git', '')  # Remove .git if present
+        owner, repo = parts[-2], parts[-1].replace('.git', '')
     except IndexError:
         return jsonify({"error": "Invalid GitHub repository URL"}), 400
 
-    # Fetch repository details from GitHub
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}"
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({"error": "Failed to fetch repository details"}), response.status_code
+    return jsonify(response.json()), response.status_code if response.ok else 400
 
-   
+
 @repo_routes.route('/api/repo/contents', methods=['GET'])
 def get_repo_contents():
+    """ Fetch repository file structure from GitHub """
     repo_url = request.args.get('repo_url')
-    path = request.args.get('path', '')  # Optional path
+    path = request.args.get('path', '')
 
     if not repo_url:
         return jsonify({"error": "Missing required parameter: repo_url"}), 400
 
     try:
         parts = repo_url.rstrip('/').split('/')
-        owner = parts[-2]
-        repo = parts[-1].replace('.git', '')  # Remove .git if present
+        owner, repo = parts[-2], parts[-1].replace('.git', '')
     except IndexError:
         return jsonify({"error": "Invalid GitHub repository URL"}), 400
 
@@ -83,14 +94,12 @@ def get_repo_contents():
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({"error": "Failed to fetch repository contents"}), response.status_code
+    return jsonify(response.json()), response.status_code if response.ok else 400
 
 
 @repo_routes.route('/api/file-content', methods=['GET'])
 def get_file_content():
+    """ Fetch file content from GitHub """
     repo_url = request.args.get('repo_url')
     path = request.args.get('path')
 
@@ -99,8 +108,7 @@ def get_file_content():
 
     try:
         parts = repo_url.rstrip('/').split('/')
-        owner = parts[-2]
-        repo = parts[-1].replace('.git', '')  # Remove .git if present
+        owner, repo = parts[-2], parts[-1].replace('.git', '')
     except IndexError:
         return jsonify({"error": "Invalid GitHub repository URL"}), 400
 
@@ -108,54 +116,43 @@ def get_file_content():
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({"error": "Failed to fetch file content", "status_code": response.status_code}), response.status_code
+    return jsonify(response.json()), response.status_code if response.ok else 400
 
 
 @repo_routes.route('/api/save-line-comment', methods=['POST'])
 def save_line_comment():
+    """ Save line comments to Firestore """
     data = request.json
-    # Required fields for saving a comment
     required_fields = ['repo_url', 'file_name', 'line_number', 'comment_text']
 
-    # Validate required fields
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
 
-    # Add timestamp to the comment
     comment_data = {
         "repo_url": data['repo_url'],
         "file_name": data['file_name'],
         "line_number": data['line_number'],
         "comment_text": data['comment_text'],
-        "created_at": datetime.now()
+        "created_at": datetime.utcnow().isoformat()
     }
 
-    # Access the database from the app configuration
-    db = current_app.config['DB']
-
     try:
-        # Insert the comment into MongoDB
-        db.comments.insert_one(comment_data)
+        db.collection("comments").add(comment_data)
         return jsonify({"message": "Comment saved successfully"}), 201
     except Exception as e:
-        return jsonify({"error": f"Failed to save comment: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
-
-# -----------------------
 
 @repo_routes.route('/api/repo/contributors', methods=['GET'])
 def get_repo_contributors():
+    """ Fetch contributors from GitHub """
     repo_url = request.args.get('repo_url')
     if not repo_url:
         return jsonify({"error": "Missing required parameter: repo_url"}), 400
 
     try:
         parts = repo_url.rstrip('/').split('/')
-        owner = parts[-2]
-        repo = parts[-1].replace('.git', '')  # Remove .git if present
+        owner, repo = parts[-2], parts[-1].replace('.git', '')
     except IndexError:
         return jsonify({"error": "Invalid GitHub repository URL"}), 400
 
@@ -163,50 +160,28 @@ def get_repo_contributors():
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({"error": "Failed to fetch contributors"}), response.status_code
+    return jsonify(response.json()), response.status_code if response.ok else 400
 
 
 @repo_routes.route('/api/repo/commits', methods=['GET'])
 def get_contributor_commits():
+    """ Fetch contributor commits from GitHub """
     repo_url = request.args.get('repo_url')
     contributor_login = request.args.get('contributor_login')
     page = request.args.get('page', 1, type=int)
 
     if not repo_url or not contributor_login:
-        return jsonify({"error": "Missing required parameters: repo_url or contributor_login"}), 400
+        return jsonify({"error": "Missing required parameters"}), 400
 
     try:
         parts = repo_url.rstrip('/').split('/')
-        owner = parts[-2]
-        repo = parts[-1].replace('.git', '')  # Remove .git if present
+        owner, repo = parts[-2], parts[-1].replace('.git', '')
     except IndexError:
         return jsonify({"error": "Invalid GitHub repository URL"}), 400
 
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/commits"
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     params = {"author": contributor_login, "page": page, "per_page": 10}
-
     response = requests.get(url, headers=headers, params=params)
 
-    if response.status_code == 200:
-        commits = response.json()
-        total_commits = response.headers.get("X-Total-Count", len(commits))  # Fallback to current page count if absent
-
-        links = {}
-        if "Link" in response.headers:
-            link_header = response.headers["Link"]
-            for link in link_header.split(","):
-                match = re.search(r'<(.+)>; rel="(\w+)"', link)
-                if match:
-                    links[match.group(2)] = match.group(1)
-
-        return jsonify({
-            "commits": commits,
-            "total_commits": total_commits,
-            "pagination": links
-        }), 200
-    else:
-        return jsonify({"error": "Failed to fetch commits", "status_code": response.status_code}), response.status_code
+    return jsonify(response.json()), response.status_code if response.ok else 400

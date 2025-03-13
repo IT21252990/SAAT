@@ -18,6 +18,8 @@ extracted_repos/
 # Environment variables
 .env
 
+videoanalysis-d5eb4-firebase-adminsdk-u5vqo-f2ffc2ff2a.json
+
 # OS-specific files
 .DS_Store
 Thumbs.db

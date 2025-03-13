@@ -92,9 +92,18 @@ const ContributorCommitHistory = ({ repoUrl }) => {
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/repo/commits`,
-        { params: { repo_url: repoUrl, contributor_login: contributorLogin, page } }
+        {
+          params: {
+            repo_url: repoUrl,
+            contributor_login: contributorLogin,
+            page,
+          },
+        }
       );
-      setCommitHistory(response.data.commits);
+      // setCommitHistory(response.data.commits);
+      setCommitHistory(
+        Array.isArray(response.data.commits) ? response.data.commits : []
+      );
       setTotalCommits(response.data.total_commits || 0);
       setPagination(response.data.pagination || {});
     } catch {
@@ -111,7 +120,9 @@ const ContributorCommitHistory = ({ repoUrl }) => {
           <li
             key={contributor.id}
             style={styles.contributorItem}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f1f1f1")}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor = "#f1f1f1")
+            }
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "")}
             onClick={() => fetchCommitHistory(contributor.login)}
           >
@@ -135,22 +146,25 @@ const ContributorCommitHistory = ({ repoUrl }) => {
           <p>
             <strong>Total Commits:</strong> {totalCommits}
           </p>
-          {commitHistory.length === 0 ? (
-            <p>Loading commits...</p>
+          {!commitHistory || commitHistory.length === 0 ? (
+            <p>No commits found or loading...</p>
           ) : (
             <ul>
               {commitHistory.map((commit) => (
                 <li key={commit.sha} style={styles.commitItem}>
                   <p>
-                    <strong>Message:</strong> {commit.commit.message}
+                    <strong>Message:</strong>{" "}
+                    {commit.commit?.message || "No message"}
                   </p>
                   <p>
                     <strong>Date:</strong>{" "}
-                    {new Date(commit.commit.author.date).toLocaleString()}
+                    {commit.commit?.author?.date
+                      ? new Date(commit.commit.author.date).toLocaleString()
+                      : "No date available"}
                   </p>
                   <p>
                     <a
-                      href={commit.html_url}
+                      href={commit.html_url || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={styles.commitLink}
@@ -162,6 +176,7 @@ const ContributorCommitHistory = ({ repoUrl }) => {
               ))}
             </ul>
           )}
+
           <div style={styles.pagination}>
             {pagination.prev && (
               <button
