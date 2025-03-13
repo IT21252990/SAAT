@@ -7,7 +7,7 @@ import Register from "./pages/user/Register";
 import ForgotPassword from "./pages/user/ForgotPassword";
 import StudentHome from "./pages/Home/StudentHome";
 import TeacherHome from "./pages/Home/TeacherHome";
-
+import ModulePage from "./pages/student/ModulePage";
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -21,6 +21,7 @@ root.render(
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/student-home" element={<StudentHome />} />
         <Route path="/teacher-home" element={<TeacherHome />} />
+        <Route path="/module-page/:moduleId" element={<ModulePage />} />
       </Routes>
     </Router>
   </React.StrictMode>

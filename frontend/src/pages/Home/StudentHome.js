@@ -6,6 +6,7 @@ const StudentHome = () => {
   const [semester, setSemester] = useState("");
   const [modules, setModules] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleFetchModules = async () => {
     if (!year || !semester) {
@@ -29,6 +30,10 @@ const StudentHome = () => {
     } catch (error) {
       setError("Failed to fetch modules: " + error.message);
     }
+  };
+
+  const handleModuleClick = (moduleId) => {
+    navigate(`/module-page/${moduleId}`); // Redirect to assignments page
   };
 
   return (
@@ -64,7 +69,12 @@ const StudentHome = () => {
           <h3>Available Modules</h3>
           <ul>
             {modules.map((mod) => (
-              <li key={mod.module_id}>{mod.name}</li>
+              <li
+                key={mod.module_id}
+                onClick={() => handleModuleClick(mod.module_id)}
+              >
+                {mod.name}
+              </li>
             ))}
           </ul>
         </div>

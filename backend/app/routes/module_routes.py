@@ -89,3 +89,18 @@ def get_modules_by_year_semester():
         return jsonify({"modules": module_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@module_bp.route("/getModuleName/<module_id>", methods=["GET"])
+def get_module_name(module_id):
+    try:
+        db = current_app.db
+        module_ref = db.collection("modules").document(module_id)
+        module_doc = module_ref.get()
+
+        if module_doc.exists:
+            return jsonify(module_doc.to_dict()), 200
+        else:
+            return jsonify({"error": "Module not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
