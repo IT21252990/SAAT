@@ -48,3 +48,17 @@ def get_assignments_by_module(module_id):
         return jsonify({"assignments": assignment_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@assignment_bp.route("/getAssignment/<assignment_id>", methods=["GET"])
+def get_assignment(assignment_id):
+    try:
+        db = current_app.db
+        assignment_ref = db.collection("assignments").document(assignment_id)
+        assignment_doc = assignment_ref.get()
+
+        if assignment_doc.exists:
+            return jsonify(assignment_doc.to_dict()), 200
+        else:
+            return jsonify({"error": "Assignment not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

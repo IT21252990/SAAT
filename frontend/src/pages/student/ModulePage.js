@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ModulePage = () => {
   const { moduleId } = useParams();
   const [moduleName, setModuleName] = useState("");
   const [assignments, setAssignments] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchModuleDetails = async () => {
@@ -16,7 +17,7 @@ const ModulePage = () => {
         const data = await response.json();
 
         if (response.ok) {
-          setModuleName(data.name); // Store module name
+          setModuleName(data.name);
         } else {
           setError(data.error || "Module not found!");
         }
@@ -55,7 +56,17 @@ const ModulePage = () => {
       {assignments.length > 0 ? (
         <ul>
           {assignments.map((assignment) => (
-            <li key={assignment.assignment_id}>{assignment.name}</li>
+            <li key={assignment.assignment_id}>
+              <button
+                onClick={() =>
+                  navigate(`/assignment/${assignment.assignment_id}`, {
+                    state: { moduleId, moduleName }, // Pass module data
+                  })
+                }
+              >
+                {assignment.name}
+              </button>
+            </li>
           ))}
         </ul>
       ) : (
