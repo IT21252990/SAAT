@@ -18,9 +18,9 @@ const Register = () => {
       const user = userCredential.user;
 
       // Save role in Firestore using Flask API
-      await fetch("http://127.0.0.1:5000/user/saveUserRole", {
+      await fetch("http://127.0.0.1:5000/user/saveUser", {
         method: "POST",
-        body: JSON.stringify({ uid: user.uid, role }),
+        body: JSON.stringify({ uid: user.uid, email: user.email, role }),
         headers: { "Content-Type": "application/json" },
       });
 

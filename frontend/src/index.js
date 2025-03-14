@@ -5,8 +5,8 @@ import App from "./App";
 import Login from "./pages/user/Login";
 import Register from "./pages/user/Register";
 import ForgotPassword from "./pages/user/ForgotPassword";
-import StudentHome from "./pages/Home/StudentHome";
-import TeacherHome from "./pages/Home/TeacherHome";
+import StudentHome from "./pages/student/StudentHome"
+import TeacherHome from "./pages/teacher/TeacherHome";
 import ModulePage from "./pages/student/ModulePage";
 import AssignmentPage from "./pages/student/AssignmentPage";
 

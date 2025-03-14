@@ -14,8 +14,11 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
   
+      // Save user ID in localStorage
+      localStorage.setItem("userId", user.uid);
+  
       // Get user role from Flask API
-      const response = await fetch(`http://127.0.0.1:5000/user/getUserRole/${user.uid}`);
+      const response = await fetch(`http://127.0.0.1:5000/user/getUser/${user.uid}`);
       const data = await response.json();
       const userRole = data.role;
   
@@ -24,13 +27,21 @@ const Login = () => {
       alert(error.message);
     }
   };
-  
 
   const handleGoogleLogin = async () => {
     try {
       const userCredential = await signInWithPopup(auth, googleProvider);
       const user = userCredential.user;
-      navigate(user.role === "student" ? "/student-home" : "/teacher-home");
+
+      // Save user ID in localStorage
+      localStorage.setItem("userId", user.uid);
+
+      // Get user role from Flask API
+      const response = await fetch(`http://127.0.0.1:5000/user/getUser/${user.uid}`);
+      const data = await response.json();
+      const userRole = data.role;
+
+      navigate(userRole === "student" ? "/student-home" : "/teacher-home");
     } catch (error) {
       alert(error.message);
     }
