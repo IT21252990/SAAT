@@ -7,6 +7,7 @@ const [year, setYear] = useState("");
   const [semester, setSemester] = useState("");
   const [modules, setModules] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleFetchModules = async () => {
     if (!year || !semester) {
@@ -32,9 +33,13 @@ const [year, setYear] = useState("");
     }
   };
 
+  const handleModuleClick = (moduleId) => {
+    navigate(`/teacher-module-page/${moduleId}`); // Redirect to assignments page
+  };
+
   return (
     <div className="container">
-      <h1>Teacher Home</h1>
+      <h1> Teacher Home</h1>
       <h2>Select Year & Semester</h2>
 
       {/* Year Dropdown */}
@@ -65,7 +70,12 @@ const [year, setYear] = useState("");
           <h3>Available Modules</h3>
           <ul>
             {modules.map((mod) => (
-              <li key={mod.module_id}>{mod.name}</li>
+              <li
+                key={mod.module_id}
+                onClick={() => handleModuleClick(mod.module_id)}
+              >
+                {mod.name}
+              </li>
             ))}
           </ul>
         </div>

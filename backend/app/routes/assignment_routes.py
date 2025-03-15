@@ -12,9 +12,13 @@ def create_assignment():
         
         module_id = data.get("module_id")
         name = data.get("name")
-        marking = data.get("marking")  # Should be a list of {criteria, allocated_mark}
+        description = data.get("description")
+        deadline = data.get("deadline")
+        submission_types = data.get("submission_types")  # {"code": True/False, "report": True/False, "video": True/False}
+        marking_criteria = data.get("markingCriteria")  # Dict for different submission types
+        details = data.get("details")  # Topics, descriptions, subtopics
         
-        if not module_id or not name or not marking:
+        if not module_id or not name or not marking_criteria:
             return jsonify({"error": "Missing required fields"}), 400
         
         assignment_id = str(uuid.uuid4())  # Generate a unique assignment ID
@@ -25,7 +29,11 @@ def create_assignment():
             "assignment_id": assignment_id,
             "module_id": module_id,
             "name": name,
-            "marking": marking  # Store as an array of objects
+            "description": description,
+            "deadline": deadline,
+            "submission_types": submission_types,
+            "marking_criteria": marking_criteria,
+            "details": details
         })
 
         return jsonify({"message": "Assignment created successfully!", "assignment_id": assignment_id}), 200
@@ -41,10 +49,8 @@ def get_assignments_by_module(module_id):
         assignments_ref = db.collection("assignments").where("module_id", "==", module_id)
         assignments = assignments_ref.stream()
 
-        assignment_list = []
-        for assignment in assignments:
-            assignment_list.append(assignment.to_dict())
-
+        assignment_list = [assignment.to_dict() for assignment in assignments]
+        
         return jsonify({"assignments": assignment_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
