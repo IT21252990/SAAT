@@ -9,7 +9,7 @@ const StudentsSubmissions = ({onRepoSelect}) => {
     useEffect(() => {
         const fetchSubmissions = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/projects`);
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/repo/projects`);
                 setSubmissions(response.data);
                 setLoading(false);
             } catch (error) {
