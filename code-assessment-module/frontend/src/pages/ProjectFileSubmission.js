@@ -42,7 +42,7 @@ const ProjectFileSubmission = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/upload-project-file`,
+        `${process.env.REACT_APP_BACKEND_URL}/file-upload/upload-project-file`,
         submissionData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
