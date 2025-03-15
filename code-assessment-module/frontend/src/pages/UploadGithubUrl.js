@@ -8,7 +8,7 @@ const UploadGithubUrl = ({ onRepoSelect }) => {
 
     const handleFetchRepo = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/repo`, {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/repo/repo-details`, {
                 params: { repo_url: repoUrl },
             });
             onRepoSelect(repoUrl, response.data); // Pass repo data to parent
