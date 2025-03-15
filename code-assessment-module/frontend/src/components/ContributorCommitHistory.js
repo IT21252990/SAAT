@@ -70,7 +70,7 @@ const ContributorCommitHistory = ({ repoUrl }) => {
     const fetchContributors = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/repo/contributors`,
+          `${process.env.REACT_APP_BACKEND_URL}/repo/contributors`,
           { params: { repo_url: repoUrl } }
         );
         setContributors(response.data);
@@ -91,7 +91,7 @@ const ContributorCommitHistory = ({ repoUrl }) => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/repo/commits`,
+        `${process.env.REACT_APP_BACKEND_URL}/repo/commits`,
         {
           params: {
             repo_url: repoUrl,

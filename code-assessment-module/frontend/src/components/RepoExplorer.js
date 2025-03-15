@@ -34,7 +34,7 @@ const RepoExplorer = ({ repoUrl }) => {
     const fetchRootContents = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/repo/contents`,
+          `${process.env.REACT_APP_BACKEND_URL}/repo/contents`,
           { params: { repo_url: repoUrl } }
         );
         setContents((prev) => ({
@@ -51,7 +51,7 @@ const RepoExplorer = ({ repoUrl }) => {
   const fetchSubdirectoryContents = async (itemPath) => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/repo/contents`,
+        `${process.env.REACT_APP_BACKEND_URL}/repo/contents`,
         { params: { repo_url: repoUrl, path: itemPath } }
       );
       setContents((prev) => ({
@@ -89,7 +89,7 @@ const RepoExplorer = ({ repoUrl }) => {
     if (!fileContents[item.path]) {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/file-content`,
+          `${process.env.REACT_APP_BACKEND_URL}/repo/file-content`,
           { params: { repo_url: repoUrl, path: item.path } }
         );
         setFileContents((prev) => ({
@@ -238,7 +238,7 @@ const RepoExplorer = ({ repoUrl }) => {
     if (currentLine != null && commentText.trim() !== "") {
       // addCommentToLine(currentLine, commentText.trim());
       axios
-        .post(`${process.env.REACT_APP_BACKEND_URL}/api/save-line-comment`, {
+        .post(`${process.env.REACT_APP_BACKEND_URL}/repo/save-line-comment`, {
           repo_url: repoUrl, // Pass the active repository URL
           file_name: activeTab?.name, // File name from the active tab
           line_number: currentLine, // Line number

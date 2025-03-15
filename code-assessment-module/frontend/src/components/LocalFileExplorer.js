@@ -29,7 +29,7 @@ const LocalFileExplorer = () => {
     const fetchRootContents = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/local-contents`,
+          `${process.env.REACT_APP_BACKEND_URL}/file-upload/local-contents`,
           { params: { path: "" } }
         );
         setContents({ "": response.data });
@@ -44,7 +44,7 @@ const LocalFileExplorer = () => {
   const fetchSubdirectoryContents = async (path) => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/local-contents`,
+        `${process.env.REACT_APP_BACKEND_URL}/file-upload/local-contents`,
         { params: { path } }
       );
       setContents((prev) => ({ ...prev, [path]: response.data }));
@@ -116,7 +116,7 @@ const LocalFileExplorer = () => {
     if (!fileContents[item.path]) {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/local-file-content`,
+          `${process.env.REACT_APP_BACKEND_URL}/file-upload/local-file-content`,
           { params: { path: item.path } }
         );
         setFileContents((prev) => ({

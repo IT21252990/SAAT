@@ -6,7 +6,7 @@ const RepoSelector = ({ onRepoSelect }) => {
     const [repo, setRepo] = useState('');
 
     const handleFetchRepo = async () => {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/repo`, {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/repo/repo-details`, {
             params: { owner, repo },
         });
         onRepoSelect(response.data);

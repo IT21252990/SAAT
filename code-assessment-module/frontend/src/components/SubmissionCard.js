@@ -10,7 +10,7 @@ const SubmissionCard = ({ submission , onRepoSelect}) => {
             navigate('/cam-home'); 
        }else{
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/repo`, {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/repo/repo-details`, {
                 params: { repo_url: submission.github_url },
             });
             onRepoSelect(submission.github_url, response.data); // Pass repo data to parent
