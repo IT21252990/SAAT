@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=G:\SLIIT\RP\Integrated_Project\SAAT\Smart-Assignment-Assessment-Tool\backend\venv
+set VIRTUAL_ENV=F:\SLIIT\Year 4 - Research\Project\Integrated_Final_Poroject\SAAT\Smart-Assignment-Assessment-Tool\backend\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

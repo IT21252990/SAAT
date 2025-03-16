@@ -14,6 +14,8 @@ dist-ssr
 
 
 .env
+postcss.config.cjs
+prettier.config.cjs
 
 # Editor directories and files
 .vscode/*

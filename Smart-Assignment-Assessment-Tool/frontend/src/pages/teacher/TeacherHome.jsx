@@ -40,7 +40,7 @@ const TeacherHome = () => {
       <Header />
       <div className="mt-10 w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
         <h1 className="mb-4 text-center text-2xl font-semibold text-gray-800 dark:text-white">
-          Teacher Home
+          Hello Teacher! 👩🏻‍🏫
         </h1>
         <h2 className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
           Select Year & Semester
@@ -76,7 +76,7 @@ const TeacherHome = () => {
           onClick={handleFetchModules}
           className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          Get Modules
+        View Modules
         </button>
 
         {modules.length > 0 && (
