@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="G:\SLIIT\RP\Integrated_Project\SAAT\Smart-Assignment-Assessment-Tool\backend\venv"
+VIRTUAL_ENV="F:\SLIIT\Year 4 - Research\Project\Integrated_Final_Poroject\SAAT\Smart-Assignment-Assessment-Tool\backend\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
