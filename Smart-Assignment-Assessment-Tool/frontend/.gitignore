@@ -14,6 +14,7 @@ dist-ssr
 
 
 .env
+postcss.config.js
 
 # Editor directories and files
 .vscode/*
