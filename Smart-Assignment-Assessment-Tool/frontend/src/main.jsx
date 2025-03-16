@@ -14,6 +14,7 @@ import TeacherModulePage from "./pages/teacher/TeacherModulePage";
 import AddAssignment from "./pages/teacher/AddAssignment";
 import ViewSubmissions from "./pages/teacher/ViewSubmissions";
 import AddSubmissionPage from "./pages/student/AddSubmissionPage";
+import ViewCodeSubmission from "./pages/teacher/ViewCodeSubmission.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -34,6 +35,7 @@ root.render(
         <Route path="/add-assignment" element={<AddAssignment />} />
         <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
         <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
+        <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
       </Routes>
     </Router>
   </React.StrictMode>
