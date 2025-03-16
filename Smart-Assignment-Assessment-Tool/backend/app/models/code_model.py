@@ -7,7 +7,7 @@ class Code:
         self.github_url = github_url
         self.comments = comments if comments else []
         self.final_feedback = final_feedback if final_feedback else []
-        self.created_at = datetime.utcnow().isoformat()
+        self.submitted_at = datetime.utcnow().isoformat()
 
     def to_dict(self):
         return {
@@ -16,7 +16,7 @@ class Code:
             "github_url": self.github_url,
             "comments": self.comments,
             "final_feedback": self.final_feedback,
-            "created_at": self.created_at
+            "submitted_at": self.submitted_at
         }
 
     def save(self , db):
