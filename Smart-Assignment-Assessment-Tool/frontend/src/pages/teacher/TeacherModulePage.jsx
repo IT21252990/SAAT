@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AssignmentDetails from "../../components/AssignmentDetails.js";
+import AssignmentDetails from "../../components/AssignmentDetails.jsx";
 
 const TeacherModulePage = () => {
   const { moduleId } = useParams();
@@ -14,7 +14,7 @@ const TeacherModulePage = () => {
     const fetchModuleDetails = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/module/getModuleName/${moduleId}`
+          `${import.meta.env.VITE_BACKEND_URL}/module/getModuleName/${moduleId}`
         );
         const data = await response.json();
 
@@ -31,7 +31,7 @@ const TeacherModulePage = () => {
     const fetchAssignments = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/assignment/getAssignmentsByModule/${moduleId}`
+          `${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignmentsByModule/${moduleId}`
         );
         const data = await response.json();
 
@@ -58,7 +58,7 @@ const TeacherModulePage = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/assignment/getAssignment/${assignmentId}`
+        `${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`
       );
       const data = await response.json();
 

@@ -11,7 +11,7 @@ const ViewSubmissions = () => {
   // Function to fetch user email using student ID
   const fetchUserEmail = async (uid) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/user/getUser/${uid}`);
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`);
       const data = await response.json();
       if (response.ok) {
         return data.email; // assuming the email is under the 'email' field
@@ -28,7 +28,7 @@ const ViewSubmissions = () => {
     const fetchSubmissions = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/submission/getSubmissionsByAssignment/${assignmentId}`
+          `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`
         );
         const data = await response.json();
 

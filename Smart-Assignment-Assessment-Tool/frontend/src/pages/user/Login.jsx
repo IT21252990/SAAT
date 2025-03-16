@@ -25,7 +25,7 @@ const Login = () => {
 
       // Get user role from Flask API
       const response = await fetch(
-        `http://127.0.0.1:5000/user/getUser/${user.uid}`,
+        `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${user.uid}`,
       );
       const data = await response.json();
       const userRole = data.role;
@@ -46,7 +46,7 @@ const Login = () => {
 
       // Get user role from Flask API
       const response = await fetch(
-        `http://127.0.0.1:5000/user/getUser/${user.uid}`,
+        `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${user.uid}`,
       );
       const data = await response.json();
       const userRole = data.role;
@@ -62,7 +62,7 @@ const Login = () => {
       <DarkThemeToggle className="absolute right-4 top-4" />
       <div className="mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-screen lg:py-0">
         <a
-          href="#"
+          href="/"
           className="mb-6 flex items-center text-2xl font-semibold text-gray-900 dark:text-white"
         >
           <img
@@ -80,7 +80,7 @@ const Login = () => {
             <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
               <div>
                 <label
-                  for="email"
+                  htmlFor="email"
                   className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Your email
@@ -97,7 +97,7 @@ const Login = () => {
               </div>
               <div>
                 <label
-                  for="password"
+                  htmlFor="password"
                   className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Password
@@ -125,7 +125,7 @@ const Login = () => {
                   </div>
                   <div className="ml-3 text-sm">
                     <label
-                      for="remember"
+                      htmlFor="remember"
                       className="text-gray-500 dark:text-gray-300"
                     >
                       Remember me
@@ -133,7 +133,7 @@ const Login = () => {
                   </div>
                 </div>
                 <a
-                  href="#"
+                  href="/forgot-password"
                   className="text-primary-600 dark:text-primary-500 text-sm font-medium hover:underline"
                 >
                   Forgot password?

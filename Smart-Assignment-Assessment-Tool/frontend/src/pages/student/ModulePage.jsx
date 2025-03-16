@@ -12,7 +12,7 @@ const ModulePage = () => {
     const fetchModuleDetails = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/module/getModuleName/${moduleId}`
+          `${import.meta.env.VITE_BACKEND_URL}/module/getModuleName/${moduleId}`
         );
         const data = await response.json();
 
@@ -29,7 +29,7 @@ const ModulePage = () => {
     const fetchAssignments = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/assignment/getAssignmentsByModule/${moduleId}`
+          `${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignmentsByModule/${moduleId}`
         );
         const data = await response.json();
 

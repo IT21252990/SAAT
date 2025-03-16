@@ -105,7 +105,7 @@ const AddAssignment = () => {
   
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/assignment/createAssignment",
+        `${import.meta.env.VITE_BACKEND_URL}/assignment/createAssignment`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

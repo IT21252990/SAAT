@@ -21,7 +21,7 @@ const AddSubmissionPage = () => {
     setLoading(true);
     try {
       // Step 1: Create the submission (without submission ID for now)
-      const response = await fetch("http://127.0.0.1:5000/submission/create", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,7 +57,7 @@ const AddSubmissionPage = () => {
   // Save GitHub URL to the database and return the code ID
   const saveGithubUrl = async (submissionId, githubUrl) => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/repo/add-repo-submission", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/add-repo-submission`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -80,7 +80,7 @@ const AddSubmissionPage = () => {
   // Update the submission with the code ID
   const updateSubmissionWithCodeId = async (submissionId, codeId) => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/submission/update", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import AssignmentDetails from "../../components/AssignmentDetails.js";
-import generatePDF from "../../components/PDFGenerator.js"
+import AssignmentDetails from "../../components/AssignmentDetails.jsx";
+import generatePDF from "../../components/PDFGenerator.jsx"
 
 const AssignmentPage = () => {
   const { assignmentId } = useParams();
@@ -19,7 +19,7 @@ const AssignmentPage = () => {
     const fetchAssignmentDetails = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/assignment/getAssignment/${assignmentId}`
+          `${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`
         );
         const data = await response.json();
 

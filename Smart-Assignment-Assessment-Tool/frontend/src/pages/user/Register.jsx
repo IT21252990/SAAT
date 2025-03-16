@@ -24,7 +24,7 @@ const Register = () => {
       const user = userCredential.user;
 
       // Save role in Firestore using Flask API
-      await fetch("http://127.0.0.1:5000/user/saveUser", {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/saveUser`, {
         method: "POST",
         body: JSON.stringify({ uid: user.uid, email: user.email, role }),
         headers: { "Content-Type": "application/json" },
@@ -60,7 +60,7 @@ const Register = () => {
             <form className="space-y-4 md:space-y-6" onSubmit={handleRegister}>
               <div>
                 <label
-                  for="email"
+                  htmlFor="email"
                   className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Your email
@@ -77,7 +77,7 @@ const Register = () => {
               </div>
               <div>
                 <label
-                  for="password"
+                  htmlFor="password"
                   className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Password
@@ -88,22 +88,23 @@ const Register = () => {
                   name="password"
                   id="password"
                   placeholder="••••••••"
-                  class="focus:ring-primary-600 focus:border-primary-600 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                  className="focus:ring-primary-600 focus:border-primary-600 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                   required=""
                 />
               </div>
               <div>
                 <label
-                  for="user_role"
-                  class="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
+                  htmlFor="user_role"
+                  className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Select your Role
                 </label>
                 <select
                   id="user_role"
-                  class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                  onChange={(e) => setRole(e.target.value)}
+                  className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                 >
-                  <option selected value="student">Student</option>
+                  <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
                 </select>
               </div>
@@ -119,7 +120,7 @@ const Register = () => {
                 </div>
                 <div className="ml-3 text-sm">
                   <label
-                    for="terms"
+                    htmlFor="terms"
                     className="font-light text-gray-500 dark:text-gray-300"
                   >
                     I accept the{" "}

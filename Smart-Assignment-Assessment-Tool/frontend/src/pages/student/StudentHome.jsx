@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { auth, googleProvider } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 
-const TeacherHome = () => {
-const [year, setYear] = useState("");
+const StudentHome = () => {
+  const [year, setYear] = useState("");
   const [semester, setSemester] = useState("");
   const [modules, setModules] = useState([]);
   const [error, setError] = useState("");
@@ -19,7 +18,7 @@ const [year, setYear] = useState("");
       setError(""); // Clear any previous errors
 
       const response = await fetch(
-        `http://127.0.0.1:5000/module/getModulesByYearSemester?year=${year}&semester=${semester}`
+        `${import.meta.env.VITE_BACKEND_URL}/module/getModulesByYearSemester?year=${year}&semester=${semester}`
       );
       const data = await response.json();
 
@@ -34,12 +33,12 @@ const [year, setYear] = useState("");
   };
 
   const handleModuleClick = (moduleId) => {
-    navigate(`/teacher-module-page/${moduleId}`); // Redirect to assignments page
+    navigate(`/module-page/${moduleId}`); // Redirect to assignments page
   };
 
   return (
     <div className="container">
-      <h1> Teacher Home</h1>
+      <h1> Student Home</h1>
       <h2>Select Year & Semester</h2>
 
       {/* Year Dropdown */}
@@ -84,4 +83,4 @@ const [year, setYear] = useState("");
   );
 };
 
-export default TeacherHome;
+export default StudentHome;

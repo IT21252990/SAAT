@@ -1,6 +1,16 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 from firebase_admin import credentials, firestore, initialize_app
+
+load_dotenv()  # Load environment variables from .env
+
+# Get Firebase credentials path from environment
+firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS")
+
+if not firebase_credentials_path:
+    raise ValueError("FIREBASE_CREDENTIALS environment variable is not set!")
 
 def create_app():
     app = Flask(__name__)
@@ -9,6 +19,7 @@ def create_app():
     # Initialize Firebase Admin SDK (Only Once)
     cred = credentials.Certificate("firebase-adminsdk.json")
     initialize_app(cred)
+
     app.db = firestore.client()  # Store Firestore client in app context
 
     # Import and register blueprints
@@ -20,11 +31,11 @@ def create_app():
     from app.routes.code.repo_routes import repo_bp
 
 
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(user_bp, url_prefix="/user")
-    app.register_blueprint(module_bp, url_prefix="/module")
-    app.register_blueprint(assignment_bp, url_prefix="/assignment")
-    app.register_blueprint(submission_bp, url_prefix="/submission")
-    app.register_blueprint(repo_bp, url_prefix="/repo")
+    app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
+    app.register_blueprint(user_bp, url_prefix="/api/v1/user")
+    app.register_blueprint(module_bp, url_prefix="/api/v1/module")
+    app.register_blueprint(assignment_bp, url_prefix="/api/v1/assignment")
+    app.register_blueprint(submission_bp, url_prefix="/api/v1/submission")
+    app.register_blueprint(repo_bp, url_prefix="/api/v1/repo")
 
     return app
