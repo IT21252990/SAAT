@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios"; // Make sure to import axios
 
 const ViewSubmissions = () => {
   const { assignmentId } = useParams();
   const [submissions, setSubmissions] = useState([]);
+  const [github_url, setGithub_url] = useState("");
+  const [codeId, setCodeId] = useState("");
   const [error, setError] = useState("");
   const [users, setUsers] = useState({});
   const navigate = useNavigate();
@@ -24,6 +27,50 @@ const ViewSubmissions = () => {
     }
   };
 
+  // Fetch the GitHub URL by code_id
+  const getRepoUrl = async (codeId) => {
+    try {
+      // Fetch the GitHub URL by code_id from the backend
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/repo/get-github-url`, {
+        params: { code_id: codeId },
+      });
+  
+      if (response.status === 200) {
+        const githubUrl = response.data.github_url; // Get the GitHub URL from the response
+        setGithub_url(githubUrl); // Store it in state
+  
+        // Once GitHub URL is fetched, proceed with handleFetchRepo
+        await handleFetchRepo(githubUrl, codeId);
+      } else {
+        setError("GitHub URL not found for this submission.");
+      }
+    } catch (error) {
+      console.error("Error fetching GitHub URL:", error);
+      setError("Failed to fetch the GitHub URL.");
+    }
+  };
+  
+  const handleFetchRepo = async (githubUrl, codeId) => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/repo/repo-details`, {
+        params: { repo_url: githubUrl },
+      });
+  
+      if (response.status === 200) {
+        // Navigate to view-code page and pass githubUrl as state
+        navigate(`/view-code/${codeId}`, { state: { githubUrl, repoDetails: response.data } });
+      } else {
+        alert("Failed to fetch repository details.");
+      }
+    } catch (error) {
+      console.error("Error fetching repository:", error);
+      alert("Failed to fetch the repository. Please check the URL.");
+    }
+  };
+  
+  
+  
+
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
@@ -37,6 +84,7 @@ const ViewSubmissions = () => {
             data.submissions.map(async (submission) => {
               // Fetch email for each submission's student_id
               const email = await fetchUserEmail(submission.student_id);
+              setCodeId(submission.code_id);
               return { ...submission, email };
             })
           );
@@ -87,9 +135,7 @@ const ViewSubmissions = () => {
                         borderRadius: "3px",
                         marginRight: "5px",
                       }}
-                      onClick={() =>
-                        navigate(`/view-code/${submission.code_id}`)
-                      }
+                      onClick={() => getRepoUrl(submission.code_id)} // Fix here
                     >
                       View Code
                     </button>

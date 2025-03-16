@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate , useLocation  } from "react-router-dom"; 
 import { FaSitemap, FaSearch, FaCodeBranch, FaPuzzlePiece, FaHome } from "react-icons/fa";
 import { MdFeedback } from "react-icons/md";
 import { FaFileSignature } from "react-icons/fa6";
@@ -8,17 +8,19 @@ import RepoExplorer from "../../components/RepoExplorer";
 import LocalFileExplorer from "../../components/LocalFileExplorer";
 import ContributorCommitHistory from "../../components/ContributorCommitHistory";
 
-const ViewCodeSubmission = ({repoUrl, repoData}) => {
+const ViewCodeSubmission = () => {
   const [activeSection, setActiveSection] = useState("explorer");
   const navigate = useNavigate(); // Initialize useNavigate
+  const { state } = useLocation(); // Get the state passed via navigate
+  const { githubUrl, repoDetails } = state || {};
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case "explorer":{
-         if(repoUrl){
-          return <RepoExplorer repoUrl={repoUrl}/> 
-        }if(!repoUrl){
-          return <LocalFileExplorer/>
+         if(githubUrl){
+          return <RepoExplorer repoUrl={githubUrl}/> 
+        }if(!githubUrl){
+        //   return <LocalFileExplorer/>
         }
       }
       case "search":

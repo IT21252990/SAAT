@@ -21,3 +21,11 @@ class Code:
 
     def save(self , db):
         db.collection("codes").document(self.code_id).set(self.to_dict())
+
+    @staticmethod
+    def get_github_url(db, code_id):
+        """ Fetch GitHub URL by code_id """
+        doc_ref = db.collection("codes").document(code_id).get()
+        if doc_ref.exists:
+            return doc_ref.to_dict().get("github_url")
+        return None
