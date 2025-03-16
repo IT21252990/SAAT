@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AssignmentDetails from "../../components/AssignmentDetails.jsx";
+import Header from "../../components/Header";
+
 
 const TeacherModulePage = () => {
   const { moduleId } = useParams();
@@ -51,7 +53,10 @@ const TeacherModulePage = () => {
 
   // Function to toggle assignment details
   const toggleAssignmentDetails = async (assignmentId) => {
-    if (expandedAssignment && expandedAssignment.assignment_id === assignmentId) {
+    if (
+      expandedAssignment &&
+      expandedAssignment.assignment_id === assignmentId
+    ) {
       setExpandedAssignment(null); // Collapse if already expanded
       return;
     }
@@ -73,91 +78,63 @@ const TeacherModulePage = () => {
   };
 
   return (
-    <div className="container">
-      <h2>Teacher's Module Page</h2>
+    <div className="h-screen flex flex-col">
+      <div className="flex-none">
+        <Header />
+      </div>      
+      <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        Teacher's Module Page
+      </h2>
 
       {/* Add Assignment Button */}
       <button
-        style={{
-          marginBottom: "10px",
-          padding: "10px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          cursor: "pointer",
-          borderRadius: "5px",
-        }}
         onClick={() =>
           navigate(`/add-assignment`, { state: { moduleId, moduleName } })
         }
+        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
       >
         Add Assignment
       </button>
 
-      <h2>Assignments for {moduleName || "Loading..."}</h2>
+      <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-3">
+        Assignments for {moduleName || "Loading..."}
+      </h3>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
       {assignments.length > 0 ? (
-        <ul>
+        <ul className="space-y-4">
           {assignments.map((assignment) => (
-            <li key={assignment.assignment_id} style={{ marginBottom: "15px" }}>
+            <li key={assignment.assignment_id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-md">
               <button
-                style={{
-                  padding: "8px",
-                  backgroundColor: "#28a745",
-                  color: "white",
-                  border: "none",
-                  cursor: "pointer",
-                  borderRadius: "5px",
-                }}
                 onClick={() => toggleAssignmentDetails(assignment.assignment_id)}
+                className="w-full text-left text-lg font-semibold text-blue-700 dark:text-blue-400 hover:underline"
               >
                 {assignment.name}
               </button>
 
               {/* Expanded assignment details using AssignmentDetails component */}
-              {expandedAssignment &&
-                expandedAssignment.assignment_id === assignment.assignment_id && (
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      padding: "10px",
-                      border: "1px solid #ddd",
-                      borderRadius: "5px",
-                      backgroundColor: "#f8f9fa",
-                    }}
-                  >
-                    <AssignmentDetails
-                      assignment={expandedAssignment}
-                      moduleName={moduleName}
-                    />
+              {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
+                <div className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
 
-                    {/* View Student Submissions Button */}
-                    <button
-                      style={{
-                        marginTop: "10px",
-                        padding: "8px",
-                        backgroundColor: "#ffc107",
-                        color: "black",
-                        border: "none",
-                        cursor: "pointer",
-                        borderRadius: "5px",
-                      }}
-                      onClick={() =>
-                        navigate(`/view-submissions/${assignment.assignment_id}`)
-                      }
-                    >
-                      View Student Submissions
-                    </button>
-                  </div>
-                )}
+                  {/* View Student Submissions Button */}
+                  <button
+                    onClick={() => navigate(`/view-submissions/${assignment.assignment_id}`)}
+                    className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    View Student Submissions
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       ) : (
-        <p>No assignments found for this module.</p>
+        <p className="text-gray-600 dark:text-gray-300">No assignments found for this module.</p>
       )}
+    </div>
     </div>
   );
 };

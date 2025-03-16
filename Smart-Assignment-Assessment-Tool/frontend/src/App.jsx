@@ -11,7 +11,7 @@ function App() {
       <div className="flex-none">
         <Header />
       </div>
-      <section className="flex-grow flex items-center justify-center bg-white dark:bg-gray-900">
+      <section className=" w-full mx-auto p-6 bg-white dark:bg-gray-800 shadow-md">
         <div className="mx-auto grid max-w-screen-xl px-4 lg:grid-cols-12 lg:gap-8 xl:gap-0">
           <div className="mr-auto place-self-center lg:col-span-7">
             <h1 className="mb-10 mt-10 max-w-2xl text-4xl font-extrabold leading-none tracking-tight dark:text-white md:text-5xl xl:text-6xl">
