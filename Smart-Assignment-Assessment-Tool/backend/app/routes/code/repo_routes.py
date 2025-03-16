@@ -40,38 +40,6 @@ def add_repo_submission():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@repo_bp.route('/submit', methods=['POST'])
-def submit_student_project():
-    """ Save student project details to Firestore """
-    required_fields = ['github_url', 'student_name', 'student_id', 'year', 'semester', 'module_name', 'module_code']
-    
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    data['created_at'] = datetime.utcnow().isoformat()  # Store timestamps as ISO format
-    
-    try:
-        db = current_app.db
-        data = request.get_json()
-
-        githu_url = data.get("github_url")
-        student_name = data.get("student_name")
-
-        db.collection("student_projects").add(data)
-        return jsonify({"message": "Data saved successfully"}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# @repo_bp.route('/projects', methods=['GET'])
-# def get_all_projects():
-#     """ Fetch all student projects from Firestore """
-#     try:
-#         projects_ref = db.collection("student_projects").stream()
-#         projects = [{**doc.to_dict(), "id": doc.id} for doc in projects_ref]
-#         return jsonify(projects), 200
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
 
 
 @repo_bp.route('/repo-details', methods=['GET'])
@@ -138,28 +106,28 @@ def get_file_content():
     return jsonify(response.json()), response.status_code if response.ok else 400
 
 
-# @repo_bp.route('/save-line-comment', methods=['POST'])
-# def save_line_comment():
-#     """ Save line comments to Firestore """
-#     data = request.json
-#     required_fields = ['repo_url', 'file_name', 'line_number', 'comment_text']
+@repo_bp.route('/save-line-comment', methods=['POST'])
+def save_line_comment():
+    """ Save line comments to Firestore """
+    data = request.json
+    required_fields = ['repo_url', 'file_name', 'line_number', 'comment_text']
 
-#     if not all(field in data for field in required_fields):
-#         return jsonify({"error": "Missing required fields"}), 400
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
 
-#     comment_data = {
-#         "repo_url": data['repo_url'],
-#         "file_name": data['file_name'],
-#         "line_number": data['line_number'],
-#         "comment_text": data['comment_text'],
-#         "created_at": datetime.utcnow().isoformat()
-#     }
+    comment_data = {
+        "repo_url": data['repo_url'],
+        "file_name": data['file_name'],
+        "line_number": data['line_number'],
+        "comment_text": data['comment_text'],
+        "created_at": datetime.utcnow().isoformat()
+    }
 
-#     try:
-#         db.collection("comments").add(comment_data)
-#         return jsonify({"message": "Comment saved successfully"}), 201
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+    try:
+        db.collection("comments").add(comment_data)
+        return jsonify({"message": "Comment saved successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @repo_bp.route('/contributors', methods=['GET'])
@@ -204,3 +172,24 @@ def get_contributor_commits():
     response = requests.get(url, headers=headers, params=params)
 
     return jsonify(response.json()), response.status_code if response.ok else 400
+
+
+@repo_bp.route('/get-github-url', methods=['GET'])
+def get_github_url():
+    """ Fetch GitHub URL by code_id """
+    code_id = request.args.get('code_id')
+
+    if not code_id:
+        return jsonify({"error": "Missing required parameter: code_id"}), 400
+
+    try:
+        db = current_app.db
+        github_url = Code.get_github_url(db, code_id)
+
+        if github_url:
+            return jsonify({"github_url": github_url}), 200
+        else:
+            return jsonify({"error": "No record found for the given code_id"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
