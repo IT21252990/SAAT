@@ -78,11 +78,9 @@ const TeacherModulePage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="flex-none">
-        <Header />
-      </div>      
-      <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div className="min-h-screen h-full flex flex-col items-center  bg-gray-100 dark:bg-gray-900">
+        <Header />     
+      <div className="mt-10 mb-10 w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
       <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
         Teacher's Module Page
       </h2>
