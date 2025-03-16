@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import generatePDF from "../../components/PDFGenerator.js";
 import AssignmentDetails from "../../components/AssignmentDetails.js";
+import generatePDF from "../../components/PDFGenerator.js"
 
 const AssignmentPage = () => {
   const { assignmentId } = useParams();
@@ -36,45 +36,19 @@ const AssignmentPage = () => {
     fetchAssignmentDetails();
   }, [assignmentId]);
 
-  const handleSubmission = async (submissionType) => {
+  const handleSubmitClick = () => {
     if (!studentId) {
       setError("User not logged in. Please log in again.");
       return;
     }
 
-    setLoading(true);
-    try {
-      const response = await fetch("http://127.0.0.1:5000/submission/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          assignment_id: assignmentId,
-          submission_type: submissionType,
-          student_id: studentId, // Use studentId from localStorage
-        }),
-      });
-
-      const data = await response.json();
-      setLoading(false);
-
-      if (response.ok) {
-        navigate(`/submit/${submissionType.toLowerCase()}`, {
-          state: {
-            submissionId: data.submission.submission_id,
-            assignmentId,
-            moduleId,
-            moduleName,
-          },
-        });
-      } else {
-        setError(data.error || "Failed to create submission!");
-      }
-    } catch (error) {
-      setError("Failed to create submission: " + error.message);
-      setLoading(false);
-    }
+    navigate(`/add-submission/${assignmentId}`, {
+      state: {
+        assignmentId,
+        moduleId,
+        moduleName,
+      },
+    });
   };
 
   return (
@@ -83,45 +57,27 @@ const AssignmentPage = () => {
         <p style={{ color: "red" }}>{error}</p>
       ) : assignment ? (
         <>
-        
-        {/* Display assignment details */}
+          {/* Display assignment details */}
           <AssignmentDetails assignment={assignment} moduleName={moduleName} />
 
           <h3>Submit Your Work</h3>
           <div>
-            {assignment.submission_types.code && (
-              <button
-                onClick={() => handleSubmission("Code")}
-                disabled={loading}
-              >
-                {loading ? "Processing..." : "Submit Code"}
-              </button>
-            )}
-            {assignment.submission_types.report && (
-              <button
-                onClick={() => handleSubmission("Report")}
-                disabled={loading}
-              >
-                {loading ? "Processing..." : "Submit Report"}
-              </button>
-            )}
-            {assignment.submission_types.video && (
-              <button
-                onClick={() => handleSubmission("Video")}
-                disabled={loading}
-              >
-                {loading ? "Processing..." : "Submit Video"}
-              </button>
-            )}
+            <button
+              onClick={handleSubmitClick}
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Submit"}
+            </button>
           </div>
 
-          {/* Button to generate PDF */}
-          <button
+           {/* Button to generate PDF */}
+           <button
             onClick={() => generatePDF(assignment, moduleName)}
             className="generate-pdf-btn"
           >
             Generate PDF
           </button>
+
         </>
       ) : (
         <p>Loading assignment details...</p>
