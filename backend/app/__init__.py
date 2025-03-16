@@ -17,11 +17,14 @@ def create_app():
     from app.routes.module_routes import module_bp
     from app.routes.assignment_routes import assignment_bp
     from app.routes.submission_routes import submission_bp
+    from app.routes.code.repo_routes import repo_bp
+
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(user_bp, url_prefix="/user")
     app.register_blueprint(module_bp, url_prefix="/module")
     app.register_blueprint(assignment_bp, url_prefix="/assignment")
     app.register_blueprint(submission_bp, url_prefix="/submission")
+    app.register_blueprint(repo_bp, url_prefix="/repo")
 
     return app

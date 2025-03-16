@@ -6,21 +6,21 @@ const AddSubmissionPage = () => {
   const location = useLocation();
   const { assignmentId, moduleId, moduleName } = location.state || {}; // Retrieve passed state
 
-  const [code, setCode] = useState(null);
-  const [report, setReport] = useState(null);
-  const [video, setVideo] = useState(null);
+  // State variables
+  const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Handle Save action
   const handleSaveClick = async () => {
-    if (!code && !report && !video) {
-      setError("At least one submission is required (code, report, or video).");
+    if (!githubUrl) {
+      setError("GitHub URL is required.");
       return;
     }
 
     setLoading(true);
     try {
-      // Create the submission (without submission ID for now)
+      // Step 1: Create the submission (without submission ID for now)
       const response = await fetch("http://127.0.0.1:5000/submission/create", {
         method: "POST",
         headers: {
@@ -34,53 +34,69 @@ const AddSubmissionPage = () => {
 
       const submissionData = await response.json();
       if (response.ok) {
-        const submissionId = submissionData.submission.submission_id;
+        const submissionId = submissionData.submission_id;
 
-        // Handle file uploads (code, report, video)
-        const formData = new FormData();
-        formData.append("submission_id", submissionId);
+        // Step 2: Save GitHub URL and retrieve the code ID
+        const codeId = await saveGithubUrl(submissionId, githubUrl);
         
-        if (code) formData.append("code", code);
-        if (report) formData.append("report", report);
-        if (video) formData.append("video", video);
-
-        // Save code, report, and video files using their respective routes
-        if (code) {
-          await uploadFile("http://127.0.0.1:5000/submission/save-code", formData);
-        }
-        if (report) {
-          await uploadFile("http://127.0.0.1:5000/submission/save-report", formData);
-        }
-        if (video) {
-          await uploadFile("http://127.0.0.1:5000/submission/save-video", formData);
-        }
+        // Step 3: Update the submission with the code ID
+        await updateSubmissionWithCodeId(submissionId, codeId);
 
         setLoading(false);
-
-        // After saving the files, navigate to the submission view page
-        navigate(`/view-submission/${submissionId}`);
+        // After saving the code ID, navigate to the submission view page
+        navigate(-1);
       } else {
-        setError(submissionData.error || "Failed to create submission!");
+        setError(submissionData.error || "Failed to create repo submission!");
       }
     } catch (error) {
-      setError("Failed to create submission: " + error.message);
+      setError("Failed to create repo submission: " + error.message);
       setLoading(false);
     }
   };
 
-  const uploadFile = async (url, formData) => {
+  // Save GitHub URL to the database and return the code ID
+  const saveGithubUrl = async (submissionId, githubUrl) => {
     try {
-      const response = await fetch(url, {
+      const response = await fetch("http://127.0.0.1:5000/repo/add-repo-submission", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submission_id: submissionId,
+          github_url: githubUrl,
+        }),
       });
 
-      const fileData = await response.json();
-      if (!response.ok) {
-        throw new Error(fileData.error || "File upload failed!");
+      const data = await response.json();
+      if (response.ok) {
+        return data.code_id;  // Return the code ID after successfully saving the GitHub URL
+      } else {
+        throw new Error(data.error || "Failed to save GitHub URL!");
       }
     } catch (error) {
-      throw new Error("Error uploading file: " + error.message);
+      throw new Error("Error saving GitHub URL: " + error.message);
+    }
+  };
+
+  // Update the submission with the code ID
+  const updateSubmissionWithCodeId = async (submissionId, codeId) => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/submission/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          submission_id: submissionId,
+          code_id: codeId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update submission with code ID!");
+      }
+    } catch (error) {
+      throw new Error("Error updating submission: " + error.message);
     }
   };
 
@@ -92,29 +108,25 @@ const AddSubmissionPage = () => {
 
       <form>
         <div>
-          <label>Code Submission</label>
+          <label>GitHub Repository URL</label>
           <input
-            type="file"
-            onChange={(e) => setCode(e.target.files[0])}
-            accept=".zip,.js,.py,.java"
+            type="text"
+            placeholder="Enter GitHub URL..."
+            value={githubUrl}
+            onChange={(e) => setGithubUrl(e.target.value)}
           />
         </div>
+        
+
         <div>
-          <label>Report Submission</label>
-          <input
-            type="file"
-            onChange={(e) => setReport(e.target.files[0])}
-            accept=".pdf,.docx"
-          />
+          <label>Report</label>
         </div>
+
+        
         <div>
-          <label>Video Submission</label>
-          <input
-            type="file"
-            onChange={(e) => setVideo(e.target.files[0])}
-            accept="video/*"
-          />
+          <label>Video</label>
         </div>
+        
 
         <button
           type="button"
@@ -126,6 +138,8 @@ const AddSubmissionPage = () => {
         <button type="button" onClick={() => navigate(`/assignment/${assignmentId}`)}>
           Cancel
         </button>
+
+        
       </form>
     </div>
   );
