@@ -3,6 +3,7 @@ from uuid import uuid4
 
 submission_bp = Blueprint("submission", __name__)
 
+# create_submission
 @submission_bp.route("/create", methods=["POST"])
 def create_submission():
     try:
@@ -36,6 +37,7 @@ def create_submission():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# update submission
 @submission_bp.route("/update/<submission_id>", methods=["PUT"])
 def update_submission(submission_id):
     try:
@@ -66,5 +68,19 @@ def update_submission(submission_id):
         submission_ref.update(update_data)
         return jsonify({"message": "Submission updated successfully!"}), 200
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# get all submissions by assignment id
+@submission_bp.route("/getSubmissionsByAssignment/<assignment_id>", methods=["GET"])
+def get_submissions_by_assignment(assignment_id):
+    try:
+        db = current_app.db
+        submissions_ref = db.collection("submissions").where("assignment_id", "==", assignment_id)
+        submissions = submissions_ref.stream()
+
+        submissions_list = [submission.to_dict() for submission in submissions]
+
+        return jsonify({"submissions": submissions_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
