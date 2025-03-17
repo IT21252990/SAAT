@@ -16,6 +16,7 @@ import ViewSubmissions from "./pages/teacher/ViewSubmissions";
 import AddSubmissionPage from "./pages/student/AddSubmissionPage";
 import ViewCodeSubmission from "./pages/teacher/ViewCodeSubmission.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
+import EditAssignment from "./pages/teacher/EditAssignment.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -41,6 +42,7 @@ root.render(
           <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
           <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
           <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
+          <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
         </Route>
       </Routes>
     </Router>
