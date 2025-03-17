@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios"; // Make sure to import axios
+import axios from "axios";
+import Header from "../../components/Header";
 
 const ViewSubmissions = () => {
   const { assignmentId } = useParams();
@@ -8,16 +9,16 @@ const ViewSubmissions = () => {
   const [github_url, setGithub_url] = useState("");
   const [codeId, setCodeId] = useState("");
   const [error, setError] = useState("");
-  const [users, setUsers] = useState({});
   const navigate = useNavigate();
 
-  // Function to fetch user email using student ID
   const fetchUserEmail = async (uid) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`);
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`
+      );
       const data = await response.json();
       if (response.ok) {
-        return data.email; // assuming the email is under the 'email' field
+        return data.email;
       } else {
         throw new Error(data.error || "Failed to fetch user.");
       }
@@ -27,19 +28,18 @@ const ViewSubmissions = () => {
     }
   };
 
-  // Fetch the GitHub URL by code_id
   const getRepoUrl = async (codeId) => {
     try {
-      // Fetch the GitHub URL by code_id from the backend
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/repo/get-github-url`, {
-        params: { code_id: codeId },
-      });
-  
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/repo/get-github-url`,
+        {
+          params: { code_id: codeId },
+        }
+      );
+
       if (response.status === 200) {
-        const githubUrl = response.data.github_url; // Get the GitHub URL from the response
-        setGithub_url(githubUrl); // Store it in state
-  
-        // Once GitHub URL is fetched, proceed with handleFetchRepo
+        const githubUrl = response.data.github_url;
+        setGithub_url(githubUrl);
         await handleFetchRepo(githubUrl, codeId);
       } else {
         setError("GitHub URL not found for this submission.");
@@ -49,16 +49,18 @@ const ViewSubmissions = () => {
       setError("Failed to fetch the GitHub URL.");
     }
   };
-  
+
   const handleFetchRepo = async (githubUrl, codeId) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/repo/repo-details`, {
-        params: { repo_url: githubUrl },
-      });
-  
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/repo/repo-details`,
+        { params: { repo_url: githubUrl } }
+      );
+
       if (response.status === 200) {
-        // Navigate to view-code page and pass githubUrl as state
-        navigate(`/view-code/${codeId}`, { state: { githubUrl, repoDetails: response.data } });
+        navigate(`/view-code/${codeId}`, {
+          state: { githubUrl, repoDetails: response.data },
+        });
       } else {
         alert("Failed to fetch repository details.");
       }
@@ -67,9 +69,6 @@ const ViewSubmissions = () => {
       alert("Failed to fetch the repository. Please check the URL.");
     }
   };
-  
-  
-  
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -82,7 +81,6 @@ const ViewSubmissions = () => {
         if (response.ok) {
           const submissionsWithEmails = await Promise.all(
             data.submissions.map(async (submission) => {
-              // Fetch email for each submission's student_id
               const email = await fetchUserEmail(submission.student_id);
               setCodeId(submission.code_id);
               return { ...submission, email };
@@ -101,92 +99,94 @@ const ViewSubmissions = () => {
   }, [assignmentId]);
 
   return (
-    <div className="container">
-      <h2>Student Submissions</h2>
+    <div className="min-h-screen h-full flex flex-col items-center bg-gray-100 dark:bg-gray-900">
+      <Header />
+      <div className="mt-10 mb-10 w-full max-w-6xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Student Submissions
+        </h2>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="text-red-500">{error}</p>}
 
-      {submissions.length > 0 ? (
-        <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Student Email</th>
-              <th>Submitted Time</th>
-              <th>View Submission</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions.map((submission, index) => (
-              <tr key={submission.submission_id}>
-                <td>{index + 1}</td> {/* Display submission number */}
-                <td>{submission.email}</td> {/* Display student email */}
-                <td>{new Date(submission.created_at).toLocaleString()}</td> {/* Format the submitted time */}
-                <td>
-                  {/* View Code Submission */}
-                  {submission.code_id && (
+        {submissions.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-300 dark:border-gray-700">
+              <thead className="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th className="py-2 px-4 border">#</th>
+                  <th className="py-2 px-4 border">Student Email</th>
+                  <th className="py-2 px-4 border">Submitted Time</th>
+                  <th className="py-2 px-4 border">Actions</th>
+                  <th className="py-2 px-4 border">Viva Dashboard</th>
+                </tr>
+              </thead>
+              <tbody>
+                {submissions.map((submission, index) => (
+                  <tr
+                    key={submission.submission_id}
+                    className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <td className="py-2 px-4 border text-center">
+                      {index + 1}
+                    </td>
+                    <td className="py-2 px-4 border">{submission.email}</td>
+                    <td className="py-2 px-4 border">
+                      {new Date(submission.created_at).toLocaleString()}
+                    </td>
+                    <td className="py-2 px-4 border text-center">
+                      {/* View Code */}
+                      {submission.code_id && (
+                        <button
+                          className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-2"
+                          onClick={() => getRepoUrl(submission.code_id)}
+                        >
+                          View Code
+                        </button>
+                      )}
+
+                      {/* View Report */}
+                      {submission.report_id && (
+                        <button
+                          className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2"
+                          onClick={() =>
+                            navigate(`/view-report/${submission.report_id}`)
+                          }
+                        >
+                          View Report
+                        </button>
+                      )}
+
+                      {/* View Video */}
+                      {submission.video_id && (
+                        <button
+                          className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                          onClick={() =>
+                            navigate(`/view-video/${submission.video_id}`)
+                          }
+                        >
+                          View Video
+                        </button>
+                      )}
+                    </td>
+                    <td className="py-2 px-4 border text-center">
                     <button
-                      style={{
-                        padding: "5px",
-                        backgroundColor: "#007bff",
-                        color: "white",
-                        border: "none",
-                        cursor: "pointer",
-                        borderRadius: "3px",
-                        marginRight: "5px",
-                      }}
-                      onClick={() => getRepoUrl(submission.code_id)} // Fix here
+                      className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                      onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
                     >
-                      View Code
+                      Go
                     </button>
-                  )}
-
-                  {/* View Report Submission */}
-                  {submission.report_id && (
-                    <button
-                      style={{
-                        padding: "5px",
-                        backgroundColor: "#28a745",
-                        color: "white",
-                        border: "none",
-                        cursor: "pointer",
-                        borderRadius: "3px",
-                        marginRight: "5px",
-                      }}
-                      onClick={() =>
-                        navigate(`/view-report/${submission.report_id}`)
-                      }
-                    >
-                      View Report
-                    </button>
-                  )}
-
-                  {/* View Video Submission */}
-                  {submission.video_id && (
-                    <button
-                      style={{
-                        padding: "5px",
-                        backgroundColor: "#ffc107",
-                        color: "white",
-                        border: "none",
-                        cursor: "pointer",
-                        borderRadius: "3px",
-                      }}
-                      onClick={() =>
-                        navigate(`/view-video/${submission.video_id}`)
-                      }
-                    >
-                      View Video
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No submissions found for this assignment.</p>
-      )}
+                  </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-300">
+            No submissions found for this assignment.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
