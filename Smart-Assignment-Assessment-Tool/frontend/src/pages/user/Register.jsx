@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { auth } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import saat_logo from "../../asserts/rounded_logo.png";
+// import saat_logo from "../../asserts/rounded_logo.png";
 import Header from "../../components/Header";
 
 const Register = () => {
