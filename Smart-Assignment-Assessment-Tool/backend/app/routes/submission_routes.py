@@ -155,6 +155,7 @@ def get_viva_dashboard_data(submission_id):
 
         submission_data = {
             "assignment_id": assignment_id,
+            "submission_id": submission_id,
             "module_name": module_name,
             "module_semester": module_semester,
             "module_year": module_year,
