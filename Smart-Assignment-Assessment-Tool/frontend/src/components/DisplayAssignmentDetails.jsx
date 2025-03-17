@@ -64,7 +64,7 @@ const DisplayAssignmentDetails = ({ submission_id }) => {
           <span className="ml-3 text-primary-600 dark:text-primary-400">Loading submission details...</span>
         </div>
       ) : submissionData ? (
-        <Card className="bg-gradient-to-br from-gray-50 to-primary-50 dark:from-gray-700 dark:to-primary-900 text-gray-700 dark:text-gray-200 overflow-hidden">
+        <Card className="bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 overflow-hidden">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="group">
