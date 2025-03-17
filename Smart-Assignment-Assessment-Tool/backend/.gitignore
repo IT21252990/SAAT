@@ -27,12 +27,15 @@ firebase-adminsdk.json
 Thumbs.db
 
 # Byte-compiled / optimized / DLL files
+**/__pycache__/
 __pycache__/
 *.py[cod]
 *$py.class
 
 # Virtual environment
 venv/
+**/venv/
+
 
 # Pytest and coverage files
 htmlcov/
@@ -76,9 +79,5 @@ docker-compose.override.yml
 **/containers/
 
 
-#Python Cache files
-app/__pycache__/
-app/models/__pycache__/
-app/routes/__pycache__/
-app/routes/code/__pycache__/
+
 
