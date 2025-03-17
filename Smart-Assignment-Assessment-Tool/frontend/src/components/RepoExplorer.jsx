@@ -503,7 +503,7 @@ const RepoExplorer = ({ repoUrl }) => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/repo/repo-contents`,
-          { params: { repo_url: repoUrl } }
+          { params: { repo_url: repoUrl } },
         );
         setContents((prev) => ({
           ...prev,
@@ -520,7 +520,7 @@ const RepoExplorer = ({ repoUrl }) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/repo/file-content`,
-        { params: { repo_url: repoUrl, path: itemPath } }
+        { params: { repo_url: repoUrl, path: itemPath } },
       );
       setContents((prev) => ({
         ...prev,
@@ -558,7 +558,7 @@ const RepoExplorer = ({ repoUrl }) => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/repo/file-content`,
-          { params: { repo_url: repoUrl, path: item.path } }
+          { params: { repo_url: repoUrl, path: item.path } },
         );
         setFileContents((prev) => ({
           ...prev,
@@ -597,9 +597,9 @@ const RepoExplorer = ({ repoUrl }) => {
                 <div className="group">
                   <div
                     onClick={() => toggleExpand(itemPath)}
-                    className="flex cursor-pointer items-center rounded py-1 px-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="flex cursor-pointer items-center rounded px-2 py-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
-                    <span className="mr-2 text-primary-600 dark:text-primary-400">
+                    <span className="text-primary-600 dark:text-primary-400 mr-2">
                       {isExpanded ? <FaFolderOpen /> : <FaFolder />}
                     </span>
                     <span className="flex-1 font-medium text-gray-700 dark:text-gray-200">
@@ -614,13 +614,15 @@ const RepoExplorer = ({ repoUrl }) => {
               ) : (
                 <div
                   onClick={() => handleFileClick(item)}
-                  className={`flex cursor-pointer items-center rounded py-1 px-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                  className={`flex cursor-pointer items-center rounded px-2 py-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
                     activeTab?.path === item.path
                       ? "bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300"
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  <span className="mr-2">{getFileIcon(item.name.split(".").pop())}</span>
+                  <span className="mr-2">
+                    {getFileIcon(item.name.split(".").pop())}
+                  </span>
                   <span className="truncate">{item.name}</span>
                 </div>
               )}
@@ -755,15 +757,15 @@ const RepoExplorer = ({ repoUrl }) => {
   }, [editorInstance, lineComments, activeTab]);
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-white dark:bg-gray-950">
+    <div className="flex h-full w-full overflow-hidden bg-white dark:bg-gray-900">
       {/* Left-side Explorer */}
-      <div className="w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-        <div className="mb-4 flex items-center">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Repository Explorer</h2>
-        </div>
-        <div className="mt-2">
-          {renderTree(contents[""])}
-        </div>
+      <div className="fixed mb-4 flex items-center">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Repository Explorer
+        </h2>
+      </div>
+      <div className="w-72 mt-8 flex-shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+        <div>{renderTree(contents[""])}</div>
       </div>
 
       {/* Right-side Editor */}
@@ -776,12 +778,14 @@ const RepoExplorer = ({ repoUrl }) => {
               onClick={() => setActiveTab(tab)}
               className={`group flex cursor-pointer items-center rounded-t px-4 py-2 ${
                 activeTab?.path === tab.path
-                  ? "bg-white text-primary-700 dark:bg-gray-700 dark:text-primary-300"
+                  ? "text-primary-700 dark:text-primary-300 bg-white dark:bg-gray-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               }`}
             >
-              <span className="mr-2">{getFileIcon(tab.name.split(".").pop())}</span>
-              <span className="truncate max-w-xs">{tab.name}</span>
+              <span className="mr-2">
+                {getFileIcon(tab.name.split(".").pop())}
+              </span>
+              <span className="max-w-xs truncate">{tab.name}</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -843,19 +847,19 @@ const RepoExplorer = ({ repoUrl }) => {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Enter your feedback..."
-              className="w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              className="focus:border-primary-500 focus:ring-primary-200 w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               rows={5}
             />
             <div className="mt-5 flex justify-end space-x-3">
               <button
                 onClick={() => setShowCommentPopup(false)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                className="focus:ring-primary-500 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCommentSubmit}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-700 dark:hover:bg-primary-800"
+                className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-800 rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 Submit Feedback
               </button>
