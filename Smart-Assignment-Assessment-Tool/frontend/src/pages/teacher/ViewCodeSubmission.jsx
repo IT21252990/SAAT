@@ -6,6 +6,8 @@ import {
   FaCodeBranch,
   FaPuzzlePiece,
   FaHome,
+  FaFileInvoice,
+  FaHandshake
 } from "react-icons/fa";
 import { MdFeedback } from "react-icons/md";
 import { FaFileSignature } from "react-icons/fa6";
@@ -34,7 +36,7 @@ const ViewCodeSubmission = () => {
       }
       case "contributions":
         return <ContributorCommitHistory repoUrl={githubUrl} />;
-      case "extensions":
+      case "submission_details":
         return <DisplayAssignmentDetails submission_id={submissionId} />
       default:
         return null;
@@ -64,20 +66,26 @@ const ViewCodeSubmission = () => {
               onClick={() => setActiveSection("explorer")}
             />
             <SidebarIcon
-              icon={<FaFileSignature size={24} />}
+              icon={<FaHandshake size={24} />}
               label="Contributions"
               active={activeSection === "contributions"}
               onClick={() => setActiveSection("contributions")}
             />
             <SidebarIcon
               icon={<MdFeedback size={24} />}
-              label="Extensions"
-              active={activeSection === "extensions"}
-              onClick={() => setActiveSection("extensions")}
+              label="Comments"
+              active={activeSection === "Comments"}
+              onClick={() => setActiveSection("Comments")}
             />
           </div>
 
           <div className="flex flex-col items-center">
+          <SidebarIcon
+              icon={<FaFileSignature size={24} />}
+              label="Submission Details"
+              active={activeSection === "submission_details"}
+              onClick={() => setActiveSection("submission_details")}
+            />
             <SidebarIcon
               icon={<FaHome size={24} />}
               label="Back to Students Submissions"
