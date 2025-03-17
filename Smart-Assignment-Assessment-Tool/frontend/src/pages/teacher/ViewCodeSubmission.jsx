@@ -13,13 +13,14 @@ import { RiAccountPinCircleFill } from "react-icons/ri";
 import RepoExplorer from "../../components/RepoExplorer";
 import LocalFileExplorer from "../../components/LocalFileExplorer";
 import ContributorCommitHistory from "../../components/ContributorCommitHistory";
+import DisplayAssignmentDetails from "../../components/DisplayAssignmentDetails";
 import Header from "../../components/Header";
 
 const ViewCodeSubmission = () => {
   const [activeSection, setActiveSection] = useState("explorer");
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { githubUrl, repoDetails } = state || {};
+  const { githubUrl, repoDetails, submissionId } = state || {};
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -34,7 +35,7 @@ const ViewCodeSubmission = () => {
       case "contributions":
         return <ContributorCommitHistory repoUrl={githubUrl} />;
       case "extensions":
-        return <div>search section</div>;
+        return <DisplayAssignmentDetails submission_id={submissionId} />
       default:
         return null;
     }
