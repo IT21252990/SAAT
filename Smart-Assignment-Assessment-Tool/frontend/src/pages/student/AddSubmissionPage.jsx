@@ -116,30 +116,33 @@ const AddSubmissionPage = () => {
             onChange={(e) => setGithubUrl(e.target.value)}
           />
         </div>
-        
 
         <div>
           <label>Report</label>
         </div>
 
-        
         <div>
           <label>Video</label>
+          <button
+            onClick={() =>
+              navigate(`/videoSubmission/${assignmentId}`, {
+                state: { moduleId, moduleName }, // Pass module data
+              })
+            }
+          >
+            Upload
+          </button>
         </div>
-        
 
-        <button
-          type="button"
-          onClick={handleSaveClick}
-          disabled={loading}
-        >
+        <button type="button" onClick={handleSaveClick} disabled={loading}>
           {loading ? "Saving..." : "Save"}
         </button>
-        <button type="button" onClick={() => navigate(`/assignment/${assignmentId}`)}>
+        <button
+          type="button"
+          onClick={() => navigate(`/assignment/${assignmentId}`)}
+        >
           Cancel
         </button>
-
-        
       </form>
     </div>
   );
