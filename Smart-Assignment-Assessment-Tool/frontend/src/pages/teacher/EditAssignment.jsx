@@ -32,24 +32,29 @@ const EditAssignment = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-
+  
+    if (!assignment) {
+      setError("Assignment data is not available.");
+      return;
+    }
+  
     const updatedAssignment = {
       ...assignment,
-      name: e.target.name.value,
-      description: e.target.description.value,
-      deadline: e.target.deadline.value,
+      name: e.target.name?.value || assignment.name,
+      description: e.target.description?.value || assignment.description,
+      deadline: e.target.deadline?.value || assignment.deadline,
       submission_types: {
-        code: e.target.code.checked,
-        report: e.target.report.checked,
-        video: e.target.video.checked,
+        code: e.target.code?.checked ?? assignment.submission_types?.code ?? false,
+        report: e.target.report?.checked ?? assignment.submission_types?.report ?? false,
+        video: e.target.video?.checked ?? assignment.submission_types?.video ?? false,
       },
       marking_criteria: {
-        code: e.target.code_criteria.value,
-        report: e.target.report_criteria.value,
-        video: e.target.video_criteria.value,
+        code: e.target.code_criteria?.value || assignment.marking_criteria?.code || "",
+        report: e.target.report_criteria?.value || assignment.marking_criteria?.report || "",
+        video: e.target.video_criteria?.value || assignment.marking_criteria?.video || "",
       },
     };
-
+  
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/assignment/updateAssignment/${assignmentId}`,
@@ -59,10 +64,10 @@ const EditAssignment = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       const data = await response.json();
-
+  
       if (response.ok) {
         navigate(`/teacher-module-page/${assignment.module_id}`);
       } else {
@@ -72,6 +77,7 @@ const EditAssignment = () => {
       setError("Failed to update assignment: " + error.message);
     }
   };
+  
 
   if (!assignment) return <p>Loading...</p>;
 
