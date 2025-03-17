@@ -271,12 +271,12 @@ def get_github_url():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @repo_bp.route('/contributor-activity', methods=['GET'])
 def get_contributor_activity():
-    """ Fetch contributor activity data from GitHub """
+    """Fetch all contributor activity data from GitHub"""
     repo_url = request.args.get('repo_url')
     contributor_login = request.args.get('contributor_login')
-    weeks = request.args.get('weeks', 12, type=int)  # Default to 12 weeks
 
     if not repo_url or not contributor_login:
         return jsonify({"error": "Missing required parameters"}), 400
@@ -287,56 +287,48 @@ def get_contributor_activity():
     except IndexError:
         return jsonify({"error": "Invalid GitHub repository URL"}), 400
 
-    # GitHub API endpoint for contributor stats
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/stats/contributors"
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
-    
+
     response = requests.get(url, headers=headers)
-    
-    # GitHub may respond with 202 if stats are being calculated
+
     if response.status_code == 202:
         return jsonify({"message": "GitHub is calculating statistics. Please try again later."}), 202
-    
+
     if not response.ok:
         return jsonify({"error": f"GitHub API error: {response.status_code}"}), response.status_code
-    
+
     contributors_data = response.json()
-    
-    # Find the specific contributor
+
     contributor_data = None
     for contrib in contributors_data:
         if contrib.get('author', {}).get('login') == contributor_login:
             contributor_data = contrib
             break
-    
+
     if not contributor_data:
         return jsonify({"error": f"No activity data found for {contributor_login}"}), 404
-    
-    # Format the data for the frontend
+
     weeks_data = contributor_data.get('weeks', [])
-    
-    # Sort by week timestamp (oldest to newest)
     weeks_data.sort(key=lambda x: x.get('w', 0))
-    
-    # Take only the most recent X weeks
-    recent_weeks = weeks_data[-weeks:]
-    
-    # Format the data for the chart
+
     activity_data = []
-    for i, week in enumerate(recent_weeks):
+    for i, week in enumerate(weeks_data):
         week_timestamp = week.get('w', 0)
         week_date = datetime.fromtimestamp(week_timestamp).strftime('%Y-%m-%d')
         activity_data.append({
             'week': f"Week {i+1}",
-            'commits': week.get('c', 0),  # Number of commits
-            'additions': week.get('a', 0),  # Number of additions
-            'deletions': week.get('d', 0),  # Number of deletions
+            'commits': week.get('c', 0),
+            'additions': week.get('a', 0),
+            'deletions': week.get('d', 0),
             'date': week_date
         })
-    
+
+    print(f"activity_data: {activity_data}")
+
     return jsonify({
         "activity_data": activity_data,
         "total_commits": contributor_data.get('total', 0),
-        "total_additions": sum(week.get('a', 0) for week in recent_weeks),
-        "total_deletions": sum(week.get('d', 0) for week in recent_weeks)
+        "total_additions": sum(week.get('a', 0) for week in weeks_data),
+        "total_deletions": sum(week.get('d', 0) for week in weeks_data)
     }), 200
