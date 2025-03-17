@@ -9,12 +9,12 @@ const VivaDashboard = () => {
   const fetchSubmissionDetails = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/submission/getVivaDashboardData/${submissionId}`
+        `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionData/${submissionId}`
       );
 
       if (response.ok) {
         const data = await response.json();
-        setSubmissionData(data);
+        setSubmissionData(data.submission_data); 
       } else {
         setError("Failed to fetch submission details.");
       }
@@ -42,7 +42,7 @@ const VivaDashboard = () => {
             <p><strong>Module Name:</strong> {submissionData.module_name}</p>
             <p><strong>Assignment Name:</strong> {submissionData.assignment_name}</p>
             <p><strong>Student Email:</strong> {submissionData.student_email}</p>
-            <p><strong>Submitted On:</strong> {new Date(submissionData.created_at).toLocaleString()}</p>
+            <p><strong>Submitted On:</strong> {new Date(submissionData.submitted_date).toLocaleString()}</p>
             {/* Add more details as needed */}
           </div>
         ) : (
