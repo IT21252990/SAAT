@@ -68,3 +68,31 @@ def get_assignment(assignment_id):
             return jsonify({"error": "Assignment not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# Edit Assignment
+@assignment_bp.route("/updateAssignment/<assignment_id>", methods=["PUT"])
+def update_assignment(assignment_id):
+    try:
+        db = current_app.db
+        data = request.get_json()
+
+        assignment_ref = db.collection("assignments").document(assignment_id)
+
+        # Get the existing document
+        existing_assignment = assignment_ref.get()
+        if not existing_assignment.exists:
+            return jsonify({"error": "Assignment not found"}), 404
+
+        # Update fields
+        assignment_ref.update({
+            "name": data.get("name", existing_assignment.get("name")),
+            "description": data.get("description", existing_assignment.get("description")),
+            "deadline": data.get("deadline", existing_assignment.get("deadline")),
+            # Update other fields like submission types, details, etc.
+        })
+
+        return jsonify({"message": "Assignment updated successfully!"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

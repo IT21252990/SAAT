@@ -78,63 +78,85 @@ const TeacherModulePage = () => {
   };
 
   return (
-    <div className="min-h-screen h-full flex flex-col items-center  bg-gray-100 dark:bg-gray-900">
-        <Header />     
-      <div className="mt-10 mb-10 w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-        Teacher's Module Page
-      </h2>
-
-      {/* Add Assignment Button */}
-      <button
-        onClick={() =>
-          navigate(`/add-assignment`, { state: { moduleId, moduleName } })
-        }
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        Add Assignment
-      </button>
-
-      <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-3">
-        Assignments for {moduleName || "Loading..."}
-      </h3>
-
-      {error && <p className="text-red-500">{error}</p>}
-
-      {assignments.length > 0 ? (
-        <ul className="space-y-4">
-          {assignments.map((assignment) => (
-            <li key={assignment.assignment_id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-md">
-              <button
-                onClick={() => toggleAssignmentDetails(assignment.assignment_id)}
-                className="w-full text-left text-lg font-semibold text-blue-700 dark:text-blue-400 hover:underline"
-              >
-                {assignment.name}
-              </button>
-
-              {/* Expanded assignment details using AssignmentDetails component */}
-              {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
-                <div className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg">
-                  <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
-
-                  {/* View Student Submissions Button */}
+    <div className="min-h-screen h-full flex flex-col items-center bg-gray-100 dark:bg-gray-900">
+      <Header />
+      <div className="mt-10 mb-10 w-full max-w-5xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+        
+        {/* Container for heading and button */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            Assignments available for {moduleName || "Loading..."}
+          </h2>
+  
+          {/* Add Assignment Button */}
+          <button
+            onClick={() =>
+              navigate(`/add-assignment`, { state: { moduleId, moduleName } })
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Add New Assignment 
+          </button>
+        </div>
+  
+        {error && <p className="text-red-500">{error}</p>}
+  
+        {assignments.length > 0 ? (
+          <ul className="space-y-4">
+            {assignments.map((assignment, index) => (
+              <li key={assignment.assignment_id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-md">
+                
+                {/* Assignment Name & Action Buttons */}
+                <div className="flex justify-between items-center">
+                  
+                  {/* Numbered Assignment Name */}
                   <button
-                    onClick={() => navigate(`/view-submissions/${assignment.assignment_id}`)}
-                    className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    onClick={() => toggleAssignmentDetails(assignment.assignment_id)}
+                    className="text-lg font-semibold text-blue-700 dark:text-blue-100 hover:underline"
                   >
-                    View Student Submissions
+                    {index + 1}. {assignment.name} 🔽
                   </button>
+  
+                  {/* Buttons for Edit & View Submissions */}
+                  <div className="flex space-x-2">
+                    {/* Edit Assignment Button */}
+                    <button
+                      onClick={() => navigate(`/edit-assignment/${assignment.assignment_id}`)}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                    >
+                      Edit Assignment ✏️
+                    </button>
+  
+                    {/* View Student Submissions Button */}
+                    <button
+                      onClick={() => navigate(`/view-submissions/${assignment.assignment_id}`)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      View Student Submissions 📄
+                    </button>
+                  </div>
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600 dark:text-gray-300">No assignments found for this module.</p>
-      )}
-    </div>
+  
+                {/* Expanded assignment details */}
+                {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
+                  <div className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg">
+                    <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-300">No assignments found for this module.</p>
+        )}
+      </div>
     </div>
   );
+  
+  
+  
+  
+  
 };
 
 export default TeacherModulePage;
