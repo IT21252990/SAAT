@@ -150,6 +150,29 @@ def get_repo_contributors():
     return jsonify(response.json()), response.status_code if response.ok else 400
 
 
+# @repo_bp.route('/commits', methods=['GET'])
+# def get_contributor_commits():
+#     """ Fetch contributor commits from GitHub """
+#     repo_url = request.args.get('repo_url')
+#     contributor_login = request.args.get('contributor_login')
+#     page = request.args.get('page', 1, type=int)
+
+#     if not repo_url or not contributor_login:
+#         return jsonify({"error": "Missing required parameters"}), 400
+
+#     try:
+#         parts = repo_url.rstrip('/').split('/')
+#         owner, repo = parts[-2], parts[-1].replace('.git', '')
+#     except IndexError:
+#         return jsonify({"error": "Invalid GitHub repository URL"}), 400
+
+#     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/commits"
+#     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+#     params = {"author": contributor_login, "page": page, "per_page": 10}
+#     response = requests.get(url, headers=headers, params=params)
+
+#     return jsonify(response.json()), response.status_code if response.ok else 400
+
 @repo_bp.route('/commits', methods=['GET'])
 def get_contributor_commits():
     """ Fetch contributor commits from GitHub """
@@ -171,8 +194,62 @@ def get_contributor_commits():
     params = {"author": contributor_login, "page": page, "per_page": 10}
     response = requests.get(url, headers=headers, params=params)
 
-    return jsonify(response.json()), response.status_code if response.ok else 400
-
+    if not response.ok:
+        return jsonify({"error": f"GitHub API error: {response.status_code}"}), response.status_code
+        
+    # Get Link header for pagination information
+    link_header = response.headers.get('Link', '')
+    pagination = {}
+    
+    # Parse Link header to extract prev and next URLs
+    if link_header:
+        links = {}
+        for link in link_header.split(','):
+            part = link.split(';')
+            url = part[0].strip()[1:-1]  # Remove < and >
+            rel = part[1].split('=')[1].strip('"')  # Extract rel value
+            links[rel] = url
+            
+        if 'next' in links:
+            pagination['next'] = links['next']
+        if 'prev' in links:
+            pagination['prev'] = links['prev']
+            
+    # Format the response to match what the frontend expects
+    commits_data = response.json()
+    
+    # If we got an error message instead of an array
+    if not isinstance(commits_data, list):
+        return jsonify({"error": "Invalid response from GitHub API"}), 400
+    
+    # Count total commits for this contributor
+    # Note: This is approximate - GitHub API doesn't provide the total count directly
+    total_commits = len(commits_data)
+    if page == 1 and not pagination.get('next'):
+        # If there's only one page, this is the total
+        pass
+    else:
+        # Otherwise, we need to make another API call to count all commits
+        total_url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/commits"
+        total_params = {"author": contributor_login, "per_page": 1}  # Just to get the count
+        total_response = requests.get(total_url, headers=headers, params=total_params)
+        
+        if total_response.ok and 'link' in total_response.headers:
+            link = total_response.headers['link']
+            if 'rel="last"' in link:
+                # Extract page number from last link
+                last_link = [l.split(';')[0] for l in link.split(',') if 'rel="last"' in l][0]
+                last_page = int(last_link.split('page=')[1].split('&')[0])
+                total_commits = (last_page - 1) * 10 + len(total_response.json())
+    
+    # Return the data in a structured format as expected by frontend
+    result = {
+        "commits": commits_data,
+        "total_commits": total_commits,
+        "pagination": pagination
+    }
+    
+    return jsonify(result), 200
 
 @repo_bp.route('/get-github-url', methods=['GET'])
 def get_github_url():
