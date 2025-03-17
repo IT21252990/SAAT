@@ -29,7 +29,7 @@ const Header = () => {
 
   return (
     <header className="w-full relative">
-      <DarkThemeToggle className="absolute top-2 right-4" />
+      <DarkThemeToggle className="absolute top-2 p-3 right-4  dark:text-yellow-300 text-blue-500" />
       <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
           {/* Logo */}
