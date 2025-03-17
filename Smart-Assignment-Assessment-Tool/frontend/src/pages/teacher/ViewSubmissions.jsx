@@ -105,35 +105,45 @@ const ViewSubmissions = () => {
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
           Student Submissions
         </h2>
-
+  
         {error && <p className="text-red-500">{error}</p>}
-
+  
         {submissions.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-300 dark:border-gray-700">
-              <thead className="bg-gray-200 dark:bg-gray-700">
+          <div className="relative overflow-x-auto shadow-md sm:rounded-lg border border-gray-300 dark:border-gray-600">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead className="text-s text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-200">
                 <tr>
-                  <th className="py-2 px-4 border">#</th>
-                  <th className="py-2 px-4 border">Student Email</th>
-                  <th className="py-2 px-4 border">Submitted Time</th>
-                  <th className="py-2 px-4 border">Actions</th>
-                  <th className="py-2 px-4 border">Viva Dashboard</th>
+                  <th scope="col" className="px-6 py-3">
+                    # 
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Student Email
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Submitted Time
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Actions
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Viva Dashboard
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {submissions.map((submission, index) => (
                   <tr
                     key={submission.submission_id}
-                    className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
                   >
-                    <td className="py-2 px-4 border text-center">
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                       {index + 1}
                     </td>
-                    <td className="py-2 px-4 border">{submission.email}</td>
-                    <td className="py-2 px-4 border">
+                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">{submission.email}</td>
+                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">
                       {new Date(submission.created_at).toLocaleString()}
                     </td>
-                    <td className="py-2 px-4 border text-center">
+                    <td className="px-6 py-4">
                       {/* View Code */}
                       {submission.code_id && (
                         <button
@@ -143,7 +153,7 @@ const ViewSubmissions = () => {
                           View Code
                         </button>
                       )}
-
+  
                       {/* View Report */}
                       {submission.report_id && (
                         <button
@@ -155,7 +165,7 @@ const ViewSubmissions = () => {
                           View Report
                         </button>
                       )}
-
+  
                       {/* View Video */}
                       {submission.video_id && (
                         <button
@@ -168,14 +178,14 @@ const ViewSubmissions = () => {
                         </button>
                       )}
                     </td>
-                    <td className="py-2 px-4 border text-center">
-                    <button
-                      className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                      onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
-                    >
-                      Go
-                    </button>
-                  </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                        onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
+                      >
+                        Go
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -189,6 +199,7 @@ const ViewSubmissions = () => {
       </div>
     </div>
   );
+  
 };
 
 export default ViewSubmissions;
