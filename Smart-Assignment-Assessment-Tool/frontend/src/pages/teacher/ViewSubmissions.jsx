@@ -28,7 +28,7 @@ const ViewSubmissions = () => {
     }
   };
 
-  const getRepoUrl = async (codeId) => {
+  const getRepoUrl = async (codeId, submissionId) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/repo/get-github-url`,
@@ -40,7 +40,7 @@ const ViewSubmissions = () => {
       if (response.status === 200) {
         const githubUrl = response.data.github_url;
         setGithub_url(githubUrl);
-        await handleFetchRepo(githubUrl, codeId);
+        await handleFetchRepo(githubUrl, codeId, submissionId);
       } else {
         setError("GitHub URL not found for this submission.");
       }
@@ -50,7 +50,7 @@ const ViewSubmissions = () => {
     }
   };
 
-  const handleFetchRepo = async (githubUrl, codeId) => {
+  const handleFetchRepo = async (githubUrl, codeId, submissionId) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/repo/repo-details`,
@@ -59,7 +59,7 @@ const ViewSubmissions = () => {
 
       if (response.status === 200) {
         navigate(`/view-code/${codeId}`, {
-          state: { githubUrl, repoDetails: response.data },
+          state: { githubUrl, repoDetails: response.data, submissionId },
         });
       } else {
         alert("Failed to fetch repository details.");
@@ -150,7 +150,7 @@ const ViewSubmissions = () => {
                       {submission.code_id && (
                         <button
                           className="mr-2 rounded-lg bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                          onClick={() => getRepoUrl(submission.code_id)}
+                          onClick={() => getRepoUrl(submission.code_id, submission.submission_id)}
                         >
                           View Code
                         </button>
