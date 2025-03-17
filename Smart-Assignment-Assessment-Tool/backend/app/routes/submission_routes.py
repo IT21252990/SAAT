@@ -104,3 +104,70 @@ def get_submissions_by_assignment(assignment_id):
         return jsonify({"submissions": submissions_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@submission_bp.route("/getSubmissionData/<submission_id>", methods=["GET"])
+def get_viva_dashboard_data(submission_id):
+    try:
+        db = current_app.db
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_data = submission_ref.get()
+
+        if not submission_data.exists:
+            return jsonify({"error": "Submission not found"}), 404
+
+        submission = submission_data.to_dict()
+        student_id = submission.get("student_id")
+        assignment_id = submission.get("assignment_id")
+        created_at = submission.get("created_at")
+
+        # Fetch assignment details (assuming a collection `assignments`)
+        assignment_ref = db.collection("assignments").document(assignment_id)
+        assignment_data = assignment_ref.get()
+
+        if not assignment_data.exists:
+            return jsonify({"error": "Assignment not found"}), 404
+
+        assignment = assignment_data.to_dict()
+        module_id = assignment.get("module_id")
+        assignment_name = assignment.get("name")
+
+        # Fetch module details 
+        module_ref = db.collection("modules").document(module_id)
+        module_data = module_ref.get()
+
+        if not module_data.exists:
+            return jsonify({"error": "Module not found"}), 404
+        
+        module = module_data.to_dict()
+        module_name = module.get("name")
+        module_semester = module.get("semester")
+        module_year = module.get("year")
+
+        # Fetch student email
+        user_ref = db.collection("users").document(student_id)
+        user_data = user_ref.get()
+
+        if not user_data.exists:
+            return jsonify({"error": "Student not found"}), 404
+
+        student_email = user_data.to_dict().get("email")
+
+        submission_data = {
+            "assignment_id": assignment_id,
+            "module_name": module_name,
+            "module_semester": module_semester,
+            "module_year": module_year,
+            "assignment_name": assignment_name,
+            "student_email": student_email,
+            "submitted_date": created_at
+        }
+
+        # Log viva dashboard data for debugging
+        print("Viva Dashboard Data:", submission_data)
+
+        return jsonify({"submission_data": submission_data}), 200
+
+    except Exception as e:
+        print("Error:", str(e))
+        return jsonify({"error": str(e)}), 500

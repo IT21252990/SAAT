@@ -14,7 +14,7 @@ const ViewSubmissions = () => {
   const fetchUserEmail = async (uid) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`
+        `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`,
       );
       const data = await response.json();
       if (response.ok) {
@@ -34,7 +34,7 @@ const ViewSubmissions = () => {
         `${import.meta.env.VITE_BACKEND_URL}/repo/get-github-url`,
         {
           params: { code_id: codeId },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -54,7 +54,7 @@ const ViewSubmissions = () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/repo/repo-details`,
-        { params: { repo_url: githubUrl } }
+        { params: { repo_url: githubUrl } },
       );
 
       if (response.status === 200) {
@@ -74,7 +74,7 @@ const ViewSubmissions = () => {
     const fetchSubmissions = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`
+          `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`,
         );
         const data = await response.json();
 
@@ -84,7 +84,7 @@ const ViewSubmissions = () => {
               const email = await fetchUserEmail(submission.student_id);
               setCodeId(submission.code_id);
               return { ...submission, email };
-            })
+            }),
           );
           setSubmissions(submissionsWithEmails);
         } else {
@@ -99,22 +99,22 @@ const ViewSubmissions = () => {
   }, [assignmentId]);
 
   return (
-    <div className="min-h-screen h-full flex flex-col items-center bg-gray-100 dark:bg-gray-900">
+    <div className="flex h-full min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900">
       <Header />
-      <div className="mt-10 mb-10 w-full max-w-6xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <div className="mb-10 mt-10 w-full max-w-6xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+        <h2 className="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
           Student Submissions
         </h2>
-  
+
         {error && <p className="text-red-500">{error}</p>}
-  
+
         {submissions.length > 0 ? (
-          <div className="relative overflow-x-auto shadow-md sm:rounded-lg border border-gray-300 dark:border-gray-600">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-              <thead className="text-s text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-200">
+          <div className="relative overflow-x-auto border border-gray-300 shadow-md dark:border-gray-600 sm:rounded-lg">
+            <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 rtl:text-right">
+              <thead className="text-s bg-gray-50 uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    # 
+                    #
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Student Email
@@ -134,12 +134,14 @@ const ViewSubmissions = () => {
                 {submissions.map((submission, index) => (
                   <tr
                     key={submission.submission_id}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
+                    className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
                   >
-                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">{submission.email}</td>
+                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">
+                      {submission.email}
+                    </td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">
                       {new Date(submission.created_at).toLocaleString()}
                     </td>
@@ -147,17 +149,17 @@ const ViewSubmissions = () => {
                       {/* View Code */}
                       {submission.code_id && (
                         <button
-                          className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-2"
+                          className="mr-2 rounded-lg bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
                           onClick={() => getRepoUrl(submission.code_id)}
                         >
                           View Code
                         </button>
                       )}
-  
+
                       {/* View Report */}
                       {submission.report_id && (
                         <button
-                          className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2"
+                          className="mr-2 rounded-lg bg-green-600 px-3 py-1 text-white hover:bg-green-700"
                           onClick={() =>
                             navigate(`/view-report/${submission.report_id}`)
                           }
@@ -165,11 +167,11 @@ const ViewSubmissions = () => {
                           View Report
                         </button>
                       )}
-  
+
                       {/* View Video */}
                       {submission.video_id && (
                         <button
-                          className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                          className="rounded-lg bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
                           onClick={() =>
                             navigate(`/view-video/${submission.video_id}`)
                           }
@@ -180,8 +182,12 @@ const ViewSubmissions = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                        onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
+                        className="rounded-md bg-purple-600 px-3 py-1 text-white hover:bg-purple-700"
+                        onClick={() =>
+                          navigate(
+                            `/viva-dashboard/${submission.submission_id}`,
+                          )
+                        }
                       >
                         Go
                       </button>
@@ -199,7 +205,6 @@ const ViewSubmissions = () => {
       </div>
     </div>
   );
-  
 };
 
 export default ViewSubmissions;
