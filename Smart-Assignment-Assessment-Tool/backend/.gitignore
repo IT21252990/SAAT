@@ -74,3 +74,11 @@ docker-compose.override.yml
 # Local Docker storage
 **/volumes/
 **/containers/
+
+
+#Python Cache files
+app/__pycache__/
+app/models/__pycache__/
+app/routes/__pycache__/
+app/routes/code/__pycache__/
+
