@@ -15,6 +15,7 @@ import AddAssignment from "./pages/teacher/AddAssignment";
 import ViewSubmissions from "./pages/teacher/ViewSubmissions";
 import AddSubmissionPage from "./pages/student/AddSubmissionPage";
 import ViewCodeSubmission from "./pages/teacher/ViewCodeSubmission.jsx";
+import PrivateRoute from "./components/PrivateRoute.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -23,19 +24,24 @@ root.render(
   <React.StrictMode>
     <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/student-home" element={<StudentHome />} />
-        <Route path="/teacher-home" element={<TeacherHome />} />
-        <Route path="/module-page/:moduleId" element={<ModulePage />} />
-        <Route path="/assignment/:assignmentId" element={<AssignmentPage />} />
-        <Route path="/teacher-module-page/:moduleId" element={<TeacherModulePage />} />
-        <Route path="/add-assignment" element={<AddAssignment />} />
-        <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
-        <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
-        <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
+
+        {/* Protected Routes */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/student-home" element={<StudentHome />} />
+          <Route path="/teacher-home" element={<TeacherHome />} />
+          <Route path="/module-page/:moduleId" element={<ModulePage />} />
+          <Route path="/assignment/:assignmentId" element={<AssignmentPage />} />
+          <Route path="/teacher-module-page/:moduleId" element={<TeacherModulePage />} />
+          <Route path="/add-assignment" element={<AddAssignment />} />
+          <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
+          <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
+          <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
+        </Route>
       </Routes>
     </Router>
   </React.StrictMode>
