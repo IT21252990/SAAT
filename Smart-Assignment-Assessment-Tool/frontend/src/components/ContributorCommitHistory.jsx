@@ -495,7 +495,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ContributorDetails from "./ContributorDetails";
 
-
 const ContributorCommitHistory = ({ repoUrl }) => {
   const [contributors, setContributors] = useState([]);
   const [loading, setLoading] = useState(false);

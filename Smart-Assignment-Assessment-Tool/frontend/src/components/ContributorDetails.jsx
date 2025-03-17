@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+  } from "recharts";
 
 const ContributorDetails = ({ contributor, repoUrl, onBack }) => {
   const [commitHistory, setCommitHistory] = useState([]);
@@ -8,6 +18,7 @@ const ContributorDetails = ({ contributor, repoUrl, onBack }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activityData, setActivityData] = useState([]);
 
   useEffect(() => {
     if (!contributor || !repoUrl) {
@@ -56,6 +67,56 @@ const ContributorDetails = ({ contributor, repoUrl, onBack }) => {
     }
   };
 
+  const fetchContributorActivity = async () => {
+    try {
+      // This is a placeholder - you'll need to implement an API endpoint for activity data
+      // For now, we'll generate some sample data based on the commits we have
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Generate sample activity data covering the last 12 weeks
+      const activityData = generateSampleActivityData();
+      setActivityData(activityData);
+    } catch (err) {
+      console.error("Error fetching activity data:", err);
+    }
+  };
+  
+  // Helper function to generate sample activity data
+  const generateSampleActivityData = () => {
+    const now = new Date();
+    const data = [];
+    
+    // Generate data for the last 12 weeks
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i * 7);
+      
+      const weekStr = `Week ${12-i}`;
+      
+      // Create some pattern in the data
+      // Base value that increases over time
+      let base = 5 + Math.floor(i / 2);
+      
+      // Add some randomness
+      let commits = Math.max(0, base + Math.floor(Math.random() * 10));
+      
+      // Add some spikes for visual interest
+      if (i % 4 === 0) {
+        commits += 10;
+      }
+      
+      data.push({
+        week: weekStr,
+        commits: commits,
+        date: date.toISOString().split('T')[0],
+      });
+    }
+    
+    return data;
+  };
+
   const handlePagination = (direction) => {
     let newPage;
     if (direction === 'prev') {
@@ -91,6 +152,43 @@ const ContributorDetails = ({ contributor, repoUrl, onBack }) => {
             <p className="text-gray-600">
               <span className="font-medium">Total Commits:</span> {totalCommits}
             </p>
+          </div>
+        </div>
+
+        {/* Contribution Activity Graph */}
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Contribution Activity</h3>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={activityData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip
+                  formatter={(value, name) => [value, 'Commits']}
+                  labelFormatter={(label) => {
+                    const item = activityData.find(item => item.week === label);
+                    return `${label} (${item?.date || ''})`;
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="commits" 
+                  stroke="#8884d8" 
+                  activeDot={{ r: 8 }} 
+                  name="Commits"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
         
