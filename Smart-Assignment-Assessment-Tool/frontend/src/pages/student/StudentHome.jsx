@@ -44,8 +44,8 @@ const StudentHome = () => {
         <h1 className="mb-4 text-center text-2xl font-semibold text-gray-800 dark:text-white">
           Hello Student ! 👩🏻‍🎓
         </h1>
-        <h2 className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
-          Select your year & semester . .
+        <h2 className="mb-4 text-center text-lg text-gray-600 dark:text-gray-100">
+          Select your year & semester to View Modules. .
         </h2>
         
         <div className="mb-4 flex flex-col space-y-2">
