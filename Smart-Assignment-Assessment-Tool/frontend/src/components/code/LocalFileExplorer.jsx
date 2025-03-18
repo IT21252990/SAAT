@@ -13,8 +13,8 @@ import {
   FaCaretDown,
   FaTimes,
 } from "react-icons/fa";
-import "../index.css";
-import "../styles/editor.styles.css";
+import "../../index.css";
+import "../../styles/editor.styles.css";
 
 const LocalFileExplorer = () => {
   const [contents, setContents] = useState({}); // Stores directory contents

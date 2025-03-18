@@ -12,10 +12,10 @@ import {
 import { MdFeedback } from "react-icons/md";
 import { FaFileSignature } from "react-icons/fa6";
 import { RiAccountPinCircleFill } from "react-icons/ri";
-import RepoExplorer from "../../components/RepoExplorer";
-import LocalFileExplorer from "../../components/LocalFileExplorer";
-import ContributorCommitHistory from "../../components/ContributorCommitHistory";
-import DisplayAssignmentDetails from "../../components/DisplayAssignmentDetails";
+import RepoExplorer from "../../components/code/RepoExplorer";
+import LocalFileExplorer from "../../components/code/LocalFileExplorer";
+import ContributorCommitHistory from "../../components/code/ContributorCommitHistory";
+import DisplayAssignmentDetails from "../../components/code/DisplayAssignmentDetails";
 import Header from "../../components/Header";
 
 const ViewCodeSubmission = () => {

@@ -17,9 +17,7 @@ import {
   FaFolderOpen,
 } from "react-icons/fa";
 import { Spinner } from "flowbite-react";
-import { useToast } from "../contexts/ToastContext";
-import "../index.css";
-import "../styles/editor.styles.css";
+import { useToast } from "../../contexts/ToastContext";
 
 const RepoExplorer = ({ repoUrl , codeId }) => {
   const [contents, setContents] = useState({});
