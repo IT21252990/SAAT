@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { doc, updateDoc } from "firebase/firestore";
 import { firestore } from "../../firebase";
 
 const AddSubmissionPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { assignmentId, moduleId, moduleName } = location.state || {}; // Retrieve passed state
+  const { assignmentId } = useParams();
+  const { moduleId, moduleName } = location.state || {}; // Retrieve passed state
 
   // State variables
   const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL

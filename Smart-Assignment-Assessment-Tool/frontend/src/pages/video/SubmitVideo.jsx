@@ -141,7 +141,7 @@ const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
       localStorage.setItem(assignmentId, JSON.stringify(updatedData));
 
       // Navigate to AddSubmissionPage
-      navigate(`/addSubmissionPage/${assignmentId}`);
+      navigate(`/add-submission/${assignmentId}`);
     }
   };
 

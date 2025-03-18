@@ -43,7 +43,7 @@ root.render(
           <Route path="/teacher-module-page/:moduleId" element={<TeacherModulePage />} />
           <Route path="/add-assignment" element={<AddAssignment />} />
           <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
-          <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
+          <Route path="/add-submission/:assignmentId" element={<AddSubmissionPage />} />
           <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
           <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
