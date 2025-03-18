@@ -18,6 +18,7 @@ const AddSubmissionPage = () => {
   useEffect(() => {
     // Retrieve the GitHub URL from localStorage when the component mounts
     const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+    console.log(assignmentId)
     if (storedData.githubUrl) {
       setGithubUrl(storedData.githubUrl);
     }

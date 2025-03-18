@@ -65,7 +65,7 @@ function SubmitVideo() {
             if (data === 100) {
               setTimeout(() => {
                 // Your code to execute after 7 seconds
-              }, 7000);
+              }, 5000);
               handleProcessingComplete(
                 filename,
                 assignmentId,
@@ -86,44 +86,40 @@ function SubmitVideo() {
     }
   };
 
-  const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
-    try {
-      const videosCollection = collection(firestore, "videos");
+const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
+  try {
+    console.log("Query Parameters:", { filename, assignmentId, moduleId, userId });
 
-      const q = query(
-        videosCollection,
-        where("filename", "==", filename),
-        where("assignmentId", "==", assignmentId),
-        where("moduleId", "==", moduleId),
-        where("userId", "==", userId),
-      );
+    const videosCollection = collection(firestore, "videos");
 
-      const querySnapshot = await getDocs(q);
+    const q = query(
+      videosCollection,
+      where("assignmentId", "==", assignmentId),
+      where("moduleId", "==", moduleId),
+      where("userId", "==", userId)
+    );
 
-      // Check if any documents match the query
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        const documentId = doc.id;
-        console.log("Document ID:", documentId);
-        return documentId;
-      } else {
-        console.log("No matching document found.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching document ID:", error);
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      const documentId = doc.id;
+      console.log("Document ID:", documentId);
+      return documentId;
+    } else {
+      console.log("No matching document found.");
       return null;
     }
-  };
+  } catch (error) {
+    console.error("Error fetching document ID:", error);
+    return null;
+  }
+};
 
-  const handleProcessingComplete = async () => {
-    const filename = "yourFilename";
-    const assignmentId = "yourAssignmentId";
-    const moduleId = "yourModuleId";
-    const userId = "yourUserId";
+  const handleProcessingComplete = async (formattedFileName, assignmentId, moduleId, userId) => {
 
     const documentId = await fetchDocumentId(
-      filename,
+      formattedFileName,
       assignmentId,
       moduleId,
       userId,
@@ -145,7 +141,7 @@ function SubmitVideo() {
       localStorage.setItem(assignmentId, JSON.stringify(updatedData));
 
       // Navigate to AddSubmissionPage
-      navigate("/addSubmissionPage");
+      navigate(`/addSubmissionPage/${assignmentId}`);
     }
   };
 
