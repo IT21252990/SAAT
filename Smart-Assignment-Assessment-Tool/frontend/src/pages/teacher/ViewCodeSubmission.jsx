@@ -16,6 +16,7 @@ import RepoExplorer from "../../components/code/RepoExplorer";
 import LocalFileExplorer from "../../components/code/LocalFileExplorer";
 import ContributorCommitHistory from "../../components/code/ContributorCommitHistory";
 import DisplayAssignmentDetails from "../../components/code/DisplayAssignmentDetails";
+import DisplayCodeComments from "../../components/code/DisplayCodeComments";
 import Header from "../../components/Header";
 
 const ViewCodeSubmission = () => {
@@ -36,6 +37,8 @@ const ViewCodeSubmission = () => {
       }
       case "contributions":
         return <ContributorCommitHistory repoUrl={githubUrl} />;
+      case "Comments":
+        return <DisplayCodeComments codeId={codeId}/>
       case "submission_details":
         return <DisplayAssignmentDetails submission_id={submissionId} />
       default:
