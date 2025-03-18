@@ -19,8 +19,9 @@ import ViewCodeSubmission from "./pages/teacher/ViewCodeSubmission.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import EditAssignment from "./pages/teacher/EditAssignment.jsx";
 import VivaDashboard from "./pages/teacher/viva/VivaDashboard.jsx";
+import GenerateVivaQuestions from "./pages/teacher/viva/GenerateVivaQuestions.jsx";
 import SubmitVideo from "./pages/video/SubmitVideo.jsx";
-import ResultScreen from "./pages/video/ResultScreen.jsx";
+import VideoScreen from "./pages/video/VideoScreen.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -45,12 +46,13 @@ root.render(
           <Route path="/teacher-module-page/:moduleId" element={<TeacherModulePage />} />
           <Route path="/add-assignment" element={<AddAssignment />} />
           <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
-          <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
+          <Route path="/add-submission/:assignmentId" element={<AddSubmissionPage />} />
           <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
           <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
+          <Route path="/generate-viva-questions/:submissionId" element={<GenerateVivaQuestions />} />
           <Route path="videoSubmission/:assignmentId" element={<SubmitVideo />} />
-          <Route path="videoSubmission/result-screen" element={<ResultScreen />} />
+          <Route path="videoSubmission/result-screen" element={<VideoScreen />} />
         </Route>
       </Routes>
     </Router>

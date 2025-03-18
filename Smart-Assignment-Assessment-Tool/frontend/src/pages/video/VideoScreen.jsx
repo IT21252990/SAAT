@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
-// Import your Firebase functions
 import { firestore } from "../../firebase"; // your Firebase initialization file
 import {
   doc,
@@ -14,80 +12,99 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-
-function ResultScreen() {
-  
-  const location = useLocation();
-  const { videoURL, fileName } = location.state || {};
-  console.log(videoURL, fileName);
-
-
-  // 'segments' is assumed to be an array of objects with:
-  //  { start: number, end: number, type: string, text: string }
+function VideoScreen() {
+  // Hardcoded video URL and filename
+  const video_url = "8a88eeab-359e-44e2-9209-15cb983fe487";
+  const filename = "Coding Challenge 3 Toggle Switch";
 
   const playerRef = useRef(null);
-  const isTeacher=true;
+  const isTeacher = true;
 
-  // Active tab (index of the segment)
+  // State for segments (from the video document), active tab, comments, and comment input
   const [segments, setSegments] = useState([]);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState(0);
-
-  // Comments state
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
 
-  useEffect(() => {
-    // If no fileName, do nothing
-    if (!fileName) return;
-
-    // Remove extension from fileName to get doc name
-    const fileNameWithoutExt = fileName.split(".")[0];
-
-    // Reference to that doc in 'videoSegments' collection
-    const docRef = doc(firestore, "segments", fileNameWithoutExt);
-
-    // Listen in real-time
-    const unsubscribeSegments = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        // Expecting data.segments to be an array
-        setSegments(data.segments || []);
-        console.log(data.segments);
+  // Function to fetch the document ID for the video from the "videos" collection
+  const fetchDocumentId = async (video_url, filename) => {
+    try {
+      const videosCollection = collection(firestore, "videos");
+      const q = query(
+        videosCollection,
+        where("assignmentId", "==", video_url),
+        where("filename", "==", filename),
+      );
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const docSnap = querySnapshot.docs[0];
+        const documentId = docSnap.id;
+        console.log("Document ID:", documentId);
+        return documentId;
       } else {
-        console.log("No segments doc found for: ", fileNameWithoutExt);
-        setSegments([]);
+        console.log("No matching document found.");
+        return null;
       }
-    });
+    } catch (error) {
+      console.error("Error fetching document ID:", error);
+      return null;
+    }
+  };
 
-    return () => unsubscribeSegments();
-  }, [fileName]);
-
-  // Fetch comments in real-time (sorted by timestamp ascending)
+  // useEffect to subscribe to the video document and fetch its segments
   useEffect(() => {
-    if (!fileName) return;
+    const fetchSegments = async () => {
+      const documentId = await fetchDocumentId(video_url, filename);
+      if (documentId) {
+        const videoDocRef = doc(firestore, "videos", documentId);
+        const unsubscribe = onSnapshot(videoDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Assume segments is an array field within the video document
+            setSegments(data.segments || []);
+            console.log("Segments:", data.segments);
+          } else {
+            console.log("Video document does not exist");
+          }
+        });
+        return unsubscribe;
+      }
+    };
+
+    const unsubscribePromise = fetchSegments();
+    return () => {
+      if (unsubscribePromise && typeof unsubscribePromise === "function") {
+        unsubscribePromise();
+      }
+    };
+  }, [video_url, filename]);
+
+  // Comments: fetch comments in real time (sorted by timestamp ascending)
+  useEffect(() => {
+    if (!filename) return;
     const q = query(
       collection(firestore, "videoComments"),
-      orderBy("timestamp", "asc")
+      orderBy("timestamp", "asc"),
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const loadedComments = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        // Only add comments for this specific file/video
-        if (data.videoName === fileName) {
+        // Only include comments for this specific video (by filename)
+        if (data.videoName === filename) {
           loadedComments.push({ id: doc.id, ...data });
         }
       });
       setComments(loadedComments);
     });
     return () => unsubscribe();
-  }, [fileName]);
+  }, [filename]);
 
-  // Function to create a new comment in Firestore
+  // Function to add a comment to Firestore
   async function addCommentToFirestore(commentText, time) {
     try {
       await addDoc(collection(firestore, "videoComments"), {
-        videoName: fileName,
+        videoName: filename,
         text: commentText,
         timestamp: time,
         createdAt: new Date(), // or serverTimestamp()
@@ -97,11 +114,7 @@ function ResultScreen() {
     }
   }
 
-  // -------------------------------
-  // Handlers
-  // -------------------------------
-
-  // Handle changing tabs (when user clicks a segment)
+  // Handler for when a segment tab is clicked
   const handleSegmentClick = (index) => {
     setActiveSegmentIndex(index);
     if (playerRef.current) {
@@ -110,30 +123,26 @@ function ResultScreen() {
     }
   };
 
-  // Handle comment submission
+  // Handler for comment submission
   const handleAddComment = async () => {
     if (!commentInput.trim() || !playerRef.current) return;
-
     const currentTime = playerRef.current.getCurrentTime();
-
-    // Save to Firestore (uncomment if integrated)
     await addCommentToFirestore(commentInput.trim(), currentTime);
-
-    // Clear the input
     setCommentInput("");
   };
 
-  // Handle clicking on a comment to jump to its timestamp
+  // Handler for clicking on a comment to jump to its timestamp
   const handleCommentClick = (time) => {
     if (playerRef.current) {
       playerRef.current.seekTo(time, "seconds");
     }
   };
 
+  // Helper functions for processing segment functions (if needed)
   function combineNonEmptyArrays(obj) {
-    return Object.values(obj) // Get all values
-      .filter((value) => Array.isArray(value) && value.length > 0) // Keep only non-empty arrays
-      .flat(); // Merge arrays
+    return Object.values(obj)
+      .filter((value) => Array.isArray(value) && value.length > 0)
+      .flat();
   }
 
   const extractFunctionNames = (jsonString) => {
@@ -157,35 +166,17 @@ function ResultScreen() {
   };
 
   const trepl = (text) => {
-    if (text == "Code") {
-      return "Codes";
-    } else {
-      return "Normal";
-    }
+    return text === "Code" ? "Codes" : "Normal";
   };
 
   return (
     <div style={styles.container}>
-      <button
-        style={{
-          color: "blue",
-          width: "100px",
-          height: "50px",
-          position: "fixed",
-          top: "50px",
-          left: "50px",
-        }}
-        onClick={() => onback()}
-      >
-        Back
-      </button>
       <h2 style={{ color: "blue" }}>Video Analysis Result</h2>
-      <h3 style={{ color: "blue" }}>{fileName}</h3>
+      <h3 style={{ color: "blue" }}>{filename}</h3>
       <div style={styles.playerWrapper}>
-        {console.log(videoURL)}
         <ReactPlayer
           ref={playerRef}
-          url={videoURL}
+          url={video_url}
           controls
           width="50%"
           height="50%"
@@ -193,7 +184,7 @@ function ResultScreen() {
         />
       </div>
 
-      {/** TABBED INTERFACE FOR SEGMENTS */}
+      {/** Tabbed Interface for Segments */}
       <div style={styles.tabContainer}>
         {segments.map((segment, index) => (
           <button
@@ -210,7 +201,7 @@ function ResultScreen() {
         ))}
       </div>
 
-      {/** DISPLAY ACTIVE SEGMENT TEXT */}
+      {/** Display Active Segment Text */}
       <div style={styles.textContainer}>
         <h3>Extracted Text:</h3>
         <p>{segments[activeSegmentIndex]?.text}</p>
@@ -220,51 +211,47 @@ function ResultScreen() {
         <div style={styles.textContainer}>
           <h3>Extracted Codes/IDE settings:</h3>
           <p>
-            {
-              // Flatten all function names from each segment into a single array
-              segments[activeSegmentIndex]?.functions
-                ?.flatMap((item) => extractFunctionNames(item))
-                .join(", ")
-            }
+            {segments[activeSegmentIndex]?.functions
+              ?.flatMap((item) => extractFunctionNames(item))
+              .join(", ")}
           </p>
         </div>
       )}
 
-      {/** COMMENTS SECTION */}
-      
-        <div style={styles.commentSection}>
-          <h3>Comments</h3>
-          <div style={styles.commentList}>
-            {comments.map((com) => (
-              <div
-                key={com.id}
-                style={styles.commentItem}
-                onClick={() => handleCommentClick(com.timestamp)}
-              >
-                <strong>{formatTime(com.timestamp)} :</strong> {com.text}
-              </div>
-            ))}
-          </div>
+      {/** Comments Section */}
+      <div style={styles.commentSection}>
+        <h3>Comments</h3>
+        <div style={styles.commentList}>
+          {comments.map((com) => (
+            <div
+              key={com.id}
+              style={styles.commentItem}
+              onClick={() => handleCommentClick(com.timestamp)}
+            >
+              <strong>{formatTime(com.timestamp)} :</strong> {com.text}
+            </div>
+          ))}
         </div>
-        {isTeacher && (
-          <div style={styles.commentForm}>
-            <input
-              type="text"
-              value={commentInput}
-              onChange={(e) => setCommentInput(e.target.value)}
-              placeholder="Add a comment"
-              style={styles.commentInput}
-            />
-            <button onClick={handleAddComment} style={styles.commentButton}>
-              Submit
-            </button>
-          </div>
+      </div>
+      {isTeacher && (
+        <div style={styles.commentForm}>
+          <input
+            type="text"
+            value={commentInput}
+            onChange={(e) => setCommentInput(e.target.value)}
+            placeholder="Add a comment"
+            style={styles.commentInput}
+          />
+          <button onClick={handleAddComment} style={styles.commentButton}>
+            Submit
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
-// Helper function to format time in a simplistic way (e.g., mm:ss)
+// Helper function to format time (mm:ss)
 function formatTime(seconds) {
   const mm = Math.floor(seconds / 60);
   const ss = Math.floor(seconds % 60);
@@ -312,7 +299,7 @@ const styles = {
   },
   commentItem: {
     display: "block",
-    color: "#007bff", // Bootstrap link color
+    color: "#007bff",
     textDecoration: "none",
     padding: "5px 0",
     border: "1px solid #ddd",
@@ -331,4 +318,4 @@ const styles = {
   },
 };
 
-export default ResultScreen;
+export default VideoScreen;

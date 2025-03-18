@@ -5,8 +5,11 @@ import ProcessingScreen from "./ProcessingScreen";
 import ResultScreen from "./ResultScreen";
 import { database } from "../../firebase";
 import VideoList from "./VideoList";
+import { firestore } from "../../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
-const pub_url = "https://e537-34-16-253-253.ngrok-free.app";
+const pub_url = "https://52e8-35-240-165-54.ngrok-free.app";
 
 function SubmitVideo() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -14,6 +17,7 @@ function SubmitVideo() {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [fileName, setFileName] = useState(""); // Added to track filename
   const [isTeacher, setIsTeacher] = useState(false);
+  const navigate = useNavigate();
 
 
   const formatVideoFileName = async (fileName) => {
@@ -40,7 +44,8 @@ function SubmitVideo() {
           filename: filename,
           assignmentId: assignmentId,
           moduleId: moduleId,
-          userId: userId
+          userId: userId,
+          video_url: f_url,
         }),
       });
 
@@ -55,6 +60,19 @@ function SubmitVideo() {
           if (data) {
             console.log(data);
             setProcessingProgress(data);
+
+            // Check if processing is complete
+            if (data === 100) {
+              setTimeout(() => {
+                // Your code to execute after 7 seconds
+              }, 5000);
+              handleProcessingComplete(
+                filename,
+                assignmentId,
+                moduleId,
+                userId,
+              );
+            }
           }
         },
         (error) => {
@@ -68,32 +86,77 @@ function SubmitVideo() {
     }
   };
 
-  const handleVideoSelect = (url, name) => {
-    setVideoURL(url);
-    setFileName(name);
-    setProcessingProgress(100);
+const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
+  try {
+    console.log("Query Parameters:", { filename, assignmentId, moduleId, userId });
+
+    const videosCollection = collection(firestore, "videos");
+
+    const q = query(
+      videosCollection,
+      where("assignmentId", "==", assignmentId),
+      where("moduleId", "==", moduleId),
+      where("userId", "==", userId)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      const documentId = doc.id;
+      console.log("Document ID:", documentId);
+      return documentId;
+    } else {
+      console.log("No matching document found.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching document ID:", error);
+    return null;
+  }
+};
+
+  const handleProcessingComplete = async (formattedFileName, assignmentId, moduleId, userId) => {
+
+    const documentId = await fetchDocumentId(
+      formattedFileName,
+      assignmentId,
+      moduleId,
+      userId,
+    );
+    if (documentId) {
+      // Retrieve existing data for the assignmentId, if any
+      const existingData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+
+      // Update the data with the new videoDocId
+      const updatedData = {
+        ...existingData,
+        videoDocId: documentId,
+        // Add other variables like githubUrl and reportId as needed
+        githubUrl: existingData.githubUrl || "", // Placeholder value
+        reportId: existingData.reportId || "", // Placeholder value
+      };
+
+      // Store the updated data back in localStorage
+      localStorage.setItem(assignmentId, JSON.stringify(updatedData));
+
+      // Navigate to AddSubmissionPage
+      navigate(`/add-submission/${assignmentId}`);
+    }
   };
 
-  const goback = () => {
-    setVideoURL("");
-    setProcessingProgress(0);
-  };
+  // const goback = () => {
+  //   setVideoURL("");
+  //   setProcessingProgress(0);
+  // };
 
   return (
     <div>
       {!videoURL && (
-          <UploadVideo onUploadComplete={processVideo} />
+        <UploadVideo onUploadComplete={processVideo} />
       )}
       {isAuthenticated && videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
-      )}
-      {isAuthenticated && videoURL && processingProgress === 100 && (
-        <ResultScreen
-          videoURL={videoURL}
-          fileName={fileName}
-          onback={goback}
-          isTeacher={isTeacher}
-        />
       )}
       <VideoList />
     </div>

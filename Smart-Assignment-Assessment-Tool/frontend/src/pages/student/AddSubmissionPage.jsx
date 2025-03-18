@@ -1,15 +1,49 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { doc, updateDoc } from "firebase/firestore";
+import { firestore } from "../../firebase";
 
 const AddSubmissionPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { assignmentId, moduleId, moduleName } = location.state || {}; // Retrieve passed state
+  const { assignmentId } = useParams();
+  const { moduleId, moduleName } = location.state || {}; // Retrieve passed state
 
   // State variables
   const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL
+  const [videoDocId, setVideoDocId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+
+  useEffect(() => {
+    // Retrieve the GitHub URL from localStorage when the component mounts
+    const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+    console.log(assignmentId)
+    if (storedData.githubUrl) {
+      setGithubUrl(storedData.githubUrl);
+    }
+    if (storedData.videoDocId) {
+      setVideoDocId(storedData.videoDocId);
+    }
+  }, [assignmentId]);
+
+  const handleGithubUrlChange = (e) => {
+    const newGithubUrl = e.target.value;
+    setGithubUrl(newGithubUrl);
+
+    // Retrieve existing data for the assignmentId, if any
+    const existingData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+
+    // Update the data with the new GitHub URL
+    const updatedData = {
+      ...existingData,
+      githubUrl: newGithubUrl,
+    };
+
+    // Store the updated data back in localStorage
+    localStorage.setItem(assignmentId, JSON.stringify(updatedData));
+  };
 
   // Handle Save action
   const handleSaveClick = async () => {
@@ -29,6 +63,7 @@ const AddSubmissionPage = () => {
         body: JSON.stringify({
           assignment_id: assignmentId,
           student_id: localStorage.getItem("userId"),
+          video_id: videoDocId || null,
         }),
       });
 
@@ -38,9 +73,17 @@ const AddSubmissionPage = () => {
 
         // Step 2: Save GitHub URL and retrieve the code ID
         const codeId = await saveGithubUrl(submissionId, githubUrl);
-        
+
         // Step 3: Update the submission with the code ID
         await updateSubmissionWithCodeId(submissionId, codeId);
+
+        // Step 4: If videoDocId is not null, update the videos collection
+        if (videoDocId) {
+          const videoDocRef = doc(firestore, "videos", videoDocId);
+          await updateDoc(videoDocRef, {
+            submissionId: submissionId,
+          });
+        }
 
         setLoading(false);
         // After saving the code ID, navigate to the submission view page
@@ -101,9 +144,9 @@ const AddSubmissionPage = () => {
   };
 
   const handleVideoNavigation = () => {
-      navigate(`/videoSubmission/${assignmentId}`, {
-        state: { moduleId, moduleName },
-      });
+    navigate(`/videoSubmission/${assignmentId}`, {
+      state: { moduleId, moduleName },
+    });
   };
 
   return (
@@ -119,7 +162,7 @@ const AddSubmissionPage = () => {
             type="text"
             placeholder="Enter GitHub URL..."
             value={githubUrl}
-            onChange={(e) => setGithubUrl(e.target.value)}
+            onChange={handleGithubUrlChange}
           />
         </div>
 
@@ -129,11 +172,13 @@ const AddSubmissionPage = () => {
 
         <div>
           <label>Video</label>
-          <button
-            onClick={handleVideoNavigation}
-          >
-            Upload
-          </button>
+          {videoDocId ? (
+            <p>Video Document ID: {videoDocId}</p>
+          ) : (
+            <button type="button" onClick={handleVideoNavigation}>
+              Upload
+            </button>
+          )}
         </div>
 
         <button type="button" onClick={handleSaveClick} disabled={loading}>

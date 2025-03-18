@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams,useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { storage } from "../../firebase";
 import {
   ref as storageRef,
@@ -15,11 +15,6 @@ function UploadVideo({ onUploadComplete }) {
   const location = useLocation();
   const { moduleId, moduleName } = location.state || {};
   const userId = localStorage.getItem("userId");
-
-  console.log("assid", assignmentId)
-  console.log("mid", moduleId)
-  console.log("mname", moduleName)
-  console.log("uid", userId);
 
   const handleUpload = () => {
     if (!file) {
