@@ -146,6 +146,78 @@ def save_line_comment():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@repo_bp.route('/code-comments', methods=['GET'])
+def get_code_comments():
+    """ Fetch all comments for a given code_id from Firebase """
+    code_id = request.args.get('code_id')
+
+    if not code_id:
+        return jsonify({"error": "Missing required parameter: code_id"}), 400
+
+    try:
+        db = current_app.db
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+
+        code_data = doc.to_dict()
+        comments = code_data.get("comments", {})
+
+        return jsonify({"code_id": code_id, "comments": comments}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@repo_bp.route('/delete-comment', methods=['DELETE'])
+def delete_comment():
+    """ Delete a specific comment from a file at a specific line """
+    try:
+        db = current_app.db
+        data = request.get_json()
+
+        code_id = request.args.get('code_id')
+        file_name = data.get('file_name')
+        line_number = str(data.get('line_number'))  # Ensure it's a string
+        comment_index = data.get('comment_index')
+
+        if not code_id or not file_name or not line_number or comment_index is None:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+
+        code_data = doc.to_dict()
+        comments = code_data.get("comments", {})
+
+        # Validate that the comment exists
+        if (file_name not in comments or 
+            line_number not in comments[file_name] or 
+            comment_index >= len(comments[file_name][line_number])):
+            return jsonify({"error": "Comment not found"}), 404
+
+        # Remove the comment
+        comments[file_name][line_number].pop(comment_index)
+
+        # Clean up empty structures
+        if not comments[file_name][line_number]:
+            del comments[file_name][line_number]
+            
+            if not comments[file_name]:
+                del comments[file_name]
+
+        # Update the document
+        doc_ref.update({"comments": comments})
+
+        return jsonify({"message": "Comment deleted successfully!"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @repo_bp.route('/contributors', methods=['GET'])
 def get_repo_contributors():

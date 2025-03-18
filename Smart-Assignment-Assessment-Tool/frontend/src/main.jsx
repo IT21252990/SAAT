@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "./contexts/ToastContext.jsx";
 import Login from "./pages/user/Login.jsx";
 import Register from "./pages/user/Register.jsx";
 import ForgotPassword from "./pages/user/ForgotPassword";
@@ -27,6 +28,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
+    <ToastProvider>
     <Router>
       <Routes>
         {/* Public Routes */}
@@ -44,7 +46,7 @@ root.render(
           <Route path="/teacher-module-page/:moduleId" element={<TeacherModulePage />} />
           <Route path="/add-assignment" element={<AddAssignment />} />
           <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
-          <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
+          <Route path="/add-submission/:assignmentId" element={<AddSubmissionPage />} />
           <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
           <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
@@ -54,5 +56,6 @@ root.render(
         </Route>
       </Routes>
     </Router>
+    </ToastProvider>
   </React.StrictMode>
 );
