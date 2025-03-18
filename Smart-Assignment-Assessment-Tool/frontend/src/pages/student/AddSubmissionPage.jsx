@@ -100,6 +100,12 @@ const AddSubmissionPage = () => {
     }
   };
 
+  const handleVideoNavigation = () => {
+      navigate(`/videoSubmission/${assignmentId}`, {
+        state: { moduleId, moduleName },
+      });
+  };
+
   return (
     <div className="container">
       <h2>Add Submission</h2>
@@ -124,11 +130,7 @@ const AddSubmissionPage = () => {
         <div>
           <label>Video</label>
           <button
-            onClick={() =>
-              navigate(`/videoSubmission/${assignmentId}`, {
-                state: { moduleId, moduleName }, // Pass module data
-              })
-            }
+            onClick={handleVideoNavigation}
           >
             Upload
           </button>
