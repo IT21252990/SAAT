@@ -44,7 +44,8 @@ function SubmitVideo() {
           filename: filename,
           assignmentId: assignmentId,
           moduleId: moduleId,
-          userId: userId
+          userId: userId,
+          video_url: f_url,
         }),
       });
 

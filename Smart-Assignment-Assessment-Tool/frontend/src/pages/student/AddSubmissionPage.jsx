@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { doc, updateDoc } from "firebase/firestore";
+import { firestore } from "../../firebase";
 
 const AddSubmissionPage = () => {
   const navigate = useNavigate();
@@ -69,9 +71,17 @@ const AddSubmissionPage = () => {
 
         // Step 2: Save GitHub URL and retrieve the code ID
         const codeId = await saveGithubUrl(submissionId, githubUrl);
-        
+
         // Step 3: Update the submission with the code ID
         await updateSubmissionWithCodeId(submissionId, codeId);
+
+        // Step 4: If videoDocId is not null, update the videos collection
+        if (videoDocId) {
+          const videoDocRef = doc(firestore, "videos", videoDocId);
+          await updateDoc(videoDocRef, {
+            submissionId: submissionId,
+          });
+        }
 
         setLoading(false);
         // After saving the code ID, navigate to the submission view page
