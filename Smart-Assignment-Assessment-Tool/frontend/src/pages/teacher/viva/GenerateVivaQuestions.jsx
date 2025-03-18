@@ -88,13 +88,27 @@ const GenerateVivaQuestions = () => {
   };
 
   const [selectedQuestions, setSelectedQuestions] = useState([]);
+
   const handleCheckboxChange = (question, level) => {
-    const questionCopy = { ...question, level }; // Add the level information to the question
+    const questionId = `${question.metric_type}-${level}-${question.qna[level].question.substring(0, 20)}`;
+    
     setSelectedQuestions((prevSelectedQuestions) => {
-      // If the question is already selected, remove it; otherwise, add it to the array
-      if (prevSelectedQuestions.some((q) => q.qna[level].question === question.qna[level].question)) {
-        return prevSelectedQuestions.filter((q) => q.qna[level].question !== question.qna[level].question);
+      // Check if this exact question is already in the array
+      const existingIndex = prevSelectedQuestions.findIndex(
+        q => q.metric_type === question.metric_type && 
+             q.level === level && 
+             q.qna[level].question === question.qna[level].question
+      );
+      
+      // If found, remove it; otherwise add it
+      if (existingIndex >= 0) {
+        return prevSelectedQuestions.filter((_, i) => i !== existingIndex);
       } else {
+        const questionCopy = { 
+          ...question, 
+          level,
+          id: questionId  // Add a unique identifier
+        };
         return [...prevSelectedQuestions, questionCopy];
       }
     });
@@ -110,13 +124,16 @@ const GenerateVivaQuestions = () => {
     }
   
     const questionsToSave = selectedQuestions.map((question) => ({
-      type:selectedContent,
+      type: selectedContent,
       metric_type: question.metric_type,
       difficulty: question.level,
       question: question.qna[question.level].question,
       answer: question.qna[question.level].answer,
     }));
   
+    // Log to verify data before sending
+    console.log("Saving questions:", questionsToSave);
+    
     const requestData = {
       submission_id: submissionId,
       questions: questionsToSave,

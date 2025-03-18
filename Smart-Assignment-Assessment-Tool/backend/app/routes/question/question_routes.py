@@ -56,3 +56,45 @@ def get_viva_questions(document_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@question_bp.route("/getBySubmission/<submission_id>", methods=["GET"])
+def get_questions_by_submission(submission_id):
+    try:
+        # Get the Firestore database instance
+        db = current_app.db
+        
+        # Query the viva_questions collection for documents matching the submission_id
+        questions_ref = db.collection("viva_questions").where("submission_id", "==", submission_id)
+        questions_docs = questions_ref.stream()
+        
+        # Process the documents to extract the questions
+        all_questions = []
+        
+        for doc in questions_docs:
+            doc_data = doc.to_dict()
+            
+            # Check if the document has questions
+            if "questions" in doc_data and isinstance(doc_data["questions"], list):
+                # Process each question in the document
+                for i, q in enumerate(doc_data["questions"]):
+                    # Add document metadata to each question
+                    question_with_metadata = {
+                        "question_text": q.get("question", ""),
+                        "type": q.get("type", ""),
+                        "difficulty": q.get("difficulty", ""),
+                        "metric_type": q.get("metric_type", ""),
+                        "answer": q.get("answer", ""),
+                        "created_at": doc_data.get("created_at", datetime.now()),
+                        "document_id": doc_data.get("document_id", ""),
+                        "submission_id": doc_data.get("submission_id", "")
+                    }
+                    
+                    all_questions.append(question_with_metadata)
+        
+        # Return the list of questions
+        return jsonify({"success": True, "questions": all_questions}), 200
+    
+    except Exception as e:
+        current_app.logger.error(f"Error fetching questions: {str(e)}")
+        return jsonify({"success": False, "message": "Failed to retrieve questions", "error": str(e)}), 500
