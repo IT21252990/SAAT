@@ -22,6 +22,7 @@ function VideoList({ onVideoSelect }) {
         );
 
         setVideos(videoData);
+        console.log(videoData)
       } catch (error) {
         console.error("Error fetching videos:", error);
       }
@@ -60,8 +61,8 @@ function VideoList({ onVideoSelect }) {
                 <button
                   className="view-button"
                   onClick={() =>
-                    navigate(`videoSubmission/result-screen`, {
-                      state: { videoUrl: video.url, videoName: video.name },
+                    navigate(`/videoSubmission/result-screen`, {
+                      state: { videoURL: video.url, fileName: video.name },
                     })
                   }
                 >

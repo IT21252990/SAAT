@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
 // Import your Firebase functions
 import { firestore } from "../../firebase"; // your Firebase initialization file
@@ -13,12 +14,19 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-function ResultScreen({ videoURL, fileName, onback, isTeacher }) {
+
+function ResultScreen() {
+  
+  const location = useLocation();
+  const { videoURL, fileName } = location.state || {};
+  console.log(videoURL, fileName);
+
+
   // 'segments' is assumed to be an array of objects with:
   //  { start: number, end: number, type: string, text: string }
 
   const playerRef = useRef(null);
-  isTeacher=true;
+  const isTeacher=true;
 
   // Active tab (index of the segment)
   const [segments, setSegments] = useState([]);

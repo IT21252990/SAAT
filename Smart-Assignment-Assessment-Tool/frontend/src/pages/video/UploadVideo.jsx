@@ -16,11 +16,6 @@ function UploadVideo({ onUploadComplete }) {
   const { moduleId, moduleName } = location.state || {};
   const userId = localStorage.getItem("userId");
 
-  console.log("assid", assignmentId)
-  console.log("mid", moduleId)
-  console.log("mname", moduleName)
-  console.log("uid", userId);
-
   const handleUpload = () => {
     if (!file) {
       alert("Please select a video file.");
