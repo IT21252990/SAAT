@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from app.utils.check_naming import check_file_naming_conventions, check_code_naming_conventions, check_code_comments_accuracy
+from app.utils.repo_analysis import check_file_naming_conventions, check_code_naming_conventions, check_code_comments_accuracy
 from app.models.code_model import Code
 
 # Define Routes
