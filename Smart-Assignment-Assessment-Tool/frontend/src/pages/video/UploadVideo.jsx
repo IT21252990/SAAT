@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams,useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { storage } from "../../firebase";
 import {
   ref as storageRef,

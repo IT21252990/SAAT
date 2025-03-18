@@ -6,7 +6,7 @@ import ResultScreen from "./ResultScreen";
 import { database } from "../../firebase";
 import VideoList from "./VideoList";
 
-const pub_url = "https://e537-34-16-253-253.ngrok-free.app";
+const pub_url = "https://1c84-34-141-150-237.ngrok-free.app";
 
 function SubmitVideo() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);

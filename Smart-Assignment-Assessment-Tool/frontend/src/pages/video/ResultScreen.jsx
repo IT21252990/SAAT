@@ -8,6 +8,8 @@ import {
   addDoc,
   onSnapshot,
   query,
+  where,
+  getDocs,
   orderBy,
 } from "firebase/firestore";
 
