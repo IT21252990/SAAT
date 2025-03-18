@@ -5,6 +5,9 @@ import ProcessingScreen from "./ProcessingScreen";
 import ResultScreen from "./ResultScreen";
 import { database } from "../../firebase";
 import VideoList from "./VideoList";
+import { firestore } from "../../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 const pub_url = "https://1c84-34-141-150-237.ngrok-free.app";
 
@@ -14,6 +17,7 @@ function SubmitVideo() {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [fileName, setFileName] = useState(""); // Added to track filename
   const [isTeacher, setIsTeacher] = useState(false);
+  const navigate = useNavigate();
 
 
   const formatVideoFileName = async (fileName) => {
@@ -55,6 +59,16 @@ function SubmitVideo() {
           if (data) {
             console.log(data);
             setProcessingProgress(data);
+
+            // Check if processing is complete
+            if (data === 100) {
+              handleProcessingComplete(
+                filename,
+                assignmentId,
+                moduleId,
+                userId,
+              );
+            }
           }
         },
         (error) => {
@@ -68,33 +82,78 @@ function SubmitVideo() {
     }
   };
 
-  const handleVideoSelect = (url, name) => {
-    setVideoURL(url);
-    setFileName(name);
-    setProcessingProgress(100);
+  const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
+    try {
+      const videosCollection = collection(firestore, "videos");
+
+      const q = query(
+        videosCollection,
+        where("filename", "==", filename),
+        where("assignmentId", "==", assignmentId),
+        where("moduleId", "==", moduleId),
+        where("userId", "==", userId),
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      // Check if any documents match the query
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const documentId = doc.id;
+        console.log("Document ID:", documentId);
+        return documentId;
+      } else {
+        console.log("No matching document found.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching document ID:", error);
+      return null;
+    }
   };
 
-  const goback = () => {
-    setVideoURL("");
-    setProcessingProgress(0);
+  const handleProcessingComplete = async () => {
+    const filename = "yourFilename";
+    const assignmentId = "yourAssignmentId";
+    const moduleId = "yourModuleId";
+    const userId = "yourUserId";
+
+    const documentId = await fetchDocumentId(
+      filename,
+      assignmentId,
+      moduleId,
+      userId,
+    );
+    if (documentId) {
+      // Store documentId in localStorage
+      localStorage.setItem("documentId", documentId);
+
+      // Navigate to AddSubmissionPage
+      navigate(`/add-submission/${assignmentId}`);
+    }
   };
+
+  // const goback = () => {
+  //   setVideoURL("");
+  //   setProcessingProgress(0);
+  // };
 
   return (
     <div>
       {!videoURL && (
-          <UploadVideo onUploadComplete={processVideo} />
+        <UploadVideo onUploadComplete={processVideo} />
       )}
       {isAuthenticated && videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
       )}
-      {isAuthenticated && videoURL && processingProgress === 100 && (
+      {/* {isAuthenticated && videoURL && processingProgress === 100 && (
         <ResultScreen
           videoURL={videoURL}
           fileName={fileName}
           onback={goback}
           isTeacher={isTeacher}
         />
-      )}
+      )} */}
       <VideoList />
     </div>
   );

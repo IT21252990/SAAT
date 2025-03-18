@@ -4,7 +4,7 @@ import { storage } from "../../firebase";
 import { ref as storageRef, listAll, getDownloadURL } from "firebase/storage";
 import "./VideoList.css";
 
-function VideoList({ onVideoSelect }) {
+function VideoList() {
   const [videos, setVideos] = useState([]);
   const navigate = useNavigate();
 
