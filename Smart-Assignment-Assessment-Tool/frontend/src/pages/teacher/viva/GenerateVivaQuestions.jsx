@@ -110,6 +110,7 @@ const GenerateVivaQuestions = () => {
     }
   
     const questionsToSave = selectedQuestions.map((question) => ({
+      type:selectedContent,
       metric_type: question.metric_type,
       difficulty: question.level,
       question: question.qna[question.level].question,
