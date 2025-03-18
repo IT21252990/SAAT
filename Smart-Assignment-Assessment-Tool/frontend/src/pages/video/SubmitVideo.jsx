@@ -125,11 +125,23 @@ function SubmitVideo() {
       userId,
     );
     if (documentId) {
-      // Store documentId in localStorage
-      localStorage.setItem("documentId", documentId);
+      // Retrieve existing data for the assignmentId, if any
+      const existingData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+
+      // Update the data with the new videoDocId
+      const updatedData = {
+        ...existingData,
+        videoDocId: documentId,
+        // Add other variables like githubUrl and reportId as needed
+        githubUrl: existingData.githubUrl || "", // Placeholder value
+        reportId: existingData.reportId || "", // Placeholder value
+      };
+
+      // Store the updated data back in localStorage
+      localStorage.setItem(assignmentId, JSON.stringify(updatedData));
 
       // Navigate to AddSubmissionPage
-      navigate(`/add-submission/${assignmentId}`);
+      navigate("/addSubmissionPage");
     }
   };
 
