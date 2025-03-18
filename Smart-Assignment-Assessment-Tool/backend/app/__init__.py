@@ -29,6 +29,7 @@ def create_app():
     from app.routes.assignment_routes import assignment_bp
     from app.routes.submission_routes import submission_bp
     from app.routes.code.repo_routes import repo_bp
+    from app.routes.code.check_naming_routes import check_naming_bp
 
 
     app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
@@ -37,5 +38,6 @@ def create_app():
     app.register_blueprint(assignment_bp, url_prefix="/api/v1/assignment")
     app.register_blueprint(submission_bp, url_prefix="/api/v1/submission")
     app.register_blueprint(repo_bp, url_prefix="/api/v1/repo")
+    app.register_blueprint(check_naming_bp, url_prefix="/api/v1/naming")
 
     return app

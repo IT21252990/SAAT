@@ -7,6 +7,7 @@ import {
   FaPuzzlePiece,
   FaHome,
   FaFileInvoice,
+  FaChartLine,
   FaHandshake
 } from "react-icons/fa";
 import { MdFeedback } from "react-icons/md";
@@ -17,6 +18,9 @@ import LocalFileExplorer from "../../components/code/LocalFileExplorer";
 import ContributorCommitHistory from "../../components/code/ContributorCommitHistory";
 import DisplayAssignmentDetails from "../../components/code/DisplayAssignmentDetails";
 import DisplayCodeComments from "../../components/code/DisplayCodeComments";
+import NamingConventionAnalyzer from "../../components/code/NamingConventionAnalyzer";
+import CodeNamingConventionAnalyzer from "../../components/code/CodeNamingConventionAnalyzer";
+import CodeCommentsAccuracyAnalyzer from "../../components/code/CodeCommentsAccuracyAnalyzer";
 import Header from "../../components/Header";
 
 const ViewCodeSubmission = () => {
@@ -39,6 +43,12 @@ const ViewCodeSubmission = () => {
         return <ContributorCommitHistory repoUrl={githubUrl} />;
       case "Comments":
         return <DisplayCodeComments codeId={codeId}/>
+      case "analyze_reports":
+        return <NamingConventionAnalyzer github_url={githubUrl} code_id={codeId}/>
+      case "analyze_code_file":
+        return <CodeNamingConventionAnalyzer github_url={githubUrl} code_id={codeId}/>
+        case "code_comment_accuracy":
+          return <CodeCommentsAccuracyAnalyzer github_url={githubUrl} code_id={codeId}/>
       case "submission_details":
         return <DisplayAssignmentDetails submission_id={submissionId} />
       default:
@@ -79,6 +89,24 @@ const ViewCodeSubmission = () => {
               label="Comments"
               active={activeSection === "Comments"}
               onClick={() => setActiveSection("Comments")}
+            />
+            <SidebarIcon
+              icon={<FaChartLine size={24} />}
+              label="Analyze Reports"
+              active={activeSection === "analyze_reports"}
+              onClick={() => setActiveSection("analyze_reports")}
+            />
+            <SidebarIcon
+              icon={<FaFileInvoice size={24} />}
+              label="Analyze Code File"
+              active={activeSection === "analyze_code_file"}
+              onClick={() => setActiveSection("analyze_code_file")}
+            />
+            <SidebarIcon
+              icon={<FaPuzzlePiece size={24} />}
+              label="Code Comment Accuracy"
+              active={activeSection === "code_comment_accuracy"}
+              onClick={() => setActiveSection("code_comment_accuracy")}
             />
           </div>
 
