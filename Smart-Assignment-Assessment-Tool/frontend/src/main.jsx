@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "./contexts/ToastContext.jsx";
 import Login from "./pages/user/Login.jsx";
 import Register from "./pages/user/Register.jsx";
 import ForgotPassword from "./pages/user/ForgotPassword";
@@ -25,6 +26,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
+    <ToastProvider>
     <Router>
       <Routes>
         {/* Public Routes */}
@@ -50,5 +52,6 @@ root.render(
         </Route>
       </Routes>
     </Router>
+    </ToastProvider>
   </React.StrictMode>
 );
