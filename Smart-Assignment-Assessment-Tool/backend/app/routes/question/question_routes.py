@@ -4,8 +4,8 @@ import uuid
 
 question_bp = Blueprint('question_bp', __name__)
 
-@question_bp.route("/addVivaQuestion", methods=["POST"])
-def add_viva_question():
+@question_bp.route("/saveVivaQuestions", methods=["POST"])
+def save_viva_questions():
     try:
         # Get the data from the request
         data = request.get_json()

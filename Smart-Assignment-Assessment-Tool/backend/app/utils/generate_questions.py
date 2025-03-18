@@ -35,8 +35,8 @@ def generate_questions_gemini(assignment_description, metric_type):
         return response.text if response else None
     except Exception as e:
         return str(e)
-import google.generativeai as genai
-import os
+
+
 
 #Code repo
 def generate_questions_from_github_url(repo_url, metric_type):
@@ -70,3 +70,41 @@ def generate_questions_from_github_url(repo_url, metric_type):
         return response.text if response else None
     except Exception as e:
         return str(e)
+
+
+
+#Code repo
+# def generate_questions_from_report(summary, metric_type):
+#     """
+#     Generate viva questions from a report summary.
+#     """
+#     prompt = f"""
+#         You are an AI tutor analyzing a student's report summary.
+#         Based on the given report summary, generate **exactly** one question-answer pair for each difficulty level:
+
+#         Report Summary:
+#         {summary}
+
+#         - **Easy Question**: Basic understanding level
+#         - **Moderate Question**: Requires some analysis or explanation
+#         - **Difficult Question**: Involves application or deeper thinking
+
+#         Metric: {metric_type}
+
+#         Format:
+#         - Easy Question: <question>
+#         Answer: <answer>
+#         - Moderate Question: <question>
+#         Answer: <answer>
+#         - Difficult Question: <question>
+#         Answer: <answer>
+
+#         Ensure that the response only includes one question-answer pair for each difficulty level. Do not include additional information.
+#     """
+
+#     try:
+#         model = genai.GenerativeModel("gemini-1.5-flash")
+#         response = model.generate_content(prompt)
+#         return response.text if response else None
+#     except Exception as e:
+#         return str(e)
