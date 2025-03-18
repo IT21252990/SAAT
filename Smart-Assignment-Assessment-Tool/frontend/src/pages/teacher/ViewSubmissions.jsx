@@ -150,7 +150,12 @@ const ViewSubmissions = () => {
                       {submission.code_id && (
                         <button
                           className="mr-2 rounded-lg bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                          onClick={() => getRepoUrl(submission.code_id, submission.submission_id)}
+                          onClick={() =>
+                            getRepoUrl(
+                              submission.code_id,
+                              submission.submission_id,
+                            )
+                          }
                         >
                           View Code
                         </button>
@@ -173,7 +178,11 @@ const ViewSubmissions = () => {
                         <button
                           className="rounded-lg bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
                           onClick={() =>
-                            navigate(`/view-video/${submission.video_id}`)
+                            navigate(`/videoSubmission/result-screen`, {
+                              state: {
+                                videoId: submission.video_id
+                              },
+                            })
                           }
                         >
                           View Video

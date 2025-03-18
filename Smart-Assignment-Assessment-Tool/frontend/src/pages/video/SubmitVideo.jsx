@@ -9,7 +9,7 @@ import { firestore } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
-const pub_url = "https://1c84-34-141-150-237.ngrok-free.app";
+const pub_url = "https://52e8-35-240-165-54.ngrok-free.app";
 
 function SubmitVideo() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -63,6 +63,9 @@ function SubmitVideo() {
 
             // Check if processing is complete
             if (data === 100) {
+              setTimeout(() => {
+                // Your code to execute after 7 seconds
+              }, 7000);
               handleProcessingComplete(
                 filename,
                 assignmentId,
@@ -159,14 +162,6 @@ function SubmitVideo() {
       {isAuthenticated && videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
       )}
-      {/* {isAuthenticated && videoURL && processingProgress === 100 && (
-        <ResultScreen
-          videoURL={videoURL}
-          fileName={fileName}
-          onback={goback}
-          isTeacher={isTeacher}
-        />
-      )} */}
       <VideoList />
     </div>
   );
