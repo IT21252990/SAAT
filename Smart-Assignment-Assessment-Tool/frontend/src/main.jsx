@@ -20,6 +20,7 @@ import PrivateRoute from "./components/PrivateRoute.jsx";
 import EditAssignment from "./pages/teacher/EditAssignment.jsx";
 import VivaDashboard from "./pages/teacher/viva/VivaDashboard.jsx";
 import SubmitVideo from "./pages/video/SubmitVideo.jsx";
+import ResultScreen from "./pages/video/ResultScreen.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -49,6 +50,7 @@ root.render(
           <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
           <Route path="videoSubmission/:assignmentId" element={<SubmitVideo />} />
+          <Route path="videoSubmission/result-screen" element={<ResultScreen />} />
         </Route>
       </Routes>
     </Router>

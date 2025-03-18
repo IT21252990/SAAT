@@ -8,14 +8,13 @@ import VideoList from "./VideoList";
 
 const pub_url = "https://e537-34-16-253-253.ngrok-free.app";
 
-const users = { user: "123", instructor: "123" };
-
 function SubmitVideo() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [videoURL, setVideoURL] = useState("");
   const [processingProgress, setProcessingProgress] = useState(0);
   const [fileName, setFileName] = useState(""); // Added to track filename
   const [isTeacher, setIsTeacher] = useState(false);
+
 
   const formatVideoFileName = async (fileName) => {
     // Remove the file extension
@@ -25,7 +24,7 @@ function SubmitVideo() {
     return formattedName;
   };
 
-  const processVideo = async (f_url, filename) => {
+  const processVideo = async (f_url, filename, assignmentId, moduleId, userId) => {
     setVideoURL(f_url);
 
     const formattedFileName = await formatVideoFileName(filename);
@@ -39,6 +38,9 @@ function SubmitVideo() {
         },
         body: JSON.stringify({
           filename: filename,
+          assignmentId: assignmentId,
+          moduleId: moduleId,
+          userId: userId
         }),
       });
 
@@ -79,13 +81,9 @@ function SubmitVideo() {
 
   return (
     <div>
-      {isAuthenticated &&
-        !videoURL &&
-        (isTeacher ? (
-          <VideoList onVideoSelect={handleVideoSelect} />
-        ) : (
+      {!videoURL && (
           <UploadVideo onUploadComplete={processVideo} />
-        ))}
+      )}
       {isAuthenticated && videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
       )}
@@ -97,6 +95,7 @@ function SubmitVideo() {
           isTeacher={isTeacher}
         />
       )}
+      <VideoList />
     </div>
   );
 }

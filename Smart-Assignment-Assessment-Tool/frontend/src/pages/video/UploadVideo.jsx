@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams,useLocation } from "react-router-dom";
 import { storage } from "../../firebase";
 import {
   ref as storageRef,
@@ -10,6 +11,15 @@ import {
 function UploadVideo({ onUploadComplete }) {
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const { assignmentId } = useParams();
+  const location = useLocation();
+  const { moduleId, moduleName } = location.state || {};
+  const userId = localStorage.getItem("userId");
+
+  console.log("assid", assignmentId)
+  console.log("mid", moduleId)
+  console.log("mname", moduleName)
+  console.log("uid", userId);
 
   const handleUpload = () => {
     if (!file) {
@@ -40,7 +50,7 @@ function UploadVideo({ onUploadComplete }) {
         // Get the download URL after upload completes
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           // *****studentID + filename for storing in database
-          onUploadComplete(downloadURL, file.name);
+          onUploadComplete(downloadURL, file.name, assignmentId, moduleId, userId);
         });
       }
     );

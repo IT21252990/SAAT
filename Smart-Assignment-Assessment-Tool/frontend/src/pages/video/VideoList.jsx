@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { storage } from "../../firebase";
 import { ref as storageRef, listAll, getDownloadURL } from "firebase/storage";
 import "./VideoList.css";
 
 function VideoList({ onVideoSelect }) {
   const [videos, setVideos] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -57,7 +59,11 @@ function VideoList({ onVideoSelect }) {
               >
                 <button
                   className="view-button"
-                  onClick={() => onVideoSelect(video.url, video.name)}
+                  onClick={() =>
+                    navigate(`videoSubmission/result-screen`, {
+                      state: { videoUrl: video.url, videoName: video.name },
+                    })
+                  }
                 >
                   View Analysis
                 </button>
