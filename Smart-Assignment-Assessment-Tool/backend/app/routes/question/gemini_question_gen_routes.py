@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 import uuid
-from app.utils.generate_questions import generate_questions_gemini  # Import utility
+from app.utils.generate_questions import generate_questions_gemini 
+from app.utils.generate_questions import generate_questions_from_github_url
+from app.utils.generate_questions import generate_questions_from_video
 
 qgenerate_bp = Blueprint("qgenerate", __name__)
 
@@ -120,7 +122,7 @@ def generate_code_questions():
         }
 
         for metric in metric_types:
-            generated_text = generate_questions_gemini(github_url, metric)
+            generated_text = generate_questions_from_github_url(github_url, metric)
 
             if not generated_text:
                 return jsonify({"error": f"Failed to generate questions for {metric}"}), 500
@@ -228,3 +230,78 @@ def generate_code_questions():
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
 
+@qgenerate_bp.route("/generateVideoQuestions", methods=["POST"])
+def generate_video_questions():
+    try:
+        db = current_app.db  # Access Firestore database from the Flask app context
+        data = request.get_json()
+        submission_id = data.get("submission_id")
+        metric_types = data.get("metric_types", [])
+
+        if not submission_id or not metric_types:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Fetch the submission from the submissions collection
+        submission_doc = db.collection("submissions").document(submission_id).get()
+        if not submission_doc.exists:
+            return jsonify({"error": "Submission not found"}), 404
+        
+        submission_data = submission_doc.to_dict()
+        video_id = submission_data.get("video_id")
+        
+        if not video_id:
+            return jsonify({"error": "video ID not found in submission"}), 404
+
+        # Fetch the video url from the video collection
+        video_doc = db.collection("videos").document(video_id).get()
+        if not video_doc.exists:
+            return jsonify({"error": "video not found"}), 404
+        
+        video_data = video_doc.to_dict()
+        segments = video_data.get("segments", [])
+
+        # Combine all text values
+        combined_text = " ".join(segment["text"] for segment in segments if "text" in segment)
+
+        if not combined_text:
+            return jsonify({"error": "segment - text not found"}), 404
+
+        question_data = {
+            "id": str(uuid.uuid4()),  # Temporary UUID for identification
+            "submission_id": submission_id,
+            "category": "video",
+            "questions": []
+        }
+
+        for metric in metric_types:
+            generated_text = generate_questions_from_video(combined_text, metric)
+
+            if not generated_text:
+                return jsonify({"error": f"Failed to generate questions for {metric}"}), 500
+
+            questions = {"easy": None, "moderate": None, "difficult": None}
+
+            for line in generated_text.strip().split("\n"):
+                if "Easy Question" in line:
+                    questions["easy"] = {"question": line.split(": ", 1)[-1]}
+                elif "Moderate Question" in line:
+                    questions["moderate"] = {"question": line.split(": ", 1)[-1]}
+                elif "Difficult Question" in line:
+                    questions["difficult"] = {"question": line.split(": ", 1)[-1]}
+                elif "Answer" in line:
+                    if questions["easy"] and "answer" not in questions["easy"]:
+                        questions["easy"]["answer"] = line.split(": ", 1)[-1]
+                    elif questions["moderate"] and "answer" not in questions["moderate"]:
+                        questions["moderate"]["answer"] = line.split(": ", 1)[-1]
+                    elif questions["difficult"] and "answer" not in questions["difficult"]:
+                        questions["difficult"]["answer"] = line.split(": ", 1)[-1]
+
+            question_data["questions"].append({
+                "metric_type": metric,
+                "qna": questions
+            })
+
+        return jsonify({"message": "Code questions generated successfully", "data": question_data}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
