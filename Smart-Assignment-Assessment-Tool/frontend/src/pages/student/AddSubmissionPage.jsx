@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const AddSubmissionPage = () => {
@@ -10,6 +10,32 @@ const AddSubmissionPage = () => {
   const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+
+  useEffect(() => {
+    // Retrieve the GitHub URL from localStorage when the component mounts
+    const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+    if (storedData.githubUrl) {
+      setGithubUrl(storedData.githubUrl);
+    }
+  }, [assignmentId]);
+
+  const handleGithubUrlChange = (e) => {
+    const newGithubUrl = e.target.value;
+    setGithubUrl(newGithubUrl);
+
+    // Retrieve existing data for the assignmentId, if any
+    const existingData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+
+    // Update the data with the new GitHub URL
+    const updatedData = {
+      ...existingData,
+      githubUrl: newGithubUrl,
+    };
+
+    // Store the updated data back in localStorage
+    localStorage.setItem(assignmentId, JSON.stringify(updatedData));
+  };
 
   // Handle Save action
   const handleSaveClick = async () => {
@@ -119,7 +145,7 @@ const AddSubmissionPage = () => {
             type="text"
             placeholder="Enter GitHub URL..."
             value={githubUrl}
-            onChange={(e) => setGithubUrl(e.target.value)}
+            onChange={handleGithubUrlChange}
           />
         </div>
 
