@@ -8,6 +8,7 @@ const AddSubmissionPage = () => {
 
   // State variables
   const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL
+  const [videoDocId, setVideoDocId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,6 +18,9 @@ const AddSubmissionPage = () => {
     const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
     if (storedData.githubUrl) {
       setGithubUrl(storedData.githubUrl);
+    }
+    if (storedData.videoDocId) {
+      setVideoDocId(storedData.videoDocId);
     }
   }, [assignmentId]);
 
@@ -55,6 +59,7 @@ const AddSubmissionPage = () => {
         body: JSON.stringify({
           assignment_id: assignmentId,
           student_id: localStorage.getItem("userId"),
+          video_id: videoDocId || null,
         }),
       });
 
@@ -155,9 +160,13 @@ const AddSubmissionPage = () => {
 
         <div>
           <label>Video</label>
-          <button type="button" onClick={handleVideoNavigation}>
-            Upload
-          </button>
+          {videoDocId ? (
+            <p>Video Document ID: {videoDocId}</p>
+          ) : (
+            <button type="button" onClick={handleVideoNavigation}>
+              Upload
+            </button>
+          )}
         </div>
 
         <button type="button" onClick={handleSaveClick} disabled={loading}>
