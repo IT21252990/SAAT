@@ -22,13 +22,13 @@ const ViewCodeSubmission = () => {
   const [activeSection, setActiveSection] = useState("explorer");
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { githubUrl, repoDetails, submissionId } = state || {};
+  const { githubUrl, repoDetails, submissionId, codeId } = state || {};
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case "explorer": {
         if (githubUrl) {
-          return <RepoExplorer repoUrl={githubUrl} />;
+          return <RepoExplorer repoUrl={githubUrl} codeId={codeId} />;
         }
         if (!githubUrl) {
           //   return <LocalFileExplorer/>

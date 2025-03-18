@@ -896,7 +896,7 @@ import { Spinner } from "flowbite-react";
 import "../index.css";
 import "../styles/editor.styles.css";
 
-const RepoExplorer = ({ repoUrl }) => {
+const RepoExplorer = ({ repoUrl , codeId }) => {
   const [contents, setContents] = useState({});
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [tabs, setTabs] = useState([]);
@@ -1136,17 +1136,20 @@ const RepoExplorer = ({ repoUrl }) => {
 
   const handleCommentSubmit = () => {
     if (currentLine != null && commentText.trim() !== "") {
-      // addCommentToLine(currentLine, commentText.trim());
       axios
-        .post(`${process.env.REACT_APP_BACKEND_URL}/repo/save-line-comment`, {
-          repo_url: repoUrl, // Pass the active repository URL
-          file_name: activeTab?.name, // File name from the active tab
-          line_number: currentLine, // Line number
-          comment_text: commentText, // Text of the comment
-        })
+        .post(
+          `${import.meta.env.VITE_BACKEND_URL}/repo/save-line-comment?code_id=${codeId}`, // Include codeId as a query parameter
+          {
+            file_name: activeTab?.name,
+            line_number: currentLine,
+            comment_text: commentText,
+          }
+        )
         .then((response) => {
           console.log(response.data.message);
           alert("Comment saved successfully!");
+          // Optionally, refresh lineComments or re-fetch them from the server
+          // to update the editor decorations.
         })
         .catch((error) => {
           console.error("Error saving comment:", error);
@@ -1217,7 +1220,7 @@ const RepoExplorer = ({ repoUrl }) => {
       {/* Left-side Explorer */}
       <div className="fixed mb-4 flex items-center">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-          Repository Explorer
+          Repository Explorer: {codeId}
         </h2>
       </div>
       <div className="w-72 mt-8 flex-shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">

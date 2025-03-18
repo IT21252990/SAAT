@@ -59,7 +59,7 @@ const ViewSubmissions = () => {
 
       if (response.status === 200) {
         navigate(`/view-code/${codeId}`, {
-          state: { githubUrl, repoDetails: response.data, submissionId },
+          state: { githubUrl, repoDetails: response.data, submissionId, codeId },
         });
       } else {
         alert("Failed to fetch repository details.");
