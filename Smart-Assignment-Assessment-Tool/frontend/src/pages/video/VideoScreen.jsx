@@ -138,6 +138,19 @@ function VideoScreen() {
     }
   };
 
+  const handleProgress = (state) => {
+    const currentTime = state.playedSeconds;
+    const currentSegmentIndex = segments.findIndex(
+      (segment) => currentTime >= segment.start && currentTime <= segment.end,
+    );
+    if (
+      currentSegmentIndex !== -1 &&
+      currentSegmentIndex !== activeSegmentIndex
+    ) {
+      setActiveSegmentIndex(currentSegmentIndex);
+    }
+  };
+
   // Helper functions for processing segment functions (if needed)
   function combineNonEmptyArrays(obj) {
     return Object.values(obj)
@@ -189,6 +202,7 @@ function VideoScreen() {
               height="100%"
               style={{ aspectRatio: "16/9" }}
               onError={(e) => console.error("ReactPlayer Error:", e)}
+              onProgress={handleProgress}
               className="max-h-[500px]"
             />
           </div>
