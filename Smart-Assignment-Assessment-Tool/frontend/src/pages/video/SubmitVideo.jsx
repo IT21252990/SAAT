@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { ref as dbRef, onValue, off } from "firebase/database"; // Added 'off' import
+import React, { useState } from "react";
+import { ref as dbRef, onValue } from "firebase/database"; // Added 'off' import
 import UploadVideo from "./UploadVideo";
 import ProcessingScreen from "./ProcessingScreen";
-import ResultScreen from "./ResultScreen";
 import { database } from "../../firebase";
-import VideoList from "./VideoList";
 import { firestore } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -12,11 +10,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 const pub_url = "https://5b00-34-124-255-253.ngrok-free.app";
 
 function SubmitVideo() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [videoURL, setVideoURL] = useState("");
   const [processingProgress, setProcessingProgress] = useState(0);
   const [fileName, setFileName] = useState(""); // Added to track filename
-  const [isTeacher, setIsTeacher] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { moduleId, moduleName } = location.state || {};
@@ -71,7 +67,7 @@ function SubmitVideo() {
             // Check if processing is complete
             if (data === 100) {
               setTimeout(() => {
-                // Your code to execute after 7 seconds
+                // Your code to execute after 5 seconds
               }, 5000);
               handleProcessingComplete(
                 filename,
@@ -163,15 +159,10 @@ function SubmitVideo() {
     }
   };
 
-  // const goback = () => {
-  //   setVideoURL("");
-  //   setProcessingProgress(0);
-  // };
-
   return (
     <div>
-      {!videoURL && <UploadVideo onUploadComplete={processVideo} />}
-      {isAuthenticated && videoURL && processingProgress < 100 && (
+      { !videoURL && <UploadVideo onUploadComplete={processVideo} />}
+      { videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
       )}
     </div>
