@@ -242,7 +242,7 @@ const ReportUpload = ({ onSubmit }) => {
       return;
     }
 
-    console.log("meka ", markingScheme.marking_schemes[0].criteria)
+    // console.log("meka ", markingScheme.marking_schemes[0].criteria)
     setLoading(true);
     setError(null);
     setProgress(0);
@@ -272,7 +272,7 @@ const ReportUpload = ({ onSubmit }) => {
       const fakeResult = aiContentResult.find(item => item.label === 'Fake');
 
       if (fakeResult ) {
-        const aiScore = (fakeResult.score * 100).toFixed(2); // Convert to percentage and round
+        const aiScore = (fakeResult.score * 100000).toFixed(2); // Convert to percentage and round
         setAIcontentResults({ percentage: aiScore });
         setPlagiarismResults(plagiarismPercentage);
       } else {

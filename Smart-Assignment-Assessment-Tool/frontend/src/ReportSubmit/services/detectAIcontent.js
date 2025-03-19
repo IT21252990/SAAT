@@ -6,7 +6,7 @@ export const detectAIcontent = async (content, progressCallback) => {
   const huggingFaceApiKey = ''; 
   const endpoint = 'https://api-inference.huggingface.co/models/openai-community/roberta-base-openai-detector';
 
-  const cleanedContent = content.trim().replace(/\s+/g, ' '); // Clean up the content
+  const cleanedContent = content.trim().replace(/\s+/g, ' '); // Clean up the content, remove extra space
 
   try {
     const response = await axios.post(

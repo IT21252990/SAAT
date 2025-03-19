@@ -52,7 +52,7 @@ Your response must be in valid JSON format with the following structure:
     {
       "description": "criterion description",
       "weightage": 70,
-      "awarded": 8,
+      "awarded": 50,
       "justification": "explanation of score",
       "suggestions": ["suggestion 1", "suggestion 2"]
     }
@@ -79,7 +79,7 @@ ${reportText}
           content: prompt,
         },
       ],
-      model: "gpt-3.5-turbo", // Used model
+      model: "gpt-3.5-turbo",
       temperature: 0.3,
       max_tokens: 2000,
       response_format: { type: "json_object" },
