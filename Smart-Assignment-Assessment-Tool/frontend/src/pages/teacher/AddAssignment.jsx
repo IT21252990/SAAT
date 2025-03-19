@@ -194,7 +194,7 @@ const AddAssignment = () => {
       );
   
       const data = await response.json();
-  console.log(data)
+      console.log(data);
       // Assuming the response contains an `assignmentId`
       const assignmentId = data.assignment_id;  // Extract the assignmentId from the response
   
@@ -211,7 +211,7 @@ const AddAssignment = () => {
         assignment_id: assignmentId,  // Add assignmentId here
       };
   
-      console.log(markingSchemeData)
+      console.log(markingSchemeData);
       try {
         const markingSchemeResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/create-marking-scheme`, {
           method: "POST",
@@ -219,7 +219,7 @@ const AddAssignment = () => {
           body: JSON.stringify(markingSchemeData),
         });
   
-        console.log(markingSchemeResponse)
+        console.log(markingSchemeResponse);
 
         const markingSchemeDataResponse = await markingSchemeResponse.json();
   
@@ -248,10 +248,6 @@ const AddAssignment = () => {
     }
   };
   
-
-
-  
-
   // Function to dismiss error
   const dismissError = () => {
     setError("");
@@ -484,51 +480,6 @@ const AddAssignment = () => {
                 Add New Main Topic
               </Button>
             </div>
-          ))}
-          {/* Add Main Topic Button */}
-          <Button color="blue" onClick={handleAddMainTopic}>
-            + Add Main Topic
-          </Button>
-          {/* Submission Types */}
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Submission Types:
-          </h3>
-
-          {/* it21306754  */}
-          {Object.keys(submissionTypes).map((type) => (
-            <Label key={type} className="flex items-center space-x-2">
-              <Checkbox
-                checked={submissionTypes[type]}
-                onChange={(e) => {
-                  const isChecked = e.target.checked;
-                  setSubmissionTypes({
-                    ...submissionTypes,
-                    [type]: isChecked, // Dynamically update the checkbox based on type
-                  });
-
-                  // Show the modal only if the 'report' checkbox is checked
-                  if (type === 'report') {
-                    setShowReportModal(isChecked);
-                  }
-                }}
-              />
-              <span>
-                {type.charAt(0).toUpperCase() + type.slice(1)} Submission
-              </span>
-            </Label>
-          ))}
-          {/* it21306754 */}
-
-          {/* Submit & Cancel Buttons */}
-          <div className="mt-4 flex space-x-4">
-            <Button type="submit" color="blue">
-              Save Assignment
-            </Button>
-            <Button color="red" onClick={() => navigate(-1)}>
-              Cancel
-            </Button>
-          </div>
-        </form>
 
             {/* Submission Types Section */}
             <div className="p-4 space-y-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
@@ -608,10 +559,10 @@ const AddAssignment = () => {
         </Card>
       </div>
 
-      {/* it21306754  */}
+      {/* it21306754 - Report Modal */}
       {showReportModal && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg w-[80%] max-h-[90vh] overflow-auto">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-[80%] max-h-[90vh] overflow-auto">
             <h1 className="text-xl font-bold text-blue-500">Marking Scheme</h1>
 
             <form onSubmit={handleSubmit}>
@@ -703,7 +654,6 @@ const AddAssignment = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

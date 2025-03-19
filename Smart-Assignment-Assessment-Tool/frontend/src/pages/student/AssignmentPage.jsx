@@ -163,7 +163,6 @@ const AssignmentPage = () => {
             </button>
           </div>
         </div>
-      </div>
     </>
   );
 };
