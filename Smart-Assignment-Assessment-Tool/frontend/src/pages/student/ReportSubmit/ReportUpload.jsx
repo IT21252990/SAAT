@@ -300,62 +300,98 @@ const ReportUpload = ({ onSubmit }) => {
 
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
-
-    // Title - Analysis Results
+    doc.setFont("helvetica");
+  
+    let yPosition = 20; // Initial vertical position
+  
+    // Title
     doc.setFontSize(16);
-    doc.setTextColor(25, 118, 210); // Primary color: #1976d2
-    doc.text("Analysis Results", 14, 20);
-
-    // AI Content Results
+    doc.setTextColor(25, 118, 210);
+    doc.text("Analysis Results", 14, yPosition);
+    yPosition += 10; // Add spacing
+  
+    // Function to create styled boxes
+    const createResultBox = (title, percentage) => {
+      doc.setDrawColor(25, 118, 210);
+      doc.setLineWidth(0.5);
+      doc.rect(10, yPosition, 90, 30); // Box outline
+  
+      doc.setFontSize(14);
+      doc.setTextColor(25, 118, 210);
+      doc.text(`${percentage}%`, 14, yPosition + 10);
+  
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(title, 14, yPosition + 20);
+  
+      yPosition += 40; // Increase y-position for next section
+    };
+  
     if (aiContentResults) {
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0); // Default text color
-      doc.text(`AI Content Percentage: ${aiContentResults.percentage}%`, 14, 30);
-
-      if (aiContentResults.percentage !== undefined) {
-        doc.text("This report appears to be AI-generated.", 14, 40);
-      } else {
-        doc.text("Unable to calculate AI content percentage.", 14, 40);
-      }
+      createResultBox("of this report appears to be AI-generated", aiContentResults.percentage || "N/A");
     }
-
-    // Analysis Results
+    if (plagiarismResults !== undefined) {
+      createResultBox("Found significant plagiarism in your report", plagiarismResults || "N/A");
+    }
+  
+    // Overall Score
     if (analysisResults) {
       doc.setFontSize(14);
-      doc.setTextColor(25, 118, 210); // Primary color: #1976d2
-      doc.text(`Overall Score: ${analysisResults.totalScore || 0}%`, 14, 50);
-
-      // Loop through criteria
+      doc.setTextColor(25, 118, 210);
+      doc.text(`Overall Score: ${analysisResults.totalScore || 0}%`, 14, yPosition);
+      yPosition += 10;
+  
+      // Analysis Criteria - Creating individual boxes
       analysisResults.criteria?.forEach((criterion, index) => {
-        const yPosition = 60 + (index * 40);  // Adjust position for each criterion
+        doc.setDrawColor(200, 200, 200);
+        doc.rect(10, yPosition, 190, 50); // Increase box height to avoid overlapping
+  
         doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0); // Default text color
-
-        doc.text(`Criterion: ${criterion.description}`, 14, yPosition);
-        doc.text(`Score: ${criterion.awarded} / ${criterion.weightage}`, 14, yPosition + 10);
-        doc.text(`Justification: ${criterion.justification}`, 14, yPosition + 20);
-
-        // Add suggestions if available
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Criterion: ${criterion.description}`, 14, yPosition + 10);
+        doc.text(`Score: ${criterion.awarded} / ${criterion.weightage}`, 14, yPosition + 20);
+  
+        // Wrap long justification text
+        const justificationText = doc.splitTextToSize(`Justification: ${criterion.justification}`, 180);
+        doc.text(justificationText, 14, yPosition + 30);
+  
+        yPosition += 50 + (justificationText.length * 5); // Adjust yPosition dynamically
+  
+        // Suggestions (if available)
         if (criterion.suggestions?.length > 0) {
-          doc.text("Suggestions for improvement:", 14, yPosition + 30);
+          doc.setFontSize(10);
+          doc.text("Suggestions:", 14, yPosition);
+          yPosition += 5;
+  
           criterion.suggestions.forEach((suggestion, idx) => {
-            doc.text(`- ${suggestion}`, 14, yPosition + 40 + (idx * 10));
+            const wrappedSuggestion = doc.splitTextToSize(`- ${suggestion}`, 180);
+            doc.text(wrappedSuggestion, 14, yPosition);
+            yPosition += wrappedSuggestion.length * 5;
           });
         }
+  
+        yPosition += 10; // Add extra space before next criterion
       });
-
-      // Add General Feedback
+  
+      // General Feedback Section
       if (analysisResults.feedback) {
         doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0); // Default text color
-        doc.text("General Feedback:", 14, 100);
-        doc.text(analysisResults.feedback, 14, 110);
+        doc.setTextColor(25, 118, 210);
+        doc.text("General Feedback", 14, yPosition);
+        yPosition += 10;
+  
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        const wrappedFeedback = doc.splitTextToSize(analysisResults.feedback, 180);
+        doc.text(wrappedFeedback, 14, yPosition);
       }
     }
-
-    // Save the generated PDF
+  
+    // Save the PDF
     doc.save("analysis_results.pdf");
   };
+  
+  
 
 
   const handleSubmitAssignment = async () => {
@@ -447,7 +483,7 @@ const ReportUpload = ({ onSubmit }) => {
       setProgress(100);
       setLoading(false);
       alert("Assignment submitted successfully!");
-      // window.location.reload();
+      window.location.reload();
     } catch (error) {
       setLoading(false);
       setError(error.message);
