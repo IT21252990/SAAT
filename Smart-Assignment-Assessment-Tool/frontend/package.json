@@ -52,7 +52,7 @@
     "swal": "^0.1.0",
     "sweetalert2": "^11.10.8",
     "swiper": "^11.1.15",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
     "react-player": "^2.16.0",
     "react-router-dom": "^7.3.0",
     "react-toastify": "^11.0.5",
