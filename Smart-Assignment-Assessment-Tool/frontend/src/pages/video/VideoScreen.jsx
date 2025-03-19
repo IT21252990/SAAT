@@ -29,35 +29,9 @@ function VideoScreen() {
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
 
-  // Function to fetch the document ID for the video from the "videos" collection
-  // const fetchDocumentId = async (video_url, filename) => {
-  //   try {
-  //     const videosCollection = collection(firestore, "videos");
-  //     const q = query(
-  //       videosCollection,
-  //       where("videoId", "==", video_url),
-  //       where("filename", "==", filename),
-  //     );
-  //     const querySnapshot = await getDocs(q);
-  //     if (!querySnapshot.empty) {
-  //       const docSnap = querySnapshot.docs[0];
-  //       const documentId = docSnap.id;
-  //       console.log("Document ID:", documentId);
-  //       return documentId;
-  //     } else {
-  //       console.log("No matching document found.");
-  //       return null;
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching document ID:", error);
-  //     return null;
-  //   }
-  // };
-
   // useEffect to subscribe to the video document and fetch its segments
   useEffect(() => {
     const fetchVideoData = async () => {
-      // const documentId = await fetchDocumentId(video_url, filename);
       if (videoId) {
         const videoDocRef = doc(firestore, "videos", videoId);
         const unsubscribe = onSnapshot(videoDocRef, (docSnap) => {
@@ -95,8 +69,9 @@ function VideoScreen() {
       snapshot.forEach((doc) => {
         const data = doc.data();
         // Only include comments for this specific video (by filename)
-        if (data.videoId === videoId) 
-          {loadedComments.push({ id: doc.id, ...data });}
+        if (data.videoId === videoId) {
+          loadedComments.push({ id: doc.id, ...data });
+        }
         console.log("Comments:", loadedComments);
       });
       setComments(loadedComments);
@@ -174,83 +149,118 @@ function VideoScreen() {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={{ color: "blue" }}>Video Analysis Result</h2>
-      <h3 style={{ color: "blue" }}>{filename}</h3>
-      <div style={styles.playerWrapper}>
-        <ReactPlayer
-          ref={playerRef}
-          url={videoUrl}
-          controls
-          width="50%"
-          height="50%"
-          onError={(e) => console.error("ReactPlayer Error:", e)}
-        />
-      </div>
+    <div className="flex h-full flex-col items-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 dark:from-gray-900 dark:to-gray-800">
+      <div className="w-full max-w-7xl rounded-xl border border-gray-200 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <h2 className="mb-2 text-3xl font-bold text-gray-800 dark:text-white">
+          Video Analysis Result
+        </h2>
+        <h3 className="mb-6 text-xl font-medium text-gray-600 dark:text-gray-300">
+          {filename}
+        </h3>
 
-      {/** Tabbed Interface for Segments */}
-      <div style={styles.tabContainer}>
-        {segments.map((segment, index) => (
-          <button
-            key={index}
-            style={{
-              ...styles.tabButton,
-              backgroundColor: index === activeSegmentIndex ? "#ddd" : "#fff",
-            }}
-            onClick={() => handleSegmentClick(index)}
-          >
-            {trepl(segment.type)} ({parseInt(segment.start)}s -{" "}
-            {parseInt(segment.end)}s)
-          </button>
-        ))}
-      </div>
-
-      {/** Display Active Segment Text */}
-      <div style={styles.textContainer}>
-        <h3>Extracted Text:</h3>
-        <p>{segments[activeSegmentIndex]?.text}</p>
-      </div>
-
-      {segments[activeSegmentIndex]?.functions && (
-        <div style={styles.textContainer}>
-          <h3>Extracted Codes/IDE settings:</h3>
-          <p>
-            {segments[activeSegmentIndex]?.functions
-              ?.flatMap((item) => extractFunctionNames(item))
-              .join(", ")}
-          </p>
+        <div className="relative mb-8 overflow-hidden rounded-lg shadow-md">
+          <div className="flex items-center justify-center bg-black">
+            <ReactPlayer
+              ref={playerRef}
+              url={videoUrl}
+              controls
+              width="100%"
+              height="100%"
+              style={{ aspectRatio: "16/9" }}
+              onError={(e) => console.error("ReactPlayer Error:", e)}
+              className="max-h-[500px]"
+            />
+          </div>
         </div>
-      )}
 
-      {/** Comments Section */}
-      <div style={styles.commentSection}>
-        <h3>Comments</h3>
-        <div style={styles.commentList}>
-          {comments.map((com) => (
-            <div
-              key={com.id}
-              style={styles.commentItem}
-              onClick={() => handleCommentClick(com.timestamp)}
+        {/** Segment Navigation */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {segments.map((segment, index) => (
+            <button
+              key={index}
+              onClick={() => handleSegmentClick(index)}
+              className={`rounded-full px-4 py-2 font-medium transition-all ${
+                index === activeSegmentIndex
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              }`}
             >
-              <strong>{formatTime(com.timestamp)} :</strong> {com.text}
-            </div>
+              {trepl(segment.type)} ({parseInt(segment.start)}s -{" "}
+              {parseInt(segment.end)}s)
+            </button>
           ))}
         </div>
-      </div>
-      {isTeacher && (
-        <div style={styles.commentForm}>
-          <input
-            type="text"
-            value={commentInput}
-            onChange={(e) => setCommentInput(e.target.value)}
-            placeholder="Add a comment"
-            style={styles.commentInput}
-          />
-          <button onClick={handleAddComment} style={styles.commentButton}>
-            Submit
-          </button>
+
+        {/** Display Active Segment Text */}
+        <div className="mb-6 rounded-lg bg-gray-50 p-6 dark:bg-gray-700">
+          <h3 className="mb-3 text-xl font-semibold text-gray-800 dark:text-white">
+            Extracted Text
+          </h3>
+          <p className="text-gray-700 dark:text-gray-200">
+            {segments[activeSegmentIndex]?.text ||
+              "No text available for this segment"}
+          </p>
         </div>
-      )}
+
+        {segments[activeSegmentIndex]?.functions && (
+          <div className="mb-6 rounded-lg bg-gray-50 p-6 dark:bg-gray-700">
+            <h3 className="mb-3 text-xl font-semibold text-gray-800 dark:text-white">
+              Extracted Codes/IDE Settings
+            </h3>
+            <p className="text-gray-700 dark:text-gray-200">
+              {segments[activeSegmentIndex]?.functions
+                ?.flatMap((item) => extractFunctionNames(item))
+                .join(", ") || "No code elements detected"}
+            </p>
+          </div>
+        )}
+
+        {/** Comments Section */}
+        <div className="mb-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+          <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-white">
+            Comments
+          </h3>
+          <div className="mb-4 max-h-[250px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+            {comments.length > 0 ? (
+              comments.map((com) => (
+                <div
+                  key={com.id}
+                  onClick={() => handleCommentClick(com.timestamp)}
+                  className="mb-2 cursor-pointer rounded-lg border-l-4 border-blue-500 bg-gray-50 p-3 text-black transition-all hover:bg-blue-50 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+                >
+                  <span className="mr-2 inline-block rounded bg-blue-100 px-2 py-1 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    {formatTime(com.timestamp)}
+                  </span>
+                  {com.text}
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500 dark:text-gray-400">
+                No comments yet
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isTeacher && (
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={commentInput}
+              onChange={(e) => setCommentInput(e.target.value)}
+              placeholder="Add a comment"
+              className="flex-1 rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-600"
+            />
+            <button
+              onClick={handleAddComment}
+              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+              disabled={!commentInput.trim()}
+            >
+              Comment
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -261,65 +271,5 @@ function formatTime(seconds) {
   const ss = Math.floor(seconds % 60);
   return `${mm}:${ss < 10 ? "0" : ""}${ss}`;
 }
-
-const styles = {
-  container: {
-    textAlign: "center",
-    marginTop: "50px",
-  },
-  playerWrapper: {
-    position: "relative",
-    marginBottom: "30px",
-    display: "flex",
-    justifyContent: "center",
-    alignItem: "center",
-  },
-  tabContainer: {
-    marginBottom: "20px",
-  },
-  tabButton: {
-    marginRight: "10px",
-    padding: "5px 10px",
-    cursor: "pointer",
-  },
-  textContainer: {
-    width: "80%",
-    margin: "0 auto",
-    textAlign: "left",
-  },
-  commentSection: {
-    width: "80%",
-    margin: "20px auto",
-    textAlign: "left",
-    borderTop: "1px solid #ccc",
-    paddingTop: "20px",
-  },
-  commentList: {
-    maxHeight: "150px",
-    overflowY: "auto",
-    marginBottom: "20px",
-    border: "1px solid #ddd",
-    padding: "10px",
-  },
-  commentItem: {
-    display: "block",
-    color: "#007bff",
-    textDecoration: "none",
-    padding: "5px 0",
-    border: "1px solid #ddd",
-  },
-  commentForm: {
-    display: "flex",
-    gap: "10px",
-  },
-  commentInput: {
-    flex: 1,
-    padding: "6px",
-  },
-  commentButton: {
-    padding: "6px 12px",
-    cursor: "pointer",
-  },
-};
 
 export default VideoScreen;

@@ -9,7 +9,7 @@ import { firestore } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const pub_url = "https://52e8-35-240-165-54.ngrok-free.app";
+const pub_url = "https://5b00-34-124-255-253.ngrok-free.app";
 
 function SubmitVideo() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
