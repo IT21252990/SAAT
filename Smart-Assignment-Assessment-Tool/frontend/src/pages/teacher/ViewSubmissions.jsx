@@ -178,9 +178,10 @@ const ViewSubmissions = () => {
                         <button
                           className="rounded-lg bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
                           onClick={() =>
-                            navigate(`/videoSubmission/result-screen`, {
+                            navigate(`/videoSubmission/video-screen`, {
                               state: {
-                                videoId: submission.video_id
+                                videoId: submission.video_id,
+                                submissionId: submission.submission_id,
                               },
                             })
                           }

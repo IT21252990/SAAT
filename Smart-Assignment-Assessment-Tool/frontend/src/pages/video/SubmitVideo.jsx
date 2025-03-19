@@ -7,7 +7,7 @@ import { database } from "../../firebase";
 import VideoList from "./VideoList";
 import { firestore } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const pub_url = "https://52e8-35-240-165-54.ngrok-free.app";
 
@@ -18,7 +18,8 @@ function SubmitVideo() {
   const [fileName, setFileName] = useState(""); // Added to track filename
   const [isTeacher, setIsTeacher] = useState(false);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const { moduleId, moduleName } = location.state || {};
 
   const formatVideoFileName = async (fileName) => {
     // Remove the file extension
@@ -28,7 +29,13 @@ function SubmitVideo() {
     return formattedName;
   };
 
-  const processVideo = async (f_url, filename, assignmentId, moduleId, userId) => {
+  const processVideo = async (
+    f_url,
+    filename,
+    assignmentId,
+    moduleId,
+    userId,
+  ) => {
     setVideoURL(f_url);
 
     const formattedFileName = await formatVideoFileName(filename);
@@ -51,7 +58,7 @@ function SubmitVideo() {
 
       const progressRef = dbRef(
         database,
-        `processing_status/${formattedFileName}`
+        `processing_status/${formattedFileName}`,
       );
       onValue(
         progressRef,
@@ -77,7 +84,7 @@ function SubmitVideo() {
         },
         (error) => {
           console.error("Error subscribing to database updates:", error);
-        }
+        },
       );
 
       console.log("Success:");
@@ -86,38 +93,47 @@ function SubmitVideo() {
     }
   };
 
-const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
-  try {
-    console.log("Query Parameters:", { filename, assignmentId, moduleId, userId });
+  const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
+    try {
+      console.log("Query Parameters:", {
+        filename,
+        assignmentId,
+        moduleId,
+        userId,
+      });
 
-    const videosCollection = collection(firestore, "videos");
+      const videosCollection = collection(firestore, "videos");
 
-    const q = query(
-      videosCollection,
-      where("assignmentId", "==", assignmentId),
-      where("moduleId", "==", moduleId),
-      where("userId", "==", userId)
-    );
+      const q = query(
+        videosCollection,
+        where("assignmentId", "==", assignmentId),
+        where("moduleId", "==", moduleId),
+        where("userId", "==", userId),
+      );
 
-    const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0];
-      const documentId = doc.id;
-      console.log("Document ID:", documentId);
-      return documentId;
-    } else {
-      console.log("No matching document found.");
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const documentId = doc.id;
+        console.log("Document ID:", documentId);
+        return documentId;
+      } else {
+        console.log("No matching document found.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching document ID:", error);
       return null;
     }
-  } catch (error) {
-    console.error("Error fetching document ID:", error);
-    return null;
-  }
-};
+  };
 
-  const handleProcessingComplete = async (formattedFileName, assignmentId, moduleId, userId) => {
-
+  const handleProcessingComplete = async (
+    formattedFileName,
+    assignmentId,
+    moduleId,
+    userId,
+  ) => {
     const documentId = await fetchDocumentId(
       formattedFileName,
       assignmentId,
@@ -141,7 +157,9 @@ const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
       localStorage.setItem(assignmentId, JSON.stringify(updatedData));
 
       // Navigate to AddSubmissionPage
-      navigate(`/add-submission/${assignmentId}`);
+      navigate(`/add-submission/${assignmentId}`, {
+        state: { moduleId, moduleName },
+      });
     }
   };
 
@@ -152,9 +170,7 @@ const fetchDocumentId = async (filename, assignmentId, moduleId, userId) => {
 
   return (
     <div>
-      {!videoURL && (
-        <UploadVideo onUploadComplete={processVideo} />
-      )}
+      {!videoURL && <UploadVideo onUploadComplete={processVideo} />}
       {isAuthenticated && videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
 import { firestore } from "../../firebase"; // your Firebase initialization file
 import {
@@ -14,8 +15,10 @@ import {
 
 function VideoScreen() {
   // Hardcoded video URL and filename
-  const video_url = "8a88eeab-359e-44e2-9209-15cb983fe487";
-  const filename = "Coding Challenge 3 Toggle Switch";
+  const location = useLocation();
+  const { videoId } = location.state;
+  const [filename, setFilename] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
 
   const playerRef = useRef(null);
   const isTeacher = true;
@@ -27,40 +30,41 @@ function VideoScreen() {
   const [commentInput, setCommentInput] = useState("");
 
   // Function to fetch the document ID for the video from the "videos" collection
-  const fetchDocumentId = async (video_url, filename) => {
-    try {
-      const videosCollection = collection(firestore, "videos");
-      const q = query(
-        videosCollection,
-        where("assignmentId", "==", video_url),
-        where("filename", "==", filename),
-      );
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const docSnap = querySnapshot.docs[0];
-        const documentId = docSnap.id;
-        console.log("Document ID:", documentId);
-        return documentId;
-      } else {
-        console.log("No matching document found.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching document ID:", error);
-      return null;
-    }
-  };
+  // const fetchDocumentId = async (video_url, filename) => {
+  //   try {
+  //     const videosCollection = collection(firestore, "videos");
+  //     const q = query(
+  //       videosCollection,
+  //       where("videoId", "==", video_url),
+  //       where("filename", "==", filename),
+  //     );
+  //     const querySnapshot = await getDocs(q);
+  //     if (!querySnapshot.empty) {
+  //       const docSnap = querySnapshot.docs[0];
+  //       const documentId = docSnap.id;
+  //       console.log("Document ID:", documentId);
+  //       return documentId;
+  //     } else {
+  //       console.log("No matching document found.");
+  //       return null;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching document ID:", error);
+  //     return null;
+  //   }
+  // };
 
   // useEffect to subscribe to the video document and fetch its segments
   useEffect(() => {
-    const fetchSegments = async () => {
-      const documentId = await fetchDocumentId(video_url, filename);
-      if (documentId) {
-        const videoDocRef = doc(firestore, "videos", documentId);
+    const fetchVideoData = async () => {
+      // const documentId = await fetchDocumentId(video_url, filename);
+      if (videoId) {
+        const videoDocRef = doc(firestore, "videos", videoId);
         const unsubscribe = onSnapshot(videoDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // Assume segments is an array field within the video document
+            setFilename(data.filename || "");
+            setVideoUrl(data.video_url || "");
             setSegments(data.segments || []);
             console.log("Segments:", data.segments);
           } else {
@@ -71,17 +75,17 @@ function VideoScreen() {
       }
     };
 
-    const unsubscribePromise = fetchSegments();
+    const unsubscribePromise = fetchVideoData();
     return () => {
       if (unsubscribePromise && typeof unsubscribePromise === "function") {
         unsubscribePromise();
       }
     };
-  }, [video_url, filename]);
+  }, [videoId]);
 
   // Comments: fetch comments in real time (sorted by timestamp ascending)
   useEffect(() => {
-    if (!filename) return;
+    if (!videoId) return;
     const q = query(
       collection(firestore, "videoComments"),
       orderBy("timestamp", "asc"),
@@ -91,20 +95,20 @@ function VideoScreen() {
       snapshot.forEach((doc) => {
         const data = doc.data();
         // Only include comments for this specific video (by filename)
-        if (data.videoName === filename) {
-          loadedComments.push({ id: doc.id, ...data });
-        }
+        if (data.videoId === videoId) 
+          {loadedComments.push({ id: doc.id, ...data });}
+        console.log("Comments:", loadedComments);
       });
       setComments(loadedComments);
     });
     return () => unsubscribe();
-  }, [filename]);
+  }, [videoId]);
 
   // Function to add a comment to Firestore
   async function addCommentToFirestore(commentText, time) {
     try {
       await addDoc(collection(firestore, "videoComments"), {
-        videoName: filename,
+        videoId: videoId,
         text: commentText,
         timestamp: time,
         createdAt: new Date(), // or serverTimestamp()
@@ -176,7 +180,7 @@ function VideoScreen() {
       <div style={styles.playerWrapper}>
         <ReactPlayer
           ref={playerRef}
-          url={video_url}
+          url={videoUrl}
           controls
           width="50%"
           height="50%"

@@ -87,7 +87,7 @@ const AddSubmissionPage = () => {
 
         setLoading(false);
         // After saving the code ID, navigate to the submission view page
-        navigate(-1);
+        navigate(`/assignment/${assignmentId}`);
       } else {
         setError(submissionData.error || "Failed to create repo submission!");
       }

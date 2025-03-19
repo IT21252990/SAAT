@@ -52,7 +52,7 @@ root.render(
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
           <Route path="/generate-viva-questions/:submissionId" element={<GenerateVivaQuestions />} />
           <Route path="videoSubmission/:assignmentId" element={<SubmitVideo />} />
-          <Route path="videoSubmission/result-screen" element={<VideoScreen />} />
+          <Route path="videoSubmission/video-screen" element={<VideoScreen />} />
         </Route>
       </Routes>
     </Router>
