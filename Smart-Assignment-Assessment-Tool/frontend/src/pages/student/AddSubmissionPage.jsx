@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { doc, updateDoc } from "firebase/firestore";
 import { firestore } from "../../firebase";
+import Header from "../../components/Header.jsx";
 
 const AddSubmissionPage = () => {
   const navigate = useNavigate();
@@ -150,8 +151,9 @@ const AddSubmissionPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-gray-100 p-6 dark:bg-gray-900">
-      <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-10 shadow-md dark:border-gray-600 dark:bg-gray-700">
+    <div className="flex min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900">
+      <Header />
+      <div className="mt-12 w-full max-w-md rounded-lg border border-gray-200 bg-white p-10 shadow-md dark:border-gray-600 dark:bg-gray-700">
         <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
           Add Submission
         </h2>
