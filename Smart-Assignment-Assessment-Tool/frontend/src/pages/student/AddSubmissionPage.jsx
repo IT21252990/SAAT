@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+
 const AddSubmissionPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { assignmentId, moduleId, moduleName } = location.state || {}; // Retrieve passed state
 
+  console.log(assignmentId, moduleId, moduleName, "userrrr: " , localStorage.getItem("userId"))
+  const userId = localStorage.getItem("userId")
   // State variables
   const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL
   const [error, setError] = useState("");
@@ -38,7 +41,7 @@ const AddSubmissionPage = () => {
 
         // Step 2: Save GitHub URL and retrieve the code ID
         const codeId = await saveGithubUrl(submissionId, githubUrl);
-        
+
         // Step 3: Update the submission with the code ID
         await updateSubmissionWithCodeId(submissionId, codeId);
 
@@ -116,17 +119,24 @@ const AddSubmissionPage = () => {
             onChange={(e) => setGithubUrl(e.target.value)}
           />
         </div>
-        
+
 
         <div>
-          <label>Report</label>
+          {/* <label>Report </label> */}
+          <button
+            type="button"
+            onClick={() => navigate(`/report-submission/${assignmentId}`, { state: { assignmentId, moduleId, moduleName, userId } })}
+          >
+            Upload Report
+          </button>
         </div>
 
-        
+
+
         <div>
           <label>Video</label>
         </div>
-        
+
 
         <button
           type="button"
@@ -139,7 +149,7 @@ const AddSubmissionPage = () => {
           Cancel
         </button>
 
-        
+
       </form>
     </div>
   );
