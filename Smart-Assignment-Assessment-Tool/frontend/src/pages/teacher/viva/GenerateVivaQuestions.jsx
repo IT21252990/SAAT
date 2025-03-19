@@ -387,7 +387,7 @@ const GenerateVivaQuestions = () => {
             </div>
 
             {/* Step 1: Select Submission Type */}
-            {/* {step === 1 && (
+            {step === 1 && (
               <div className="mt-6">
                 <h2 className="mb-6 text-xl font-semibold text-gray-700 dark:text-gray-200">
                   What type of submission do you want to generate questions for?
@@ -397,44 +397,29 @@ const GenerateVivaQuestions = () => {
                     <button
                       key={type}
                       onClick={() => handleButtonClick(type)}
-                      className={`flex flex-col items-center justify-center rounded-xl p-6 shadow-md transition-all duration-200 hover:shadow-lg ${typeColors[type]} text-white transform hover:scale-105`}
-                    >
-                      {typeIcons[type]}
-                      <span className="text-lg font-medium capitalize">{type}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )} */}
-            <div className="mt-6">
-                <h2 className="mb-6 text-xl font-semibold text-gray-700 dark:text-gray-200">
-                  What type of submission do you want to generate questions for?
-                </h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-            {["general", "code", "video", "report"].map((type) => (
-              <button
-                key={type}
-                onClick={() => handleButtonClick(type)}
-                disabled={!availableTypes[type]}
-                className={`flex flex-col items-center justify-center rounded-xl p-6 shadow-md transition-all duration-200 
+                      disabled={!availableTypes[type]}
+                      className={`flex flex-col items-center justify-center rounded-xl p-6 shadow-md transition-all duration-200 
       ${
         availableTypes[type]
           ? `hover:shadow-lg ${typeColors[type]} transform text-white hover:scale-105`
           : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
       }
     `}
-              >
-                {typeIcons[type]}
-                <span className="text-lg font-medium capitalize">{type}</span>
-                {!availableTypes[type] && type !== "general" && (
-                  <span className="text-xs font-medium ">
-                    Not Available
-                  </span>
-                )}
-              </button>
-            ))}
-            </div>
-            </div>
+                    >
+                      {typeIcons[type]}
+                      <span className="text-lg font-medium capitalize">
+                        {type}
+                      </span>
+                      {!availableTypes[type] && type !== "general" && (
+                        <span className="text-xs font-medium ">
+                          Not Available
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Step 2: Evaluation Metrics */}
             {step === 2 && selectedContent && (
