@@ -174,7 +174,6 @@ function SubmitVideo() {
       {isAuthenticated && videoURL && processingProgress < 100 && (
         <ProcessingScreen progress={processingProgress} />
       )}
-      <VideoList />
     </div>
   );
 }

@@ -150,47 +150,77 @@ const AddSubmissionPage = () => {
   };
 
   return (
-    <div className="container">
-      <h2>Add Submission</h2>
+    <div className="flex min-h-screen flex-col items-center bg-gray-100 p-6 dark:bg-gray-900">
+      <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-10 shadow-md dark:border-gray-600 dark:bg-gray-700">
+        <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+          Add Submission
+        </h2>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="mb-4 text-red-500">{error}</p>}
 
-      <form>
-        <div>
-          <label>GitHub Repository URL</label>
-          <input
-            type="text"
-            placeholder="Enter GitHub URL..."
-            value={githubUrl}
-            onChange={handleGithubUrlChange}
-          />
-        </div>
+        <form>
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              GitHub Repository URL
+            </label>
+            <input
+              type="text"
+              placeholder="Enter GitHub URL..."
+              value={githubUrl}
+              onChange={handleGithubUrlChange}
+              className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            />
+          </div>
 
-        <div>
-          <label>Report</label>
-        </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Report
+            </label>
+            {/* Add your report input or component here if needed */}
+          </div>
 
-        <div>
-          <label>Video</label>
-          {videoDocId ? (
-            <p>Video Document ID: {videoDocId}</p>
-          ) : (
-            <button type="button" onClick={handleVideoNavigation}>
-              Upload
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Video
+            </label>
+            {videoDocId ? (
+              <p className="w-full rounded-md  border border-gray-300 p-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                <span className="font-semibold">Video Document ID: </span>
+                {videoDocId}
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleVideoNavigation}
+                className="w-full  rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-gray-800 dark:hover:bg-gray-900 dark:focus:ring-blue-800"
+              >
+                Upload Video
+              </button>
+            )}
+          </div>
+
+          <div className="mb-4 mt-16">
+            <button
+              type="button"
+              onClick={handleSaveClick}
+              disabled={loading}
+              className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              {loading ? "Saving..." : "Save"}
             </button>
-          )}
-        </div>
+          </div>
 
-        <button type="button" onClick={handleSaveClick} disabled={loading}>
-          {loading ? "Saving..." : "Save"}
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate(`/assignment/${assignmentId}`)}
-        >
-          Cancel
-        </button>
-      </form>
+          <div>
+            <button
+              type="button"
+              onClick={() => navigate(`/assignment/${assignmentId}`)}
+              className="w-full rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-500 dark:hover:bg-gray-600 dark:focus:ring-gray-800"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

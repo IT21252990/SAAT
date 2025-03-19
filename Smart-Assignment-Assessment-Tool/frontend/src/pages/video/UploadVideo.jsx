@@ -52,13 +52,14 @@ function UploadVideo({ onUploadComplete }) {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Upload Video Assignment</h2>
-      <div style={styles.formGroup}>
-        <h4 style={{ fontWeight: "bold", fontSize: 25 }}>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 px-6 dark:bg-gray-900">
+      <h2 className="mb-10 text-5xl font-bold text-gray-900 dark:text-white">
+        Upload Video Assignment
+      </h2>
+      <div className="inline-block rounded-lg border border-gray-200 bg-white p-10 text-center shadow-md dark:border-gray-600 dark:bg-gray-700">
+        <h4 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
           Please upload the Assignment to start processing
         </h4>
-        <br />
         <input
           type="file"
           accept="video/*"
@@ -66,93 +67,30 @@ function UploadVideo({ onUploadComplete }) {
             setFile(e.target.files[0]);
             setUploadProgress(0); // Reset upload progress
           }}
-          style={styles.input}
+          className="mb-5 block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400"
         />
         {file && (
-          <div style={styles.fileInfo}>
+          <div className="mb-5 text-gray-600 dark:text-gray-300">
             <p>Selected file: {file.name}</p>
           </div>
         )}
         {uploadProgress > 0 && (
-          <div style={styles.progressBar}>
+          <div className="mb-5 h-5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
             <div
-              style={{
-                ...styles.progress,
-                width: `${uploadProgress}%`,
-              }}
+              style={{ width: `${uploadProgress}%` }}
+              className="h-full rounded-full bg-indigo-600 transition-all duration-500"
             ></div>
           </div>
         )}
-        <br />
-        <button onClick={handleUpload} style={styles.button}>
+        <button
+          onClick={handleUpload}
+          className="rounded-md bg-indigo-600 px-6 py-3 text-lg font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-800 dark:focus:ring-indigo-800"
+        >
           Upload and Process
         </button>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundImage:
-      'url("https://plus.unsplash.com/premium_photo-1661456342021-faa4a2ac84f1?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWR1Y2F0aW9uJTIwYmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    height: "100vh",
-    color: "#6200ee",
-    textAlign: "center",
-    padding: "0 20px",
-  },
-  heading: {
-    color: "#fff",
-    fontSize: "48px",
-    marginBottom: "40px",
-    textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
-  },
-  formGroup: {
-    display: "inline-block",
-    textAlign: "center",
-    padding: "20px 60px 60px 60px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    backgroundColor: "#f7f7f7",
-    boxShadow: "0px 0px 10px rgba(0,0,0,0.1)",
-  },
-  input: {
-    marginBottom: "20px",
-    fontSize: "16px",
-    display: "block",
-  },
-  fileInfo: {
-    marginBottom: "20px",
-    color: "#555",
-  },
-  progressBar: {
-    width: "100%",
-    height: "20px",
-    backgroundColor: "#e0e0e0",
-    borderRadius: "10px",
-    overflow: "hidden",
-    marginBottom: "20px",
-  },
-  progress: {
-    height: "100%",
-    backgroundColor: "#6200ee",
-    transition: "width 0.5s ease-in-out",
-  },
-  button: {
-    padding: "12px 24px",
-    fontSize: "16px",
-    backgroundColor: "#6200ee",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-};
 
 export default UploadVideo;
