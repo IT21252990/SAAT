@@ -7,34 +7,75 @@ import logo from "../asserts/rounded_logo.png";
 
 const Header = () => {
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Listen for authentication state changes
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
+      
+      if (currentUser) {
+        // Fetch user role from Firestore
+        fetchUserRole(currentUser.uid);
+      } else {
+        setUserRole(null);
+      }
     });
+    
     return () => unsubscribe();
   }, []);
+
+  // Function to fetch user role from Firestore
+  const fetchUserRole = async (uid) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`);
+      if (response.ok) {
+        const userData = await response.json();
+        setUserRole(userData.role);
+      } else {
+        console.error("Failed to fetch user role");
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       localStorage.removeItem("userId"); // Clear stored user ID
+      setUserRole(null);
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
+  // Handle logo click based on user role
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      navigate("/");
+    } else if (userRole === "teacher") {
+      navigate("/teacher-home");
+    } else if (userRole === "student") {
+      navigate("/student-home");
+    } else {
+      // Default case if role is not recognized
+      navigate("/");
+    }
+  };
+
   return (
-    <header className="w-full relative">
-      <DarkThemeToggle className="absolute top-2 p-3 right-4  dark:text-yellow-300 text-blue-500" />
+    <header className="relative w-full">
+      <DarkThemeToggle className="absolute p-3 text-blue-500 top-2 right-4 dark:text-yellow-300" />
       <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
-        <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-          {/* Logo */}
-          <a href="/" className="flex items-center">
-            <img src={logo} className="mr-3 h-6 sm:h-9" alt="Saat Logo" />
+        <div className="flex flex-wrap items-center justify-between max-w-screen-xl mx-auto">
+          {/* Logo with custom click handler */}
+          <a href="#" onClick={handleLogoClick} className="flex items-center">
+            <img src={logo} className="h-6 mr-3 sm:h-9" alt="Saat Logo" />
             <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
               S A A T
             </span>
@@ -44,7 +85,7 @@ const Header = () => {
             {user ? (
               <div className="flex items-center">
                 {/* Display User Email */}
-                <span className="text-gray-700 dark:text-gray-300 mr-4">
+                <span className="mr-4 text-gray-700 dark:text-gray-300">
                   {user.email}
                 </span>
 
