@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
 } from "firebase/firestore";
+import Header from "../../components/Header.jsx";
 
 function VideoScreen() {
   // Hardcoded video URL and filename
@@ -183,8 +184,9 @@ function VideoScreen() {
   };
 
   return (
-    <div className="flex h-full flex-col items-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-7xl rounded-xl border border-gray-200 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
+    <div className="flex h-full flex-col items-center bg-gradient-to-b from-gray-50 to-gray-100  dark:from-gray-900 dark:to-gray-800">
+      <Header />
+      <div className="mt-12 w-full max-w-7xl rounded-xl border border-gray-200 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
         <h2 className="mb-2 text-3xl font-bold text-gray-800 dark:text-white">
           Video Analysis Result
         </h2>
