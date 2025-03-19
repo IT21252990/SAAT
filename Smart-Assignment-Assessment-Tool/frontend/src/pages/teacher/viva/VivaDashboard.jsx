@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/Header";
 import { Card, Alert, Button } from "flowbite-react";
+import { HiArrowLeft, HiOutlineCode, HiDocumentText, HiVideoCamera, HiChevronRight, HiExclamation } from "react-icons/hi";
 
 const VivaDashboard = () => {
   const { submissionId } = useParams();
@@ -88,14 +89,28 @@ const VivaDashboard = () => {
     }));
   };
 
+  // Function to go back to previous page
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <Header />
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
+        <Header />
+      </div>
+      
+      {/* Main content with padding to account for fixed header */}
+      <div className="container px-4 pt-24 pb-8 mx-auto">
         {/* Main Content Card */}
-        <div className="mb-8 rounded-xl bg-white shadow-lg dark:bg-gray-800 overflow-hidden">
+        <Button color="light" onClick={handleGoBack} className="mb-4 mr-4">
+            <HiArrowLeft className="w-5 h-5 mr-2" />
+            Back to Submissions
+          </Button>
+        <div className="mb-8 overflow-hidden bg-white shadow-lg rounded-xl dark:bg-gray-800">
           {/* Header with gradient background */}
-          <div className="bg-gradient-to-r from-gray-600 to-gray-800 px-6 py-4">
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-800">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <h2 className="text-2xl font-bold text-white">
                 Viva Dashboard
@@ -103,7 +118,7 @@ const VivaDashboard = () => {
               <Button
                 onClick={() => navigate(`/generate-viva-questions/${submissionId}`)}
                 color="green"
-                className="mt-3 md:mt-0 font-medium flex items-center justify-center gap-2 hover:bg-white/90"
+                className="flex items-center justify-center gap-2 mt-3 font-medium md:mt-0 hover:bg-white/90"
               >
                 <span className="text-lg"> Generate Questions 💡 </span>
               </Button>
@@ -121,24 +136,24 @@ const VivaDashboard = () => {
             {/* Submission Details */}
             {submissionData ? (
               <Card className="mb-6 border border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col space-y-2">
                     <div className="flex items-start">
-                      <span className="w-32 text-gray-500 dark:text-gray-400 font-medium">Module:</span>
+                      <span className="w-32 font-medium text-gray-500 dark:text-gray-400">Module:</span>
                       <span className="font-semibold text-gray-900 dark:text-white">{submissionData.module_name}</span>
                     </div>
                     <div className="flex items-start">
-                      <span className="w-32 text-gray-500 dark:text-gray-400 font-medium">Assignment:</span>
+                      <span className="w-32 font-medium text-gray-500 dark:text-gray-400">Assignment:</span>
                       <span className="font-semibold text-gray-900 dark:text-white">{submissionData.assignment_name}</span>
                     </div>
                   </div>
                   <div className="flex flex-col space-y-2">
                     <div className="flex items-start">
-                      <span className="w-32 text-gray-500 dark:text-gray-400 font-medium">Student:</span>
+                      <span className="w-32 font-medium text-gray-500 dark:text-gray-400">Student:</span>
                       <span className="font-semibold text-gray-900 dark:text-white">{submissionData.student_email}</span>
                     </div>
                     <div className="flex items-start">
-                      <span className="w-32 text-gray-500 dark:text-gray-400 font-medium">Submitted:</span>
+                      <span className="w-32 font-medium text-gray-500 dark:text-gray-400">Submitted:</span>
                       <span className="font-semibold text-gray-900 dark:text-white">
                         {new Date(submissionData.submitted_date).toLocaleString()}
                       </span>
@@ -147,14 +162,14 @@ const VivaDashboard = () => {
                 </div>
               </Card>
             ) : (
-              <div className="flex justify-center items-center h-32">
-                <div className="animate-pulse flex space-x-4">
-                  <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
-                  <div className="flex-1 space-y-4 py-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="flex items-center justify-center h-32">
+                <div className="flex space-x-4 animate-pulse">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                  <div className="flex-1 py-1 space-y-4">
+                    <div className="w-3/4 h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
                     <div className="space-y-2">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                      <div className="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                      <div className="w-5/6 h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
                     </div>
                   </div>
                 </div>
@@ -173,33 +188,33 @@ const VivaDashboard = () => {
               </div>
               
               {isLoadingQuestions ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-primary-600"></div>
                 </div>
               ) : questions.length > 0 ? (
-                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="overflow-hidden border border-gray-200 rounded-lg dark:border-gray-700">
                   <div className="overflow-x-auto">
-                    <table className="w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+                    <table className="w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
                       <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                          <th scope="col" className="w-16 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="w-16 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
                             Type
                           </th>
-                          <th scope="col" className="w-20 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="w-20 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
                             Metric
                           </th>
-                          <th scope="col" className="w-24 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="w-24 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
                             Difficulty
                           </th>
-                          <th scope="col" className="w-1/3 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="w-1/3 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
                             Question
                           </th>
-                          <th scope="col" className="w-1/3 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="w-1/3 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
                             Answer
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                      <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-800">
                         {questions.map((question, index) => {
                           const questionId = `${question.document_id}-${index}`;
                           const isExpanded = expandedAnswers[questionId];
@@ -207,12 +222,12 @@ const VivaDashboard = () => {
                           return (
                             <tr 
                               key={questionId}
-                              className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                              className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
                             >
                               <td className="px-4 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                   <span className="mr-1">{getTypeIcon(question.type)}</span>
-                                  <span className="capitalize font-medium text-gray-900 dark:text-white text-sm">
+                                  <span className="text-sm font-medium text-gray-900 capitalize dark:text-white">
                                     {question.type}
                                   </span>
                                 </div>
@@ -228,7 +243,7 @@ const VivaDashboard = () => {
                                 </span>
                               </td>
                               <td className="px-4 py-4">
-                                <div className="text-sm text-gray-900 dark:text-white break-words">
+                                <div className="text-sm text-gray-900 break-words dark:text-white">
                                   {question.question_text}
                                 </div>
                               </td>
@@ -238,7 +253,7 @@ const VivaDashboard = () => {
                                 </div>
                                 <button 
                                   onClick={() => toggleAnswerExpansion(questionId)}
-                                  className="mt-1 text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                                  className="mt-1 text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                                 >
                                   {isExpanded ? 'Show less' : 'View full answer'}
                                 </button>
@@ -251,12 +266,12 @@ const VivaDashboard = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg p-8 border border-dashed border-gray-300 dark:border-gray-700">
-                  <svg className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <div className="flex flex-col items-center justify-center p-8 border border-gray-300 border-dashed rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                  <svg className="w-16 h-16 mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                   </svg>
-                  <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">No questions found for this submission</p>
-                  <p className="text-gray-500 dark:text-gray-500 mt-2 text-center">Generate new viva questions using the button above</p>
+                  <p className="text-lg font-medium text-gray-600 dark:text-gray-400">No questions found for this submission</p>
+                  <p className="mt-2 text-center text-gray-500 dark:text-gray-500">Generate new viva questions using the button above</p>
                 </div>
               )}
             </div>

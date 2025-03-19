@@ -398,16 +398,16 @@ const ViewSubmissions = () => {
               <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                   <tr>
-                    <th scope="col" className="px-6 py-4 font-medium">
+                    <th scope="col" className="px-6 py-4 font-medium text-center">
                       Student
                     </th>
-                    <th scope="col" className="px-6 py-4 font-medium">
+                    <th scope="col" className="px-6 py-4 font-medium text-center">
                       Submitted
                     </th>
-                    <th scope="col" className="px-6 py-4 font-medium">
+                    <th scope="col" className="px-6 py-4 font-medium text-center">
                       Actions
                     </th>
-                    <th scope="col" className="px-6 py-4 font-medium text-right">
+                    <th scope="col" className="px-6 py-4 font-medium text-center">
                       Viva
                     </th>
                   </tr>
@@ -435,7 +435,7 @@ const ViewSubmissions = () => {
                               onClick={() => getRepoUrl(submission.code_id, submission.submission_id)}
                               className="flex items-center"
                             >
-                              <HiOutlineCode className="mr-1" />
+                              <HiOutlineCode className="mr-1 text-sm" />
                               View Code
                             </Button>
                           )}
@@ -446,7 +446,7 @@ const ViewSubmissions = () => {
                               onClick={() => navigate(`/view-report/${submission.report_id}`)}
                               className="flex items-center"
                             >
-                              <HiDocumentText className="mr-1" />
+                              <HiDocumentText className="mr-1 text-sm" />
                               View Report
                             </Button>
                           )}
@@ -464,7 +464,7 @@ const ViewSubmissions = () => {
                               }
                               className="flex items-center"
                             >
-                              <HiVideoCamera className="mr-1" />
+                              <HiVideoCamera className="mr-1 text-sm" />
                               View Video
                             </Button>
                           )}
@@ -479,7 +479,7 @@ const ViewSubmissions = () => {
                           pill
                         >
                           Viva Dashboard
-                          <HiChevronRight className="ml-1" />
+                          <HiChevronRight className="ml-1 text-sm" />
                         </Button>
                       </td>
                     </tr>
