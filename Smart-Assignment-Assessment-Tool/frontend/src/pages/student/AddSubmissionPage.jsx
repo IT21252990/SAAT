@@ -48,7 +48,7 @@ const AddSubmissionPage = () => {
   // Handle Save action
   const handleSaveClick = async () => {
     if (!githubUrl) {
-      setError("GitHub URL is required.");
+      setGithubUrl("");
       return;
     }
 
