@@ -102,7 +102,7 @@ const VivaDashboard = () => {
       </div>
       
       {/* Main content with padding to account for fixed header */}
-      <div className="container px-4 pt-24 pb-8 mx-auto">
+      <main className="container px-4 pt-24 pb-8 mx-auto">
         {/* Main Content Card */}
         <Button color="light" onClick={handleGoBack} className="mb-4 mr-4">
             <HiArrowLeft className="w-5 h-5 mr-2" />
@@ -277,7 +277,7 @@ const VivaDashboard = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

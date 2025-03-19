@@ -325,7 +325,7 @@ const GenerateVivaQuestions = () => {
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
         <Header />
       </div>
-
+      <ToastContainer position="top-center" autoClose={3000} />
       {/* Main content with padding to account for fixed header */}
       <div className="container px-4 pt-24 pb-8 mx-auto">
         <div className="mx-auto max-w-7xl">
