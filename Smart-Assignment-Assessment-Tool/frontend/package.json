@@ -17,6 +17,7 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@heroicons/react": "^2.2.0",
     "@monaco-editor/react": "^4.7.0",
     "@mui/material": "^6.1.7",
     "@react-google-maps/api": "^2.20.3",
@@ -46,15 +47,16 @@
     "react-firebase-hooks": "^5.1.1",
     "react-leaflet": "^4.2.1",
     "react-pdf": "^9.1.1",
-    "react-router-dom": "^7.3.0",
     "react-scripts": "5.0.1",
-    "react-toastify": "^10.0.5",
-    "recharts": "^2.15.1",
     "stripe": "^15.5.0",
     "swal": "^0.1.0",
     "sweetalert2": "^11.10.8",
     "swiper": "^11.1.15",
     "web-vitals": "^2.1.4"
+    "react-player": "^2.16.0",
+    "react-router-dom": "^7.3.0",
+    "react-toastify": "^11.0.5",
+    "recharts": "^2.15.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

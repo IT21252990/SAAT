@@ -104,6 +104,30 @@ def get_submissions_by_assignment(assignment_id):
         return jsonify({"submissions": submissions_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@submission_bp.route("/getSubmissionsBySubmission/<submission_id>", methods=["GET"])
+def get_submissions_by_relevant_submission_id(submission_id):
+    try:
+        db = current_app.db
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_data = submission_ref.get()
+
+        if not submission_data.exists:
+            return jsonify({"error": "Submission not found"}), 404
+
+        submission = submission_data.to_dict()
+        code_id = submission.get("code_id")
+        report_id = submission.get("report_id")
+        video_id = submission.get("video_id")
+
+        submission_data = {
+            "code_id": code_id,
+            "report_id": report_id,
+            "video_id": video_id,
+        }
+        return jsonify({"submission_data": submission_data}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @submission_bp.route("/getSubmissionData/<submission_id>", methods=["GET"])
@@ -155,6 +179,7 @@ def get_viva_dashboard_data(submission_id):
 
         submission_data = {
             "assignment_id": assignment_id,
+            "submission_id": submission_id,
             "module_name": module_name,
             "module_semester": module_semester,
             "module_year": module_year,

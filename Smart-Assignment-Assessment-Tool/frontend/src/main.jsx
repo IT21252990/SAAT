@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "./contexts/ToastContext.jsx";
 import Login from "./pages/user/Login.jsx";
 import Register from "./pages/user/Register.jsx";
 import ForgotPassword from "./pages/user/ForgotPassword";
@@ -20,12 +21,16 @@ import EditAssignment from "./pages/teacher/EditAssignment.jsx";
 import VivaDashboard from "./pages/teacher/viva/VivaDashboard.jsx";
 import ReportUpload from "./pages/student/ReportSubmit/ReportUpload.jsx";
 import ViewReportSubmission from "./pages/teacher/ViewReportSubmission.jsx";
+import GenerateVivaQuestions from "./pages/teacher/viva/GenerateVivaQuestions.jsx";
+import SubmitVideo from "./pages/video/SubmitVideo.jsx";
+import VideoScreen from "./pages/video/VideoScreen.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
+    <ToastProvider>
     <Router>
       <Routes>
         {/* Public Routes */}
@@ -43,7 +48,7 @@ root.render(
           <Route path="/teacher-module-page/:moduleId" element={<TeacherModulePage />} />
           <Route path="/add-assignment" element={<AddAssignment />} />
           <Route path="/view-submissions/:assignmentId" element={<ViewSubmissions />} />
-          <Route path="/add-submission/:submissionId" element={<AddSubmissionPage />} />
+          <Route path="/add-submission/:assignmentId" element={<AddSubmissionPage />} />
           <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
           <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
@@ -51,8 +56,12 @@ root.render(
           <Route path="/report-submission/:assignmentId" element={<ReportUpload />} />
           <Route path="/report-submission/:assignmentId" element={<ReportUpload />} />
           <Route path="/view-report/:report_id" element={<ViewReportSubmission />} />
+          <Route path="/generate-viva-questions/:submissionId" element={<GenerateVivaQuestions />} />
+          <Route path="videoSubmission/:assignmentId" element={<SubmitVideo />} />
+          <Route path="videoSubmission/video-screen" element={<VideoScreen />} />
         </Route>
       </Routes>
     </Router>
+    </ToastProvider>
   </React.StrictMode>
 );

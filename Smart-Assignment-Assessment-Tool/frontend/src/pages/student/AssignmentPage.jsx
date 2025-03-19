@@ -68,7 +68,7 @@ const AssignmentPage = () => {
   };
 
   return (
-    <div className="flex h-full flex-col items-center bg-gray-100 dark:bg-gray-900">
+    <>
       <Header />
       {/* Main container with flex-row for side-by-side layout */}
       <div className="mt-4 flex w-full max-w-7xl flex-row gap-6 p-6">
@@ -152,20 +152,19 @@ const AssignmentPage = () => {
             {loading ? "Processing..." : "Upload Submission"}
           </button>
 
+            <hr className="my-10 h-px w-full border-0 bg-gray-200 dark:bg-gray-200 dark:bg-opacity-80" />
 
-
-          <hr className="my-10 h-px w-full border-0 bg-gray-200 dark:bg-gray-200 dark:bg-opacity-80" />
-
-          <button
-            onClick={() => generatePDF(assignment, moduleName)}
-            className="w-full rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800"
-          >
-            Download Assignment <br />
-            as a PDF 📩
-          </button>
+            <button
+              onClick={() => generatePDF(assignment, moduleName)}
+              className="w-full rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800"
+            >
+              Download Assignment <br />
+              as a PDF 📩
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

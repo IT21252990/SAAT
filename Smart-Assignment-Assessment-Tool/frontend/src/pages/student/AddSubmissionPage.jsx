@@ -7,12 +7,10 @@ import Header from "../../components/Header.jsx";
 const AddSubmissionPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { assignmentId, moduleId, moduleName } = location.state || {}; // Retrieve passed state
+    const { assignmentId } = useParams();
+    const { moduleId, moduleName } = location.state || {}; // Retrieve passed state
 
-    console.log(assignmentId, moduleId, moduleName, "userrrr: ", localStorage.getItem("userId"))
     const userId = localStorage.getItem("userId")
-    // const { assignmentId } = useParams();
-    // const { moduleId, moduleName } = location.state || {}; // Retrieve passed state
 
     // State variables
     const [githubUrl, setGithubUrl] = useState(""); // State for GitHub URL
