@@ -8,8 +8,6 @@ import {
   addDoc,
   onSnapshot,
   query,
-  where,
-  getDocs,
   orderBy,
 } from "firebase/firestore";
 
@@ -21,7 +19,7 @@ function VideoScreen() {
   const [videoUrl, setVideoUrl] = useState("");
 
   const playerRef = useRef(null);
-  const isTeacher = true;
+  const [isTeacher, setIsTeacher] = useState(false);
 
   // State for segments (from the video document), active tab, comments, and comment input
   const [segments, setSegments] = useState([]);
@@ -29,9 +27,32 @@ function VideoScreen() {
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
 
+
+  const handleUser = async () => {
+      try {
+        // Save user ID in localStorage
+        const userId = localStorage.getItem("userId");
+  
+        // Get user role from Flask API
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${userId}`,
+        );
+        const data = await response.json();
+        const userRole = data.role;
+        console.log("User role:", userRole);
+  
+        if(userRole === "teacher"){
+          setIsTeacher(true);
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
   // useEffect to subscribe to the video document and fetch its segments
   useEffect(() => {
     const fetchVideoData = async () => {
+      handleUser();
       if (videoId) {
         const videoDocRef = doc(firestore, "videos", videoId);
         const unsubscribe = onSnapshot(videoDocRef, (docSnap) => {
