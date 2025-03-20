@@ -398,3 +398,65 @@ def get_contributor_activity():
         "total_additions": sum(week.get('a', 0) for week in weeks_data),
         "total_deletions": sum(week.get('d', 0) for week in weeks_data)
     }), 200
+
+@repo_bp.route('/save-final-feedback', methods=['POST'])
+def save_final_feedback():
+    """
+    Save final feedback for a code submission
+    """
+    try:
+        db = current_app.db
+        data = request.get_json()
+        
+        code_id = data.get("code_id")
+        feedback_text = data.get("feedback")
+        
+        if not code_id or not feedback_text:
+            return jsonify({"error": "Missing required fields: code_id or feedback"}), 400
+        
+        # Check if the code_id exists
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+        
+        # Update the database with the final feedback
+        doc_ref.update({"final_feedback": feedback_text})
+        
+        return jsonify({
+            "message": "Final feedback saved successfully",
+            "code_id": code_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@repo_bp.route('/get-final-feedback', methods=['GET'])
+def get_final_feedback():
+    """
+    Get final feedback for a specific code submission
+    """
+    code_id = request.args.get('code_id')
+    
+    if not code_id:
+        return jsonify({"error": "Missing required parameter: code_id"}), 400
+    
+    try:
+        db = current_app.db
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+        
+        code_data = doc.to_dict()
+        final_feedback = code_data.get("final_feedback", "")
+        
+        return jsonify({
+            "code_id": code_id,
+            "final_feedback": final_feedback
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

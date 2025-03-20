@@ -46,7 +46,7 @@ const ForgotPassword = () => {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       {/* Background pattern */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-10">
+      <div className="fixed inset-0 z-0 text-gray-900 pointer-events-none opacity-10 dark:text-gray-50">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">

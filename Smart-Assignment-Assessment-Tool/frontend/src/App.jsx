@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       {/* Background pattern */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-10">
+      <div className="fixed inset-0 z-0 text-gray-900 pointer-events-none opacity-10 dark:text-gray-50">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">

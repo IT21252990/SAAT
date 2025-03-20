@@ -19,6 +19,7 @@ import ContributorCommitHistory from "../../components/code/ContributorCommitHis
 import DisplayAssignmentDetails from "../../components/code/DisplayAssignmentDetails";
 import DisplayCodeComments from "../../components/code/DisplayCodeComments";
 import RepositoryAnalyzer from "../../components/code/RepositoryAnalyzer";
+import CodeAnalysisResults from "../../components/code/CodeAnalysisResults";
 import Header from "../../components/Header";
 
 const ViewCodeSubmission = () => {
@@ -41,8 +42,10 @@ const ViewCodeSubmission = () => {
         return <ContributorCommitHistory repoUrl={githubUrl} />;
       case "Comments":
         return <DisplayCodeComments codeId={codeId}/>
-        case "analyze_code_base":
+      case "analyze_code_base":
         return <RepositoryAnalyzer github_url={githubUrl} code_id={codeId}/>
+      case "code_analysis_results":
+        return <CodeAnalysisResults codeId={codeId}/>
       case "submission_details":
         return <DisplayAssignmentDetails submission_id={submissionId} />
       default:
@@ -55,7 +58,7 @@ const ViewCodeSubmission = () => {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden">
+    <div className="flex flex-col w-full h-screen overflow-hidden">
       {/* Fixed Header */}
       <div className="flex-none">
         <Header />
@@ -64,7 +67,7 @@ const ViewCodeSubmission = () => {
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
         {/* Sidebar */}
-        <div className="flex h-full w-16 flex-col justify-between bg-gray-600 dark:bg-gray-950 py-4 px-2">
+        <div className="flex flex-col justify-between w-16 h-full px-2 py-4 bg-gray-600 dark:bg-gray-950">
           <div className="flex flex-col items-center space-y-2">
             <SidebarIcon
               icon={<FaSitemap size={24} />}
@@ -90,6 +93,12 @@ const ViewCodeSubmission = () => {
               active={activeSection === "analyze_code_base"}
               onClick={() => setActiveSection("analyze_code_base")}
             />
+            <SidebarIcon
+              icon={<FaFileInvoice size={24} />}
+              label="Code Analysis Results"
+              active={activeSection === "code_analysis_results"}
+              onClick={() => setActiveSection("code_analysis_results")}
+            />
           </div>
 
           <div className="flex flex-col items-center">
@@ -109,7 +118,7 @@ const ViewCodeSubmission = () => {
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 p-4 overflow-auto">
           {renderActiveSection()}
         </div>
       </div>
