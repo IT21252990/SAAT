@@ -19,6 +19,8 @@ import ViewCodeSubmission from "./pages/teacher/ViewCodeSubmission.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import EditAssignment from "./pages/teacher/EditAssignment.jsx";
 import VivaDashboard from "./pages/teacher/viva/VivaDashboard.jsx";
+import ReportUpload from "./pages/student/ReportSubmit/ReportUpload.jsx";
+import ViewReportSubmission from "./pages/teacher/ViewReportSubmission.jsx";
 import GenerateVivaQuestions from "./pages/teacher/viva/GenerateVivaQuestions.jsx";
 import SubmitVideo from "./pages/video/SubmitVideo.jsx";
 import VideoScreen from "./pages/video/VideoScreen.jsx";
@@ -50,6 +52,10 @@ root.render(
           <Route path="/view-code/:codeId" element={<ViewCodeSubmission />} />
           <Route path="/edit-assignment/:assignmentId" element={<EditAssignment />} />
           <Route path="/viva-dashboard/:submissionId" element={<VivaDashboard />} />
+          
+          <Route path="/report-submission/:assignmentId" element={<ReportUpload />} />
+          <Route path="/report-submission/:assignmentId" element={<ReportUpload />} />
+          <Route path="/view-report/:report_id" element={<ViewReportSubmission />} />
           <Route path="/generate-viva-questions/:submissionId" element={<GenerateVivaQuestions />} />
           <Route path="videoSubmission/:assignmentId" element={<SubmitVideo />} />
           <Route path="videoSubmission/video-screen" element={<VideoScreen />} />

@@ -196,3 +196,53 @@ def get_viva_dashboard_data(submission_id):
     except Exception as e:
         print("Error:", str(e))
         return jsonify({"error": str(e)}), 500
+
+
+
+# update report id 
+@submission_bp.route("/update-report", methods=["POST"])
+def update_report_id():
+    try:
+        db = current_app.db
+        data = request.get_json()
+
+        submission_id = data.get("submission_id")
+        report_id = data.get("report_id")
+
+        if not submission_id or not report_id:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Retrieve the submission and update report_id
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_ref.update({"report_id": report_id})
+
+        return jsonify({"message": "Report ID updated successfully!"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# submission exists for a given assignment_id and student_id
+@submission_bp.route("/check-submission", methods=["POST"])
+def check_submission():
+    try:
+        db = current_app.db
+        data = request.get_json()
+
+        assignment_id = data.get("assignment_id")
+        student_id = data.get("student_id")
+
+        if not assignment_id or not student_id:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Query Firestore for a matching submission
+        submissions_ref = db.collection("submissions")
+        query = submissions_ref.where("assignment_id", "==", assignment_id).where("student_id", "==", student_id).limit(1)
+        results = query.stream()
+
+        for submission in results:
+            return jsonify({"exists": True, "submission_id": submission.id}), 200
+
+        return jsonify({"exists": False}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

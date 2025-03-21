@@ -31,6 +31,9 @@ def create_app():
     from app.routes.code.repo_routes import repo_bp
     from app.routes.code.repo_analysis_routes import check_naming_bp
 
+    from app.routes.report_routes import marking_scheme_bp
+    from app.routes.report_routes import report_submission_bp
+
     from app.routes.question.question_routes import question_bp
     from app.routes.question.gemini_question_gen_routes import qgenerate_bp
 
@@ -43,5 +46,8 @@ def create_app():
     app.register_blueprint(check_naming_bp, url_prefix="/api/v1/naming")
     app.register_blueprint(question_bp, url_prefix="/api/v1/question")
     app.register_blueprint(qgenerate_bp, url_prefix="/api/v1/qgenerate")
+
+    app.register_blueprint(marking_scheme_bp, url_prefix="/api/v1/marking-scheme")
+    app.register_blueprint(report_submission_bp, url_prefix="/api/v1/report")
 
     return app
