@@ -114,7 +114,7 @@ const GenerateVivaQuestions = () => {
       } else if (selectedContent === "video") {
         apiUrl = `${import.meta.env.VITE_BACKEND_URL}/qgenerate/generateVideoQuestions`;
       } else if (selectedContent === "report") {
-        apiUrl = "/api/generateReportQuestions";
+        apiUrl = `${import.meta.env.VITE_BACKEND_URL}/qgenerate/generateReportQuestions`;
       }
 
       setLoading(true);

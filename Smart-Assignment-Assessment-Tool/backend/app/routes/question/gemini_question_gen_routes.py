@@ -155,80 +155,80 @@ def generate_code_questions():
         return jsonify({"error": str(e)}), 500
 
 
-# #Report
-# @qgenerate_bp.route("/generateReportQuestions", methods=["POST"])
-# def generate_report_questions():
-#     try:
-#         # Access Firestore database from the Flask app context
-#         db = current_app.db  
-#         data = request.get_json()
-#         submission_id = data.get("submission_id")
-#         metric_types = data.get("metric_types", [])
+#Report
+@qgenerate_bp.route("/generateReportQuestions", methods=["POST"])
+def generate_report_questions():
+    try:
+        # Access Firestore database from the Flask app context
+        db = current_app.db  
+        data = request.get_json()
+        submission_id = data.get("submission_id")
+        metric_types = data.get("metric_types", [])
 
-#         if not submission_id or not metric_types:
-#             return jsonify({"error": "Missing required fields"}), 400
+        if not submission_id or not metric_types:
+            return jsonify({"error": "Missing required fields"}), 400
 
-#         # Fetch the submission from the submissions collection
-#         submission_doc = db.collection("submissions").document(submission_id).get()
-#         if not submission_doc.exists:
-#             return jsonify({"error": "Submission not found"}), 404
+        # Fetch the submission from the submissions collection
+        submission_doc = db.collection("submissions").document(submission_id).get()
+        if not submission_doc.exists:
+            return jsonify({"error": "Submission not found"}), 404
         
-#         submission_data = submission_doc.to_dict()
-#         report_id = submission_data.get("report_id")
+        submission_data = submission_doc.to_dict()
+        report_id = submission_data.get("report_id")
         
-#         if not report_id:
-#             return jsonify({"error": "report ID not found in submission"}), 404
+        if not report_id:
+            return jsonify({"error": "report ID not found in submission"}), 404
 
-#         # Fetch the report summary from the report collection
-#         report_doc = db.collection("report_submissions").document(report_id).get()
-#         if not report_doc.exists:
-#             return jsonify({"error": "report not found"}), 404
+        # Fetch the report summary from the report collection
+        report_doc = db.collection("report_submissions").document(report_id).get()
+        if not report_doc.exists:
+            return jsonify({"error": "report not found"}), 404
         
-#         report_data = report_doc.to_dict()
-#         summary = report_data.get("summary")
+        report_data = report_doc.to_dict()
+        summary = report_data.get("summary")
 
-#         if not summary:
-#             return jsonify({"error": "report summary not found"}), 404
+        if not summary:
+            return jsonify({"error": "report summary not found"}), 404
 
-#         question_data = {
-#             "id": str(uuid.uuid4()),  # Temporary UUID for identification
-#             "submission_id": submission_id,
-#             "category": "report",
-#             "questions": []
-#         }
+        question_data = {
+            "id": str(uuid.uuid4()),  # Temporary UUID for identification
+            "submission_id": submission_id,
+            "category": "report",
+            "questions": []
+        }
 
-#         for metric in metric_types:
-#             generated_text = generate_questions_gemini(summary, metric)
+        for metric in metric_types:
+            generated_text = generate_questions_gemini(summary, metric)
 
-#             if not generated_text:
-#                 return jsonify({"error": f"Failed to generate questions for {metric}"}), 500
+            if not generated_text:
+                return jsonify({"error": f"Failed to generate questions for {metric}"}), 500
 
-#             questions = {"easy": None, "moderate": None, "difficult": None}
+            questions = {"easy": None, "moderate": None, "difficult": None}
 
-#             for line in generated_text.strip().split("\n"):
-#                 if "Easy Question" in line:
-#                     questions["easy"] = {"question": line.split(": ", 1)[-1]}
-#                 elif "Moderate Question" in line:
-#                     questions["moderate"] = {"question": line.split(": ", 1)[-1]}
-#                 elif "Difficult Question" in line:
-#                     questions["difficult"] = {"question": line.split(": ", 1)[-1]}
-#                 elif "Answer" in line:
-#                     if questions["easy"] and "answer" not in questions["easy"]:
-#                         questions["easy"]["answer"] = line.split(": ", 1)[-1]
-#                     elif questions["moderate"] and "answer" not in questions["moderate"]:
-#                         questions["moderate"]["answer"] = line.split(": ", 1)[-1]
-#                     elif questions["difficult"] and "answer" not in questions["difficult"]:
-#                         questions["difficult"]["answer"] = line.split(": ", 1)[-1]
+            for line in generated_text.strip().split("\n"):
+                if "Easy Question" in line:
+                    questions["easy"] = {"question": line.split(": ", 1)[-1]}
+                elif "Moderate Question" in line:
+                    questions["moderate"] = {"question": line.split(": ", 1)[-1]}
+                elif "Difficult Question" in line:
+                    questions["difficult"] = {"question": line.split(": ", 1)[-1]}
+                elif "Answer" in line:
+                    if questions["easy"] and "answer" not in questions["easy"]:
+                        questions["easy"]["answer"] = line.split(": ", 1)[-1]
+                    elif questions["moderate"] and "answer" not in questions["moderate"]:
+                        questions["moderate"]["answer"] = line.split(": ", 1)[-1]
+                    elif questions["difficult"] and "answer" not in questions["difficult"]:
+                        questions["difficult"]["answer"] = line.split(": ", 1)[-1]
 
-#             question_data["questions"].append({
-#                 "metric_type": metric,
-#                 "qna": questions
-#             })
+            question_data["questions"].append({
+                "metric_type": metric,
+                "qna": questions
+            })
 
-#         return jsonify({"message": "Code questions generated successfully", "data": question_data}), 200
+        return jsonify({"message": "Code questions generated successfully", "data": question_data}), 200
 
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @qgenerate_bp.route("/generateVideoQuestions", methods=["POST"])
 def generate_video_questions():
