@@ -44,30 +44,29 @@ export const analyzeReport = async (
     console.log("Sending request to OpenAI...");
     // onProgress(70);
 
-    const prompt = `
-Analyze this student report according to the following marking scheme.
-Your response must be in valid JSON format with the following structure:
-{
-  "criteria": [
-    {
-      "description": "criterion description",
-      "weightage": 70,
-      "awarded": 50,
-      "justification": "explanation of score",
-      "suggestions": ["suggestion 1", "suggestion 2"]
-    }
-  ],
-  "totalScore": 80,
-  "feedback": "overall feedback"
-}
+    const prompt = `Analyze this student report according to the following marking scheme.
+                    Your response must be in valid JSON format with the following structure:
+                    {
+                      "criteria": [
+                        {
+                          "description": "criterion description",
+                          "weightage": 70,
+                          "awarded": 50,
+                          "justification": "explanation of score",
+                          "suggestions": ["suggestion 1", "suggestion 2"]
+                        }
+                      ],
+                      "totalScore": 80,
+                      "feedback": "overall feedback"
+                    }
 
-Marking Scheme:
-${JSON.stringify(criteriaDescription)}
+                    Marking Scheme:
+                    ${JSON.stringify(criteriaDescription)}
 
-Student Report:
-${reportText}
-`;
-
+                    Student Report:
+                    ${reportText}
+                    `;
+                  
     const completion = await openai.chat.completions.create({
       messages: [
         {

@@ -17,6 +17,7 @@ const AssignmentPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [assignments, setAssignments] = useState([]);
 
   // Retrieve studentId from localStorage
   const studentId = localStorage.getItem("userId");
@@ -42,7 +43,7 @@ const AssignmentPage = () => {
         }
 
         if (responseMarking.ok) {
-          setMarking(dataMarking);
+          setMarking(dataMarking.marking_schemes[0]);
           console.log(dataMarking)
         } else {
           setError(dataMarking.error || "Marking not found!");
@@ -221,6 +222,7 @@ const AssignmentPage = () => {
                       <AssignmentDetails
                         assignment={assignment}
                         moduleName={moduleName}
+                        marking={marking}
                       />
                     </div>
                   </>
