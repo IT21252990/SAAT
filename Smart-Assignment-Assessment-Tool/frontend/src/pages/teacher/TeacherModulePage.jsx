@@ -9,6 +9,7 @@ const TeacherModulePage = () => {
   const { moduleId } = useParams();
   const [moduleName, setModuleName] = useState("");
   const [assignments, setAssignments] = useState([]);
+  const [marking, setMarking] = useState([]);
   const [expandedAssignment, setExpandedAssignment] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -43,11 +44,12 @@ const TeacherModulePage = () => {
         } else {
           setError(assignmentsData.error || "Failed to load assignments!");
         }
-      } catch (error) {
-        setError("Connection error: " + error.message);
-      } finally {
-        setLoading(false);
-      }
+
+    } catch (error) {
+      setError("Connection error: " + error.message);
+    } finally {
+      setLoading(false);
+    }
     };
 
     fetchData();
@@ -66,11 +68,28 @@ const TeacherModulePage = () => {
       );
       const data = await response.json();
 
+
+       // Fetch marking
+       const assignmentsReportMarking = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignmentId}`
+      );
+      const markingData = await assignmentsReportMarking.json();
+
+      if (assignmentsReportMarking.ok) {
+        setMarking(markingData.marking_schemes[0]);
+        console.log('success',markingData.marking_schemes[0])
+      } else {
+        setError(markingData.error || "Failed to load marking!");
+      }
+
+    
       if (response.ok) {
         setExpandedAssignment(data);
       } else {
         setError(data.error || "Failed to fetch assignment details.");
       }
+
+      console.log(marking)
     } catch (error) {
       setError("Error fetching assignment details: " + error.message);
     }
@@ -197,7 +216,7 @@ const TeacherModulePage = () => {
                       {/* Expanded assignment details with animation */}
                       {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
                         <div className="pt-4 mt-4 border-t dark:border-gray-700">
-                          <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
+                          <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} marking={marking} />
                         </div>
                       )}
                     </Card>

@@ -67,32 +67,98 @@ const AddAssignment = () => {
     highDescription: "",
     weight: "",
   });
+
+  // Handle submission type change with modal logic
+  const handleSubmissionTypeChange = (type, checked) => {
+    setSubmissionTypes({
+      ...submissionTypes,
+      [type]: checked,
+    });
+
+    // Open modal when Report checkbox is clicked
+    if (type === 'report' && checked) {
+      setShowReportModal(true);
+    }
+  };
+
   const handleCriterionChange = (e) => {
     setNewCriterion({ ...newCriterion, [e.target.name]: e.target.value });
   };
+
   const calculateTotalWeight = () => {
     return rubric.criteria.reduce((sum, criterion) => sum + Number(criterion.weight), 0);
   };
+
   const addCriterion = () => {
     if (!newCriterion.name || !newCriterion.lowDescription || !newCriterion.highDescription || !newCriterion.weight) {
-      // toast.error("All fields are required.");
+      setError("All fields are required.");
       return;
     }
 
-    if (calculateTotalWeight() + Number(newCriterion.weight) > 100) {
-      // toast.error("Total weight cannot exceed 100%.");
+    const weightNum = Number(newCriterion.weight);
+    if (weightNum <= 0 || weightNum > 100) {
+      setError("Weight must be between 1 and 100.");
+      return;
+    }
+
+    if (calculateTotalWeight() + weightNum > 100) {
+      setError("Total weight cannot exceed 100%.");
       return;
     }
 
     setRubric({
       ...rubric,
-      criteria: [...rubric.criteria, newCriterion],
+      criteria: [...rubric.criteria, { ...newCriterion, weight: weightNum }],
     });
     setNewCriterion({ name: "", lowDescription: "", highDescription: "", weight: "" });
     setError(""); // Clear errors after successful addition
   };
 
-  // Add a new marking criteria
+  const removeCriterion = (index) => {
+    setRubric({
+      ...rubric,
+      criteria: rubric.criteria.filter((_, i) => i !== index),
+    });
+  };
+
+  const saveRubric = () => {
+    const totalWeight = calculateTotalWeight();
+    
+    if (rubric.criteria.length === 0) {
+      setError("Please add at least one criterion before saving.");
+      return;
+    }
+
+    if (totalWeight !== 100) {
+      setError(`Total weight must equal 100%. Current total: ${totalWeight}%`);
+      return;
+    }
+
+    // Close modal and keep rubric data temporarily
+    setShowReportModal(false);
+    setError("");
+    
+    // Show success message
+    alert("Rubric saved successfully! You can now save the assignment.");
+  };
+
+  const closeModalAndUncheckReport = () => {
+    setShowReportModal(false);
+    setSubmissionTypes({
+      ...submissionTypes,
+      report: false,
+    });
+    // Clear rubric data if modal is closed without saving
+    setRubric({
+      startDate: "",
+      dueDate: "",
+      rubricName: "",
+      criteria: [],
+    });
+    setError("");
+  };
+
+  // Add new marking criteria
   const handleAddCriteria = (type) => {
     setMarkingCriteria((prev) => ({
       ...prev,
@@ -156,19 +222,6 @@ const AddAssignment = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Log the payload to ensure it's structured correctly
-    const payload = {
-      module_id: moduleId,
-      name: assignmentName,
-      description: assignmentDescription,
-      deadline,
-      submission_types: submissionTypes,
-      markingCriteria: markingCriteria,
-      details,
-    };
-  
-    console.log("Sending Payload:", payload);
-  
     // Check if required fields are filled
     if (!assignmentName || !deadline) {
       setError("Assignment name and deadline are required!");
@@ -182,6 +235,35 @@ const AddAssignment = () => {
       setIsSubmitting(false);
       return;
     }
+
+    // If report is selected, validate rubric
+    if (submissionTypes.report) {
+      if (rubric.criteria.length === 0) {
+        setError("Please create a rubric for the report submission type!");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const totalWeight = calculateTotalWeight();
+      if (totalWeight !== 100) {
+        setError(`Rubric total weight must equal 100%. Current total: ${totalWeight}%`);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Log the payload to ensure it's structured correctly
+    const payload = {
+      module_id: moduleId,
+      name: assignmentName,
+      description: assignmentDescription,
+      deadline,
+      submission_types: submissionTypes,
+      markingCriteria: markingCriteria,
+      details,
+    };
+  
+    console.log("Sending Payload:", payload);
   
     try {
       const response = await fetch(
@@ -195,52 +277,61 @@ const AddAssignment = () => {
   
       const data = await response.json();
       console.log(data);
+      
+      if (!response.ok) {
+        setError(data.error || "Something went wrong with creating the assignment!");
+        setIsSubmitting(false);
+        return;
+      }
+
       // Assuming the response contains an `assignmentId`
       const assignmentId = data.assignment_id;  // Extract the assignmentId from the response
-  
-      // Prepare the marking scheme data including the assignmentId
-      const markingSchemeData = {
-        moduleCode: moduleId,
-        rubricName: assignmentName,
-        criteria: rubric.criteria.map((criterion) => ({
-          name: criterion.name,
-          lowDescription: criterion.lowDescription,
-          highDescription: criterion.highDescription,
-          weight: criterion.weight,
-        })),
-        assignment_id: assignmentId,  // Add assignmentId here
-      };
-  
-      console.log(markingSchemeData);
-      try {
-        const markingSchemeResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/create-marking-scheme`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(markingSchemeData),
-        });
-  
-        console.log(markingSchemeResponse);
+      
+      // Create rubric only if report submission type is selected and rubric exists
+      if (submissionTypes.report && rubric.criteria.length > 0) {
+        // Prepare the marking scheme data including the assignmentId
+        const markingSchemeData = {
+          moduleCode: moduleId,
+          rubricName: assignmentName,
+          criteria: rubric.criteria.map((criterion) => ({
+            name: criterion.name,
+            lowDescription: criterion.lowDescription,
+            highDescription: criterion.highDescription,
+            weight: criterion.weight,
+          })),
+          assignment_id: assignmentId,  // Add assignmentId here
+        };
+        
+        try {
+          const markingSchemeResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/create-marking-scheme`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(markingSchemeData),
+          });
+    
 
-        const markingSchemeDataResponse = await markingSchemeResponse.json();
-  
-        if (markingSchemeResponse.ok) {
-          // toast.success("Rubric created successfully!");
-          console.log("Success", markingSchemeDataResponse);
-        } else {
-          // toast.error(markingSchemeDataResponse.message || "Something went wrong!");
+          console.log(markingSchemeData);
+          console.log(markingSchemeResponse);
+
+          const markingSchemeDataResponse = await markingSchemeResponse.json();
+    
+          if (markingSchemeResponse.ok) {
+            console.log("Rubric created successfully!", markingSchemeDataResponse);
+          } else {
+            console.error("Failed to create rubric:", markingSchemeDataResponse.message || "Something went wrong!");
+            // Don't fail the entire process if rubric creation fails
+          }
+        } catch (error) {
+          console.error("Network error creating rubric:", error.message);
+          // Don't fail the entire process if rubric creation fails
         }
-      } catch (error) {
-        // toast.error("Network error: " + error.message);
       }
-  
-      if (response.ok) {
-        // Success notification
-        window.scrollTo(0, 0);
-        alert("Assignment added successfully!");
-        navigate(-1); // Navigate back to the Teacher Module Page
-      } else {
-        setError(data.error || "Something went wrong with creating the assignment!");
-      }
+
+      // Success notification
+      window.scrollTo(0, 0);
+      alert("Assignment added successfully!");
+      navigate(-1); // Navigate back to the Teacher Module Page
+      
     } catch (error) {
       setError("Failed to add assignment: " + error.message);
     } finally {
@@ -502,12 +593,7 @@ const AddAssignment = () => {
                     <Label className="flex items-center space-x-3 cursor-pointer">
                       <Checkbox
                         checked={submissionTypes[type]}
-                        onChange={(e) =>
-                          setSubmissionTypes({
-                            ...submissionTypes,
-                            [type]: e.target.checked,
-                          })
-                        }
+                        onChange={(e) => handleSubmissionTypeChange(type, e.target.checked)}
                         className="text-primary-600 focus:ring-primary-500"
                       />
                       <div>
@@ -524,6 +610,31 @@ const AddAssignment = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Rubric Status Display */}
+              {submissionTypes.report && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-blue-800 dark:text-blue-200">Report Rubric</h4>
+                      {rubric.criteria.length > 0 ? (
+                        <p className="text-sm text-blue-600 dark:text-blue-300">
+                          {rubric.criteria.length} criteria added (Total: {calculateTotalWeight()}%)
+                        </p>
+                      ) : (
+                        <p className="text-sm text-blue-600 dark:text-blue-300">No rubric created yet</p>
+                      )}
+                    </div>
+                    <Button
+                      color="blue"
+                      size="sm"
+                      onClick={() => setShowReportModal(true)}
+                    >
+                      {rubric.criteria.length > 0 ? 'Edit Rubric' : 'Create Rubric'}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Submit & Cancel Buttons */}
@@ -559,98 +670,186 @@ const AddAssignment = () => {
         </Card>
       </div>
 
-      {/* it21306754 - Report Modal */}
+      {/* Report Modal - Enhanced */}
       {showReportModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg w-[80%] max-h-[90vh] overflow-auto">
-            <h1 className="text-xl font-bold text-blue-500">Marking Scheme</h1>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-[90%] max-w-6xl max-h-[90vh] overflow-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Create Marking Scheme</h1>
+              <Button
+                color="light"
+                size="sm"
+                onClick={closeModalAndUncheckReport}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <HiX className="w-5 h-5" />
+              </Button>
+            </div>
 
-            <form onSubmit={handleSubmit}>
-              {rubric.criteria.length > 0 && (
-                <div className="mb-12">
-                  <h2 className="mb-4 text-lg font-semibold text-blue-500">Marking Scheme</h2>
-                  <div className="mb-2 p-2 bg-blue-100 rounded flex">
-                    <span className="block text-gray-800 font-bold px-4 w-1/3">Criterion Name</span>
-                    <p className="text-sm px-4 text-gray-800 font-bold w-1/2">Low Marks</p>
-                    <p className="text-sm px-4 text-gray-800 font-bold w-1/2">High Marks</p>
+            {/* Current Criteria Display */}
+            {rubric.criteria.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    Current Criteria ({rubric.criteria.length})
+                  </h2>
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    calculateTotalWeight() === 100 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  }`}>
+                    Total Weight: {calculateTotalWeight()}%
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="grid grid-cols-12 gap-2 p-3 bg-blue-100 dark:bg-blue-900/30 rounded font-medium text-gray-800 dark:text-gray-200">
+                    <div className="col-span-3">Criterion Name</div>
+                    <div className="col-span-3">Low Marks Description</div>
+                    <div className="col-span-3">High Marks Description</div>
+                    <div className="col-span-2">Weight (%)</div>
+                    <div className="col-span-1">Action</div>
+                  </div>
+                  
                   {rubric.criteria.map((criterion, index) => (
-                    <div key={index} className="mb-2 p-2 bg-blue-50 rounded flex">
-                      <span className="block text-gray-800 font-semibold px-4 w-1/3">
-                        {criterion.name} ({criterion.weight}%)
-                      </span>
-                      <p className="text-sm px-4 w-1/2">{criterion.lowDescription}</p>
-                      <p className="text-sm px-4 w-1/2">{criterion.highDescription}</p>
+                    <div key={index} className="grid grid-cols-12 gap-2 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                      <div className="col-span-3 font-medium text-gray-800 dark:text-gray-200">
+                        {criterion.name}
+                      </div>
+                      <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
+                        {criterion.lowDescription}
+                      </div>
+                      <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
+                        {criterion.highDescription}
+                      </div>
+                      <div className="col-span-2 font-medium text-gray-800 dark:text-gray-200">
+                        {criterion.weight}%
+                      </div>
+                      <div className="col-span-1">
+                        <Button
+                          color="red"
+                          size="xs"
+                          onClick={() => removeCriterion(index)}
+                        >
+                          <HiMinusCircle className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              <div className="mb-4 flex flex-row items-start gap-x-6">
-                <input
-                  type="text"
-                  name="name"
-                  value={newCriterion.name}
-                  onChange={handleCriterionChange}
-                  placeholder="Criterion Name"
-                  className="w-full p-2 border border-gray-300 rounded mb-2"
-                />
-
-                <textarea
-                  rows="4"
-                  name="lowDescription"
-                  value={newCriterion.lowDescription}
-                  onChange={handleCriterionChange}
-                  placeholder="Requirements for Low Marks"
-                  className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                ></textarea>
-
-                <textarea
-                  rows="4"
-                  name="highDescription"
-                  value={newCriterion.highDescription}
-                  onChange={handleCriterionChange}
-                  placeholder="Requirements for High Marks"
-                  className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                ></textarea>
-
-                <div className="flex flex-col w-full">
-                  <input
+            {/* Add New Criterion Form */}
+            <div className="mb-6 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+              <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Add New Criterion</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Criterion Name *
+                  </Label>
+                  <TextInput
+                    type="text"
+                    name="name"
+                    value={newCriterion.name}
+                    onChange={handleCriterionChange}
+                    placeholder="e.g., Code Quality, Documentation"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Weight (%) *
+                  </Label>
+                  <TextInput
                     type="number"
                     name="weight"
                     value={newCriterion.weight}
                     onChange={handleCriterionChange}
-                    placeholder="Weight %"
-                    className="w-full p-2 border border-gray-300 rounded mb-2"
+                    placeholder="e.g., 25"
+                    min="1"
+                    max="100"
+                    required
                   />
-                  <button
-                    type="button"
-                    onClick={addCriterion}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded"
-                  >
-                    Add Criterion
-                  </button>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Remaining: {100 - calculateTotalWeight()}%
+                  </p>
                 </div>
               </div>
 
-              {error && <p className="text-red-600 mb-2">{error}</p>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Low Marks Description *
+                  </Label>
+                  <Textarea
+                    rows="4"
+                    name="lowDescription"
+                    value={newCriterion.lowDescription}
+                    onChange={handleCriterionChange}
+                    placeholder="Requirements for achieving low marks in this criterion..."
+                    required
+                  />
+                </div>
 
-              <button
-                type="submit"
-                className="w-1/2 mx-[25%] mt-12 px-4 py-2 bg-blue-600 text-white rounded"
+                <div>
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    High Marks Description *
+                  </Label>
+                  <Textarea
+                    rows="4"
+                    name="highDescription"
+                    value={newCriterion.highDescription}
+                    onChange={handleCriterionChange}
+                    placeholder="Requirements for achieving high marks in this criterion..."
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                onClick={addCriterion}
+                color="blue"
+                className="w-full"
+                disabled={calculateTotalWeight() >= 100}
               >
-                Create Rubric
-              </button>
-            </form>
+                <HiPlusCircle className="w-5 h-5 mr-2" />
+                Add Criterion
+              </Button>
+            </div>
 
-            <Button
-              color="red"
-              size="xs"
-              onClick={() => setShowReportModal(false)}
-              className="absolute top-2 right-2"
-            >
-              Close
-            </Button>
+            {/* Error Display */}
+            {error && (
+              <Alert color="failure" className="mb-4">
+                <HiX className="w-5 h-5 mr-2" />
+                {error}
+              </Alert>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button
+                color="light"
+                onClick={closeModalAndUncheckReport}
+                className="w-full sm:w-auto"
+              >
+                Cancel
+              </Button>
+              
+              <Button
+                type="button"
+                color="blue"
+                onClick={saveRubric}
+                className="w-full sm:w-auto"
+                disabled={rubric.criteria.length === 0 || calculateTotalWeight() !== 100}
+              >
+                <HiSave className="w-5 h-5 mr-2" />
+                Save Rubric ({calculateTotalWeight()}%)
+              </Button>
+            </div>
           </div>
         </div>
       )}

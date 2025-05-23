@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { DarkThemeToggle } from "flowbite-react";
-import { auth } from "../firebase";
+import { auth } from "../firebase.jsx";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import logo from "../asserts/rounded_logo.png";
