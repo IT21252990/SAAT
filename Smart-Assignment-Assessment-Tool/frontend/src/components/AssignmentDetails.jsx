@@ -56,13 +56,33 @@ const AssignmentDetails = ({ assignment, moduleName }) => {
         </p>
       )}
 
+    <h3 className="mb-2 mt-6 text-2xl font-semibold text-gray-900 dark:text-white">
+      Deliverables
+    </h3>
+    {assignment.submission_types ? (
+      <ul className="mb-4 list-disc list-inside text-gray-700 dark:text-gray-300">
+        {Object.entries(assignment.submission_types)
+          .filter(([type, isAccepted]) => isAccepted)
+          .map(([type], index) => (
+            <li key={index} className="capitalize">
+              {type}
+            </li>
+          ))}
+      </ul>
+    ) : (
+      <p className="text-gray-600 dark:text-gray-400">No submission types specified.</p>
+    )}
+
+
       <h3 className="mb-2 mt-6 text-2xl font-semibold text-gray-900 dark:text-white">
         Marking Criteria
       </h3>
       {assignment.marking_criteria &&
-      Object.keys(assignment.marking_criteria).length > 0 ? (
-        Object.entries(assignment.marking_criteria).map(
-          ([type, criteria], index) => (
+      Object.keys(assignment.marking_criteria).some(
+        (key) => assignment.marking_criteria[key]?.length > 0
+      ) ? (
+        Object.entries(assignment.marking_criteria).map(([type, criteria], index) =>
+          criteria && criteria.length > 0 ? (
             <div
               key={index}
               className="mt-4 rounded-lg border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700"
@@ -70,31 +90,25 @@ const AssignmentDetails = ({ assignment, moduleName }) => {
               <h4 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {type.charAt(0).toUpperCase() + type.slice(1)} Marking Criteria:
               </h4>
-              {criteria && criteria.length > 0 ? (
-                <ul className="mt-2 list-inside list-disc">
-                  {criteria.map((item, subIndex) => (
-                    <li
-                      key={subIndex}
-                      className="text-gray-700 dark:text-gray-300"
-                    >
-                      <strong>{item.criteria}:</strong> {item.allocated_mark}{" "}
-                      marks
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-600 dark:text-gray-400">
-                  No criteria available for this submission type.
-                </p>
-              )}
+              <ul className="mt-2 list-inside list-disc">
+                {criteria.map((item, subIndex) => (
+                  <li
+                    key={subIndex}
+                    className="text-gray-700 dark:text-gray-300"
+                  >
+                    <strong>{item.criteria}:</strong> {item.allocated_mark} marks
+                  </li>
+                ))}
+              </ul>
             </div>
-          ),
+          ) : null
         )
       ) : (
         <p className="text-gray-600 dark:text-gray-400">
           No marking criteria available.
         </p>
       )}
+  
     </div>
   );
 };

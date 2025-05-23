@@ -76,6 +76,31 @@ const TeacherModulePage = () => {
     }
   };
 
+  const deleteAssignment = async (assignmentId) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/assignment/deleteAssignment/${assignmentId}`,
+      { method: "DELETE" }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Remove deleted assignment from list
+      setAssignments(prev => prev.filter(a => a.assignment_id !== assignmentId));
+      setExpandedAssignment(null);
+    } else {
+      setError(data.error || "Failed to delete assignment.");
+    }
+  } catch (error) {
+    setError("Error deleting assignment: " + error.message);
+  }
+};
+
+
   // Function to dismiss error
   const dismissError = () => {
     setError("");
@@ -168,7 +193,7 @@ const TeacherModulePage = () => {
 
                         {/* Action buttons */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          <Tooltip content="Edit this assignment">
+                          {/* <Tooltip content="Edit this assignment">
                             <Button
                               color="warning"
                               size="sm"
@@ -178,7 +203,7 @@ const TeacherModulePage = () => {
                               <HiPencil className="w-4 h-4 mr-2" />
                               Edit
                             </Button>
-                          </Tooltip>
+                          </Tooltip> */}
                           
                           <Tooltip content="View all student submissions">
                             <Button
@@ -196,10 +221,44 @@ const TeacherModulePage = () => {
 
                       {/* Expanded assignment details with animation */}
                       {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
-                        <div className="pt-4 mt-4 border-t dark:border-gray-700">
-                          <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
-                        </div>
-                      )}
+  <>
+    
+
+    {/* Assignment details section */}
+    <div className="pt-2 border-t dark:border-gray-700">
+      <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
+    </div>
+
+    {/* Control panel for expanded assignment */}
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50  dark:bg-gray-700">
+      <div className="mb-2 ml-2 sm:mb-0 text-sm font-medium text-gray-700 dark:text-gray-300">
+        Manage this assignment:
+      </div>
+      <div className="flex gap-3">
+        <Button
+          color="warning"
+          size="sm"
+          onClick={() => navigate(`/edit-assignment/${assignment.assignment_id}`)}
+        >
+          <HiPencil className="w-4 h-4 mr-2" />
+          Edit
+        </Button>
+        <Button
+        color="failure"
+        size="sm"
+        onClick={() => deleteAssignment(assignment.assignment_id)}
+        className="transition-transform duration-300 hover:scale-105"
+      >
+          <HiX className="w-4 h-4 mr-2" />
+          Delete
+        </Button>
+      </div>
+    </div>
+  </>
+)}
+
+
+
                     </Card>
                   ))}
                 </div>
