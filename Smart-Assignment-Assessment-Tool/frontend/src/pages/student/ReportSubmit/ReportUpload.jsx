@@ -422,7 +422,7 @@ const ReportUpload = ({ onSubmit }) => {
         body: JSON.stringify(submissionData),
       });
 
-      console.log(submissionData)
+      console.log("data: ", submissionData)
       if (!reportResponse.ok) {
         throw new Error("Failed to submit the assignment report.");
       }
@@ -586,18 +586,15 @@ const ReportUpload = ({ onSubmit }) => {
             <Typography variant="h6" gutterBottom>
               Analysis Results
             </Typography>
-            <Typography variant="h5" color="primary">
-              Overall Score: {analysisResults.totalScore || 0}%
-            </Typography>
+         
 
             {analysisResults.criteria?.map((criterion, index) => (
               <Box key={index} sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                 <Typography variant="subtitle1" fontWeight="bold">
                   {criterion.description}
                 </Typography>
-                <Typography>
-                  Score: {criterion.awarded} / {criterion.weightage} points
-                </Typography>
+                
+                
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                   Justification: {criterion.justification}
                 </Typography>

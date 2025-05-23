@@ -31,6 +31,7 @@ def create_marking_scheme():
                 {
                     "criterion": criterion["name"],
                     "low_description": criterion["lowDescription"],
+                    "medium_description": criterion["mediumDescription"],
                     "high_description": criterion["highDescription"],
                     "weightage": criterion["weight"]
                 } for criterion in criteria

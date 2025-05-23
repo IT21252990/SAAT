@@ -242,10 +242,9 @@ const TeacherModulePage = () => {
                       {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
   <>
     
-
     {/* Assignment details section */}
     <div className="pt-2 border-t dark:border-gray-700">
-      <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} />
+      <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} marking={marking}/>
     </div>
 
     {/* Control panel for expanded assignment */}

@@ -64,6 +64,7 @@ const AddAssignment = () => {
   const [newCriterion, setNewCriterion] = useState({
     name: "",
     lowDescription: "",
+    mediumDescription: "",
     highDescription: "",
     weight: "",
   });
@@ -90,7 +91,7 @@ const AddAssignment = () => {
   };
 
   const addCriterion = () => {
-    if (!newCriterion.name || !newCriterion.lowDescription || !newCriterion.highDescription || !newCriterion.weight) {
+    if (!newCriterion.name || !newCriterion.lowDescription || !newCriterion.mediumDescription || !newCriterion.highDescription || !newCriterion.weight) {
       setError("All fields are required.");
       return;
     }
@@ -110,7 +111,7 @@ const AddAssignment = () => {
       ...rubric,
       criteria: [...rubric.criteria, { ...newCriterion, weight: weightNum }],
     });
-    setNewCriterion({ name: "", lowDescription: "", highDescription: "", weight: "" });
+    setNewCriterion({ name: "", lowDescription: "", mediumDescription: "", highDescription: "", weight: "" });
     setError(""); // Clear errors after successful addition
   };
 
@@ -296,6 +297,7 @@ const AddAssignment = () => {
           criteria: rubric.criteria.map((criterion) => ({
             name: criterion.name,
             lowDescription: criterion.lowDescription,
+            mediumDescription: criterion.lowDescription,
             highDescription: criterion.highDescription,
             weight: criterion.weight,
           })),
@@ -706,6 +708,7 @@ const AddAssignment = () => {
                   <div className="grid grid-cols-12 gap-2 p-3 bg-blue-100 dark:bg-blue-900/30 rounded font-medium text-gray-800 dark:text-gray-200">
                     <div className="col-span-3">Criterion Name</div>
                     <div className="col-span-3">Low Marks Description</div>
+                    <div className="col-span-3">Medium Marks Description</div>
                     <div className="col-span-3">High Marks Description</div>
                     <div className="col-span-2">Weight (%)</div>
                     <div className="col-span-1">Action</div>
@@ -718,6 +721,9 @@ const AddAssignment = () => {
                       </div>
                       <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
                         {criterion.lowDescription}
+                      </div>
+                      <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
+                        {criterion.mediumDescription}
                       </div>
                       <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
                         {criterion.highDescription}
@@ -779,8 +785,8 @@ const AddAssignment = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
+              <div className="flex gap-4 mb-4">
+                <div className="w-1/3">
                   <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Low Marks Description *
                   </Label>
@@ -794,7 +800,21 @@ const AddAssignment = () => {
                   />
                 </div>
 
-                <div>
+                <div className="w-1/3">
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Medium Marks Description *
+                  </Label>
+                  <Textarea
+                    rows="4"
+                    name="mediumDescription"
+                    value={newCriterion.mediumDescription}
+                    onChange={handleCriterionChange}
+                    placeholder="Requirements for achieving medium marks in this criterion..."
+                    required
+                  />
+                </div>
+
+                <div className="w-1/3">
                   <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     High Marks Description *
                   </Label>
