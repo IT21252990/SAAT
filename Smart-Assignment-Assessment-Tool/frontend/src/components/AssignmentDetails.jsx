@@ -76,24 +76,6 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
     )}
 
 
-    <h3 className="mb-2 mt-6 text-2xl font-semibold text-gray-900 dark:text-white">
-      Deliverables
-    </h3>
-    {assignment.submission_types ? (
-      <ul className="mb-4 list-disc list-inside text-gray-700 dark:text-gray-300">
-        {Object.entries(assignment.submission_types)
-          .filter(([type, isAccepted]) => isAccepted)
-          .map(([type], index) => (
-            <li key={index} className="capitalize">
-              {type}
-            </li>
-          ))}
-      </ul>
-    ) : (
-      <p className="text-gray-600 dark:text-gray-400">No submission types specified.</p>
-    )}
-
-
       <h3 className="mb-2 mt-6 text-2xl font-semibold text-gray-900 dark:text-white">
         Marking Criteria
       </h3>
