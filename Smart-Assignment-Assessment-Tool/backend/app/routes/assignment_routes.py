@@ -96,3 +96,23 @@ def update_assignment(assignment_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# Delete Assignment
+@assignment_bp.route("/deleteAssignment/<assignment_id>", methods=["DELETE"])
+def delete_assignment(assignment_id):
+    try:
+        db = current_app.db
+        assignment_ref = db.collection("assignments").document(assignment_id)
+
+        # Check if the assignment exists
+        if not assignment_ref.get().exists:
+            return jsonify({"error": "Assignment not found"}), 404
+
+        # Delete the assignment document
+        assignment_ref.delete()
+
+        return jsonify({"message": "Assignment deleted successfully!"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
