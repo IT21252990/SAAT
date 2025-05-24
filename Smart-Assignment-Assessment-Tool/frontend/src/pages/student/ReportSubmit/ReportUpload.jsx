@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Button, 
-  CircularProgress, 
-  Alert, 
-  Typography, 
-  Stepper, 
-  Step, 
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Alert,
+  Typography,
+  Stepper,
+  Step,
   StepLabel,
   Card,
   CardContent,
@@ -79,10 +79,10 @@ const ReportUpload = ({ onSubmit }) => {
 
   const checkExistingSubmission = async () => {
     if (!assignmentId || !userId) return;
-    
+
     try {
       console.log('Checking existing submission for:', { assignmentId, userId });
-      
+
       const response = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
         method: "POST",
         headers: {
@@ -94,7 +94,7 @@ const ReportUpload = ({ onSubmit }) => {
       if (response.ok) {
         const result = await response.json();
         console.log('Check submission result:', result);
-        
+
         if (result.exists) {
           // Try to fetch submission details
           try {
@@ -196,11 +196,11 @@ const ReportUpload = ({ onSubmit }) => {
         try {
           const arrayBuffer = event.target.result;
           const result = await mammoth.extractRawText({ arrayBuffer });
-          
+
           if (!result.value) {
             reject(new Error('No text extracted from DOCX'));
           }
-          
+
           resolve(result.value.trim());
         } catch (err) {
           console.error("Error parsing DOCX:", err);
@@ -214,12 +214,12 @@ const ReportUpload = ({ onSubmit }) => {
 
   const parsePdfFile = async (file) => {
     const reader = new FileReader();
-    
+
     return new Promise((resolve, reject) => {
       reader.onload = async (event) => {
         try {
           const arrayBuffer = event.target.result;
-          
+
           if (!pdfjsLib || !pdfjsLib.getDocument) {
             reject(new Error("PDF.js library is not available."));
             return;
@@ -230,7 +230,7 @@ const ReportUpload = ({ onSubmit }) => {
 
           const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
           const pdf = await loadingTask.promise;
-          
+
           let fullText = '';
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -267,7 +267,7 @@ const ReportUpload = ({ onSubmit }) => {
 
     try {
       console.log('Analyzing Report:', studentReport.content);
-      
+
       const result = await analyzeReport(studentReport.content, markingScheme.criteria, assignmentId, (progress) => {
         setProgress(progress);
       });
@@ -279,7 +279,7 @@ const ReportUpload = ({ onSubmit }) => {
       const plagiarismResult = await detectPlagiarism(studentReport.content, (progress) => {
         console.log(`Progress: ${progress.toFixed(2)}%`);
       });
-      
+
       const plagiarismPercentage = plagiarismResult.toFixed(2);
       const fakeResult = aiContentResult.find(item => item.label === 'Fake');
 
@@ -289,7 +289,7 @@ const ReportUpload = ({ onSubmit }) => {
       }
 
       const aiScore = (fakeResult.score * 100000).toFixed(2);
-      
+
       // Set all the results first
       setAnalysisResults(result);
       setAIcontentResults({ percentage: aiScore });
@@ -297,7 +297,7 @@ const ReportUpload = ({ onSubmit }) => {
       setActiveStep(3);
 
       console.log("✅ Calling handleSubmitAssignment...");
-      
+
       // Submit the assignment with all the analysis results
       await handleSubmitAssignmentWithResults(result, { percentage: aiScore }, plagiarismPercentage);
 
@@ -315,7 +315,7 @@ const ReportUpload = ({ onSubmit }) => {
 
   const handleSubmitAssignmentWithResults = async (analysisResults, aiContentResults, plagiarismResults) => {
     console.log("Submitting with file:", submitReport.file);
-    
+
     const submissionData = {
       moduleCode: moduleId,
       status: "submitted",
@@ -343,7 +343,7 @@ const ReportUpload = ({ onSubmit }) => {
       if (!reportResponse.ok) {
         throw new Error("Failed to submit the assignment report.");
       }
-      
+
       const reportResult = await reportResponse.json();
       const reportId = reportResult.report.report_id;
 
@@ -404,12 +404,12 @@ const ReportUpload = ({ onSubmit }) => {
         reportId: reportId,
         status: "submitted"
       };
-      
+
       setSubmissionStatus(newSubmissionStatus);
       setIsUpdating(false);
       setProgress(100);
       alert("Assignment submitted successfully!");
-      
+
     } catch (error) {
       console.error('Submission error:', error);
       throw error;
@@ -486,68 +486,192 @@ const ReportUpload = ({ onSubmit }) => {
     doc.save("analysis_results.pdf");
   };
 
+
+
+
+
+
+  const [reportSubmissions, setReportSubmissions] = useState([]);
+  const [reportID, setReportID] = useState('');
+  const [reportData, setReportData] = useState('');
+  const [assignmentData, setAssignmentData] = useState('');
+
+
+  // Fetch user email
+  const fetchUserEmail = async (uid) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`,
+      );
+      const data = await response.json();
+      if (response.ok) {
+        return data.email;
+      } else {
+        throw new Error(data.error || "Failed to fetch user.");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return null;
+    }
+  };
+
+  // Fetch assignment details
+  const fetchAssignmentDetails = async () => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`,
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setReportID(data.submissions[0].report_id);
+        console.log("name", data.submissions[0].report_id)
+      }
+    } catch (error) {
+      console.error("Error fetching assignment details:", error);
+    }
+  };
+
+
+  useEffect(() => {
+    const fetchAllReportSubmissions = async () => {
+      try {
+        setError(null);
+        setLoading(true);
+
+        await fetchAssignmentDetails();
+
+        console.log('Fetching report submissions for assignment ID:', reportID);
+
+        const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
+
+        console.log("response: ", response);
+        const Reportdata = await response.json();
+        if (response.ok) {
+          setReportData(Reportdata);
+          console.log("report", Reportdata);
+
+          // Set the individual state variables based on the response structure
+          // setAiContentResults(Reportdata.aiContent || {});
+          setPlagiarismResults(Reportdata.plagiarism || "0");
+          setAnalysisResults(Reportdata.analysis_report || {});
+        }
+
+
+        const AssignmentResponse = await fetch(`http://127.0.0.1:5000/api/v1/assignment/getAssignment/${assignmentId}`);
+
+        console.log("AssignmentResponse: ", AssignmentResponse);
+        const assignmentData = await AssignmentResponse.json();
+        if (AssignmentResponse.ok) {
+          setAssignmentData(assignmentData);
+          console.log("assignment", assignmentData);
+        }
+
+      } catch (err) {
+        console.error("Fetch error:", err);
+        // setError("Failed to fetch report submissions");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (assignmentId) {
+      fetchAllReportSubmissions();
+    }
+  }, [assignmentId, reportID]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getStatusChip = (status) => {
+    const statusConfig = {
+      submitted: { color: "warning", label: "Submitted" },
+      reviewed: { color: "info", label: "Reviewed" },
+      published: { color: "success", label: "Published" }
+    };
+
+    const config = statusConfig[status] || { color: "default", label: status || 'Unknown' };
+
+    return (
+      <Chip
+        label={config.label}
+        color={config.color}
+        variant="filled"
+        size="small"
+      />
+    );
+  };
+
   return (
     <div>
-          <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
-                  <Header />
-                </div>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
+        <Header />
+      </div>
 
-    <Box sx={{ mt: 12, maxWidth: 800, mx: 'auto' }}>
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-        {['Marking Scheme Loaded', 'Upload Student Report', 'Analysis', 'Result'].map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+      <Box sx={{ mt: 12, maxWidth: 800, mx: 'auto' }}>
+        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+          {['Marking Scheme Loaded', 'Upload Student Report', 'Analysis', 'Result'].map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
 
-      {/* Show submission status card if submission exists and not updating */}
-      {submissionStatus && !isUpdating && (
-        <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <CheckCircle sx={{ color: '#4caf50', mr: 2, fontSize: 32 }} />
-              <Box>
-                <Typography variant="h5" color="primary" gutterBottom>
-                  Assignment Submitted Successfully
-                </Typography>
-                <Chip 
-                  label="SUBMITTED" 
-                  color="success" 
-                  variant="filled"
-                  sx={{ fontWeight: 'bold' }}
-                />
-              </Box>
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Description sx={{ color: '#666', mr: 2 }} />
+        {/* Show submission status card if submission exists and not updating */}
+        {submissionStatus && !isUpdating && (
+          <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <CheckCircle sx={{ color: '#4caf50', mr: 2, fontSize: 32 }} />
                 <Box>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    Submitted File:
+                  <Typography variant="h5" color="primary" gutterBottom>
+                    Assignment Submitted Successfully 
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {submissionStatus.fileName || 'Student Report'}
-                  </Typography>
+                  <Chip
+                    label="SUBMITTED"
+                    color="success"
+                    variant="filled"
+                    sx={{ fontWeight: 'bold' }}
+                  />
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Schedule sx={{ color: '#666', mr: 2 }} />
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    Submission Time:
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatSubmissionTime(submissionStatus.submittedAt || submissionStatus.createdAt)}
-                  </Typography>
-                </Box>
-              </Box>
+              <Divider sx={{ my: 2 }} />
 
-              {/* {submissionStatus.mark && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'space-between' }}>
+
+                <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                  <Description sx={{ color: '#666', mr: 2 }} />
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      Assignment:
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {assignmentData.name}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Schedule sx={{ color: '#666', mr: 2 }} />
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      Deadline:
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {assignmentData.deadline}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* {submissionStatus.mark && (
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Typography variant="subtitle1" fontWeight="bold" sx={{ mr: 2 }}>
                     Score:
@@ -559,112 +683,245 @@ const ReportUpload = ({ onSubmit }) => {
                   />
                 </Box>
               )} */}
-            </Box>
+              </Box>
 
-            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<Update />}
-                onClick={handleUpdateSubmission}
-              >
-                Update Submission
-              </Button>
-              
-              {/* <Button
+              {reportData.status != 'published' && (
+                <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<Update />}
+                    onClick={handleUpdateSubmission}
+                  >
+                    Update Submission
+                  </Button>
+
+                  {/* <Button
                 variant="contained"
                 color="primary"
                 onClick={handleDownloadPdf}
               >
                 Download Analysis Report
               </Button> */}
-            </Box>
-          </CardContent>
-        </Card>
-      )}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Upload section - show when no submission or updating */}
-      {(!submissionStatus || isUpdating) && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            {isUpdating ? 'Update Student Report' : 'Upload Student Report'}
-          </Typography>
+        {/* Upload section - show when no submission or updating */}
+        {(!submissionStatus || isUpdating) && (
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              {isUpdating ? 'Update Student Report' : 'Upload Student Report'}
+            </Typography>
 
-          <Box sx={{ mb: 3 }}>
-            <input
-              type="file"
-              accept=".docx,.pdf"
-              onChange={(e) => {
-                handleFileChange(e);
-                e.target.value = null;
-              }}
-              style={{ display: 'none' }}
-              id="student-report-upload"
-            />
+            <Box sx={{ mb: 3 }}>
+              <input
+                type="file"
+                accept=".docx,.pdf"
+                onChange={(e) => {
+                  handleFileChange(e);
+                  e.target.value = null;
+                }}
+                style={{ display: 'none' }}
+                id="student-report-upload"
+              />
 
-            <label htmlFor="student-report-upload">
-              <Button
-                variant="contained"
-                component="span"
-                disabled={loading}
-                sx={{ mr: 2 }}
-              >
-                {studentReport ? 'Change Student Report' : 
-                 isUpdating ? 'Upload New Report' : 'Upload Student Report'}
-              </Button>
-            </label>
-            
-            {studentReport && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Selected: {studentReport.name}
-              </Typography>
-            )}
-          </Box>
-
-          {studentReport && !loading && (
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAnalyze}
-                sx={{ mt: 2 }}
-              >
-                {isUpdating ? 'Update & Analyze Report' : 'Analyze Report'}
-              </Button>
-              
-              {isUpdating && (
+              <label htmlFor="student-report-upload">
                 <Button
-                  variant="outlined"
-                  onClick={handleCancelUpdate}
-                  sx={{ mt: 2 }}
+                  variant="contained"
+                  component="span"
+                  disabled={loading}
+                  sx={{ mr: 2 }}
                 >
-                  Cancel Update
+                  {studentReport ? 'Change Student Report' :
+                    isUpdating ? 'Upload New Report' : 'Upload Student Report'}
                 </Button>
+              </label>
+
+              {studentReport && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Selected: {studentReport.name}
+                </Typography>
               )}
             </Box>
-          )}
-        </Box>
-      )}
 
-      {/* Loading and Error states */}
-      {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      )}
+            {studentReport && !loading && (
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAnalyze}
+                  sx={{ mt: 2 }}
+                >
+                  {isUpdating ? 'Update & Analyze Report' : 'Analyze Report'}
+                </Button>
 
-      {loading && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            {progress === 0 ? 'Processing files...' :
-              progress === 50 ? 'Analyzing content...' :
-                isUpdating ? 'Updating submission...' : 'Completing analysis...'}
-          </Typography>
-          <CircularProgress size={24} sx={{ mt: 1 }} />
-        </Box>
-      )}
-    </Box>
-        </div>
+                {isUpdating && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleCancelUpdate}
+                    sx={{ mt: 2 }}
+                  >
+                    Cancel Update
+                  </Button>
+                )}
+              </Box>
+            )}
+          </Box>
+        )}
+
+
+
+        {/* analysis Results published reports */}
+        {reportData.status === 'published' && (
+
+          <div>
+            <div className='flex gap-x-4'>
+              <Box sx={{ mt: 4 }} className='border-2 p-[1.5rem] rounded-md border-[#1976d22b] w-1/2 mt-8'>
+                <Typography variant="h5" color="primary">
+                  {reportData?.aiContent?.percentage || "0"}%
+                </Typography>
+                {reportData?.aiContent?.percentage !== undefined ? (
+                  <Typography variant="h8" gutterBottom>
+                    of this report appears to be AI-generated
+                  </Typography>
+                ) : (
+                  <Typography variant="body1" color="error">
+                    Unable to calculate AI content percentage.
+                  </Typography>
+                )}
+              </Box>
+
+              <Box sx={{ mt: 4 }} className='border-2 p-[1.5rem] rounded-md border-[#1976d22b] w-1/2 mt-8'>
+                <Typography variant="h5" color="primary">
+                  {reportData?.plagiarism || "0"}%
+                </Typography>
+                {reportData?.plagiarism !== undefined ? (
+                  <Typography variant="h8" gutterBottom>
+                    Found significant plagiarism in your report
+                  </Typography>
+                ) : (
+                  <Typography variant="body1" color="error">
+                    Unable to calculate plagiarism percentage.
+                  </Typography>
+                )}
+              </Box>
+            </div>
+
+            <Box sx={{ mt: 4, p: 3, border: '1px solid #ccc', borderRadius: 1 }}>
+              <Typography variant="h6" gutterBottom>
+                Analysis Results
+              </Typography>
+
+              {/* Display Total Score */}
+              {reportData?.analysis_report?.totalScore && (
+                <Box sx={{ mb: 2, p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
+                  <Typography variant="h6" color="primary">
+                    Total Score: {reportData.analysis_report.totalScore}/20
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Display Criteria */}
+              {reportData?.analysis_report?.criteria?.map((criterion, index) => (
+                <Box key={index} sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                  <div className="flex justify-between items-start mb-2">
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {criterion.description}
+                    </Typography>
+                    <Typography variant="subtitle2" color="primary" fontWeight="bold">
+                      {criterion.awarded}/{(criterion.weightage * 20) / 100} marks
+                    </Typography>
+                  </div>
+
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    <strong>Weightage:</strong> {criterion.weightage}%
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    <strong>Justification:</strong> {criterion.justification}
+                  </Typography>
+
+                  {criterion.suggestions?.length > 0 && (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight="bold">
+                        Suggestions for improvement:
+                      </Typography>
+                      <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
+                        {criterion.suggestions.map((suggestion, idx) => (
+                          <li key={idx}>
+                            <Typography variant="body2" color="text.secondary">
+                              {suggestion}
+                            </Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </Box>
+                  )}
+                </Box>
+              ))}
+
+              {/* Display General Feedback */}
+              {reportData?.analysis_report?.feedback && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    General Feedback
+                  </Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {reportData.analysis_report.feedback}
+                  </Typography>
+
+                  {/* Display Summary if available */}
+                  {/* {reportData?.summary && (
+            <Box sx={{ mt: 2, p: 2, bgcolor: '#f9f9f9', borderRadius: 1 }}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Report Summary:
+              </Typography>
+              <Typography variant="body2">
+                {reportData.summary}
+              </Typography>
+            </Box>
+          )} */}
+
+                  <div className='flex gap-6'>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleDownloadPdf}
+                      sx={{ mt: 2 }}
+                    >
+                      Download Analysis as PDF
+                    </Button>
+                  </div>
+                </Box>
+              )}
+            </Box>
+          </div>
+
+
+        )}
+
+        {/* Loading and Error states */}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {loading && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              {progress === 0 ? 'Processing files...' :
+                progress === 50 ? 'Analyzing content...' :
+                  isUpdating ? 'Updating submission...' : 'Completing analysis...'}
+            </Typography>
+            <CircularProgress size={24} sx={{ mt: 1 }} />
+          </Box>
+        )}
+      </Box>
+    </div>
   );
 };
 

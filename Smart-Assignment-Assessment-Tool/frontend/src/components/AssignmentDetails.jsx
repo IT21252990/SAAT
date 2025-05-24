@@ -10,6 +10,8 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
                       assignment?.submission_type_weights?.[type] || 
                       0;
 
+    console.log("marking:",marking)
+
     return (
       <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
@@ -44,7 +46,7 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
               </tr>
             </thead>
             <tbody>
-              {criteria.map((criterion, index) => (
+              {criteria.report.map((criterion, index) => (
                 <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-4 py-2 text-gray-700 border border-gray-300 dark:border-gray-600 dark:text-gray-300">
                     {criterion.criterion}
