@@ -5,14 +5,17 @@ import ProcessingScreen from "./ProcessingScreen";
 import { database } from "../../firebase";
 import { firestore } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
-const pub_url = "https://e1eb-34-148-219-166.ngrok-free.app";
+const pub_url = "https://9299-34-125-207-233.ngrok-free.app";
 
 function SubmitVideo() {
   const [videoURL, setVideoURL] = useState("");
   const [processingProgress, setProcessingProgress] = useState(0);
+  const { assignmentId } = useParams();
+  const userId = localStorage.getItem("userId");
   const [fileName, setFileName] = useState(""); // Added to track filename
+
   const navigate = useNavigate();
   const location = useLocation();
   const { moduleId, moduleName } = location.state || {};
@@ -36,6 +39,12 @@ function SubmitVideo() {
 
     const formattedFileName = await formatVideoFileName(filename);
     setFileName(filename); // Store filename for useEffect
+
+    console.log("Filename:", filename, 
+    "\nAssignment ID:", assignmentId, 
+    "\nModule ID:", moduleId, 
+    "\nUser ID:", userId, 
+    "\nVideo URL:", f_url);
 
     try {
       const response = await fetch(pub_url + "/process_video", {
@@ -107,7 +116,9 @@ function SubmitVideo() {
         where("userId", "==", userId),
       );
 
+      console.log("Query:", q);
       const querySnapshot = await getDocs(q);
+      console.log("Query Snapshot:", querySnapshot);
 
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
@@ -152,9 +163,21 @@ function SubmitVideo() {
       // Store the updated data back in localStorage
       localStorage.setItem(assignmentId, JSON.stringify(updatedData));
 
+      console.log("Processing complete!");
+      console.log("Updated Data:", updatedData);
+      console.log("Video Document ID:", documentId);
+      console.log("Assignment ID:", assignmentId);
+      console.log("Module ID:", moduleId);
+      console.log("User ID:", userId);
+      console.log("Video URL:", videoURL);
+
       // Navigate to AddSubmissionPage
       navigate(`/add-submission/${assignmentId}`, {
-        state: { moduleId, moduleName },
+        state: {
+          assignmentId,
+          moduleId,
+          moduleName,
+        },
       });
     }
   };
@@ -163,7 +186,7 @@ function SubmitVideo() {
     <div>
       { !videoURL && <UploadVideo onUploadComplete={processVideo} />}
       { videoURL && processingProgress < 100 && (
-        <ProcessingScreen progress={processingProgress} />
+        <ProcessingScreen progress={processingProgress} assignmentId={assignmentId} moduleId={moduleId} userId={userId} />
       )}
     </div>
   );

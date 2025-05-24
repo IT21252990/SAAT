@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
-import { firestore } from "../../firebase"; // your Firebase initialization file
+import { firestore, auth } from "../../firebase"; // your Firebase initialization file
 import {
   doc,
   collection,
@@ -33,8 +33,16 @@ function VideoScreen() {
       try {
         // Save user ID in localStorage
         const userId = localStorage.getItem("userId");
-  
+        const user = auth.currentUser;
+        if (user) {
+            console.log("User is signed in", user.uid);
+        } else {
+            console.error("User is not authenticated");
+        }
+
+        
         // Get user role from Flask API
+        console.log("Fetching user role from backend...", userId);
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${userId}`,
         );
@@ -46,6 +54,7 @@ function VideoScreen() {
           setIsTeacher(true);
         }
       } catch (error) {
+        console.error("Error fetching user role:", error);
         alert(error.message);
       }
     };
@@ -62,7 +71,7 @@ function VideoScreen() {
             setFilename(data.filename || "");
             setVideoUrl(data.video_url || "");
             setSegments(data.segments || []);
-            console.log("Segments:", data.segments);
+            // console.log("Segments:", data.segments);
           } else {
             console.log("Video document does not exist");
           }
@@ -94,7 +103,7 @@ function VideoScreen() {
         if (data.videoId === videoId) {
           loadedComments.push({ id: doc.id, ...data });
         }
-        console.log("Comments:", loadedComments);
+        // console.log("Comments:", loadedComments);
       });
       setComments(loadedComments);
     });

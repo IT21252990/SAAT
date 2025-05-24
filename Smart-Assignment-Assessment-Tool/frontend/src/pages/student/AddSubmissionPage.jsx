@@ -21,27 +21,27 @@ const AddSubmissionPage = () => {
 
     const [submissionTypes, setSubmissionTypes] = useState({ code: false, report: false, video: false });
 
-useEffect(() => {
-    const fetchAssignmentDetails = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
-            const data = await res.json();
-            if (res.ok) {
-                setSubmissionTypes(data.submission_types || { code: false, report: false, video: false });
+    useEffect(() => {
+        const fetchAssignmentDetails = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
+                const data = await res.json();
+                if (res.ok) {
+                    setSubmissionTypes(data.submission_types || { code: false, report: false, video: false });
 
-                const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
-                if (storedData.githubUrl) setGithubUrl(storedData.githubUrl);
-                if (storedData.videoDocId) setVideoDocId(storedData.videoDocId);
-            } else {
-                setError(data.error || "Failed to fetch assignment.");
+                    const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+                    if (storedData.githubUrl) setGithubUrl(storedData.githubUrl);
+                    if (storedData.videoDocId) setVideoDocId(storedData.videoDocId);
+                } else {
+                    setError(data.error || "Failed to fetch assignment.");
+                }
+            } catch (err) {
+                setError("Failed to load assignment: " + err.message);
             }
-        } catch (err) {
-            setError("Failed to load assignment: " + err.message);
-        }
-    };
+        };
 
-    fetchAssignmentDetails();
-}, [assignmentId]);
+        fetchAssignmentDetails();
+    }, [assignmentId]);
 
 
 

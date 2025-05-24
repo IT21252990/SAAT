@@ -1,6 +1,6 @@
 import React from "react";
 
-function ProcessingScreen({ progress }) {
+function ProcessingScreen({ progress, assignmentId, moduleId, userId }) {
   return (
     <div style={styles.container}>
       <h2>Processing Video...</h2>
