@@ -244,7 +244,7 @@ const TeacherModulePage = () => {
 
                           {/* Assignment details section */}
                           <div className="pt-2 border-t dark:border-gray-700">
-                            <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} marking={marking.criteria} />
+                            <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} marking={marking} />
                           </div>
 
                           {/* Control panel for expanded assignment */}

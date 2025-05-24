@@ -144,27 +144,29 @@ def generate_questions_from_video(combined_text, metric_type):
     
 
 #generate some general questions from assignment
-import google.generativeai as genai
-
 def generate_questions_from_assignment(description):
     """
-    Generate 3 general viva questions from an assignment description using Gemini.
+    Generate 3 general viva question-answer pairs from an assignment description using Gemini.
     """
 
     prompt = f"""
-    You are an AI tutor preparing for a viva exam.
-    Based on the following assignment description, generate exactly 3 general viva questions 
-    that a teacher might ask to assess a student's overall understanding of the assignment.
+    You are an AI tutor preparing viva questions.
+
+    Given the following assignment description, generate exactly 3 general viva question-answer pairs
+    that a teacher might ask to test a student's understanding.
 
     Assignment Description:
     {description}
 
     Format:
     - Question 1: <question>
+      Answer: <answer>
     - Question 2: <question>
+      Answer: <answer>
     - Question 3: <question>
+      Answer: <answer>
 
-    Only include the questions in the specified format. Do not include answers or extra commentary.
+    Only include questions and answers in this format. Avoid any extra text.
     """
 
     try:
@@ -172,25 +174,34 @@ def generate_questions_from_assignment(description):
         response = model.generate_content(prompt)
 
         if not response or not response.text:
-            print("[ERROR] No response received from Gemini.")
+            print("[ERROR] No response from Gemini.")
             return []
 
         print("[INFO] Raw Gemini response:")
         print(response.text)
 
-        # Simplified extraction of question text
+        lines = response.text.strip().splitlines()
+
         questions = []
-        for line in response.text.strip().splitlines():
-            line = line.strip().lstrip("-").strip()  # Remove leading dash and whitespace
+        current_q = {}
+
+        for line in lines:
+            line = line.strip().lstrip("-").strip()
             if line.lower().startswith("question") and ":" in line:
-                question = line.split(":", 1)[1].strip()
-                questions.append(question)
+                current_q = {}  # start new question
+                current_q["question"] = line.split(":", 1)[1].strip()
+            elif line.lower().startswith("answer") and ":" in line:
+                current_q["answer"] = line.split(":", 1)[1].strip()
+                if "question" in current_q:
+                    questions.append(current_q)
+                    current_q = {}
 
-        print("[INFO] Parsed Questions:")
-        for i, q in enumerate(questions, 1):
-            print(f"Q{i}: {q}")
+        print("[INFO] Parsed Questions and Answers:")
+        for i, qa in enumerate(questions, 1):
+            print(f"Q{i}: {qa['question']}")
+            print(f"A{i}: {qa['answer']}")
 
-        return questions[:3]  # Return only the first 3 questions
+        return questions[:3]  # Ensure exactly 3
     except Exception as e:
-        print("[ERROR] Failed to generate questions:", str(e))
+        print("[ERROR] Failed to generate Q&A:", str(e))
         return []

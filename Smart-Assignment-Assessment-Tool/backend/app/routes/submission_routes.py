@@ -173,6 +173,7 @@ def get_submissions_by_relevant_submission_id(submission_id):
         return jsonify({"error": str(e)}), 500
 
 
+#submission data of an assignmnet including the module name, assignment name, student email, and submitted date
 @submission_bp.route("/getSubmissionData/<submission_id>", methods=["GET"])
 def get_viva_dashboard_data(submission_id):
     try:
@@ -198,6 +199,7 @@ def get_viva_dashboard_data(submission_id):
         assignment = assignment_data.to_dict()
         module_id = assignment.get("module_id")
         assignment_name = assignment.get("name")
+        viva_questions = assignment.get("viva_questions", [])  
 
         # Fetch module details 
         module_ref = db.collection("modules").document(module_id)
@@ -228,7 +230,8 @@ def get_viva_dashboard_data(submission_id):
             "module_year": module_year,
             "assignment_name": assignment_name,
             "student_email": student_email,
-            "submitted_date": created_at
+            "submitted_date": created_at,
+            "viva_questions": viva_questions
         }
 
         # Log viva dashboard data for debugging
