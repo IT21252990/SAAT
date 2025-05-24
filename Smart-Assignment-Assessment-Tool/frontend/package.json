@@ -30,6 +30,7 @@
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.4.19",
     "axios": "^1.8.3",
+    "bluebird": "^3.7.2",
     "dotenv": "^16.4.7",
     "firebase": "^11.4.0",
     "flowbite-react": "^0.8.0",
@@ -59,7 +60,8 @@
     "swal": "^0.1.0",
     "sweetalert2": "^11.10.8",
     "swiper": "^11.1.15",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

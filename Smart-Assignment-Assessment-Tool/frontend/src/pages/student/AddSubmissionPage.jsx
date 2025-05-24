@@ -19,33 +19,53 @@ const AddSubmissionPage = () => {
     const [loading, setLoading] = useState(false);
 
 
-    useEffect(() => {
-        // Retrieve the GitHub URL from localStorage when the component mounts
-        const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
-        console.log(assignmentId)
-        if (storedData.githubUrl) {
-            setGithubUrl(storedData.githubUrl);
+    const [submissionTypes, setSubmissionTypes] = useState({ code: false, report: false, video: false });
+
+useEffect(() => {
+    const fetchAssignmentDetails = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
+            const data = await res.json();
+            if (res.ok) {
+                setSubmissionTypes(data.submission_types || { code: false, report: false, video: false });
+
+                const storedData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+                if (storedData.githubUrl) setGithubUrl(storedData.githubUrl);
+                if (storedData.videoDocId) setVideoDocId(storedData.videoDocId);
+            } else {
+                setError(data.error || "Failed to fetch assignment.");
+            }
+        } catch (err) {
+            setError("Failed to load assignment: " + err.message);
         }
-        if (storedData.videoDocId) {
-            setVideoDocId(storedData.videoDocId);
-        }
-    }, [assignmentId]);
+    };
+
+    fetchAssignmentDetails();
+}, [assignmentId]);
+
+
 
     const handleGithubUrlChange = (e) => {
         const newGithubUrl = e.target.value;
         setGithubUrl(newGithubUrl);
+        const githubUrlRegex = /^(https?:\/\/)?(www\.)?github\.com\/[\w.-]+\/[\w.-]+(\.git)?\/?$/;
 
-        // Retrieve existing data for the assignmentId, if any
-        const existingData = JSON.parse(localStorage.getItem(assignmentId)) || {};
+        if (!githubUrlRegex.test(newGithubUrl)) {
+            setError("Please enter a valid GitHub repository URL.");
+        } else {
+            setError("");
+            // Retrieve existing data for the assignmentId, if any
+            const existingData = JSON.parse(localStorage.getItem(assignmentId)) || {};
 
-        // Update the data with the new GitHub URL
-        const updatedData = {
-            ...existingData,
-            githubUrl: newGithubUrl,
-        };
+            // Update the data with the new GitHub URL
+            const updatedData = {
+                ...existingData,
+                githubUrl: newGithubUrl,
+            };
 
-        // Store the updated data back in localStorage
-        localStorage.setItem(assignmentId, JSON.stringify(updatedData));
+            // Store the updated data back in localStorage
+            localStorage.setItem(assignmentId, JSON.stringify(updatedData));
+        }
     };
 
     // Handle Save action
@@ -163,7 +183,65 @@ const AddSubmissionPage = () => {
                 {error && <p className="mb-4 text-red-500">{error}</p>}
 
                 <form>
-                    <div className="mb-4">
+
+                    {/* GitHub URL input */}
+                    {submissionTypes.code && (
+                        <div className="mb-4">
+                            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                GitHub Repository URL
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Enter GitHub URL..."
+                                value={githubUrl}
+                                onChange={handleGithubUrlChange}
+                                className={`w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white ${
+                                        error && error.includes("GitHub") ? "border-red-500" : "border-gray-300"
+                        }`}        />
+                        </div>
+                    )}
+
+                    {/* Report submission */}
+                    {submissionTypes.report && (
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Report
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/report-submission/${assignmentId}`, {
+                                    state: { assignmentId, moduleId, moduleName, userId }
+                                })}
+                                className="w-full rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-gray-800 dark:hover:bg-gray-900 dark:focus:ring-blue-800"
+                            >
+                                Upload Report
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Video submission */}
+                    {submissionTypes.video && (
+                        <div className="mb-4">
+                            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Video
+                            </label>
+                            {videoDocId ? (
+                                <p className="w-full rounded-md border border-gray-300 p-2 text-base dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    <span className="font-semibold">Video Document ID: </span>{videoDocId}
+                                </p>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleVideoNavigation}
+                                    className="w-full rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-gray-800 dark:hover:bg-gray-900 dark:focus:ring-blue-800"
+                                >
+                                    Upload Video
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* <div className="mb-4">
                         <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             GitHub Repository URL
                         </label>
@@ -188,7 +266,7 @@ const AddSubmissionPage = () => {
                             Upload Report
                         </button>
                         {/* Add your report input or component here if needed */}
-                    </div>
+                    {/* </div>
 
                     <div className="mb-4">
                         <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -208,7 +286,7 @@ const AddSubmissionPage = () => {
                                 Upload Video
                             </button>
                         )}
-                    </div>
+                    </div>  */}
 
                     <div className="mb-4 mt-16">
                         <button
