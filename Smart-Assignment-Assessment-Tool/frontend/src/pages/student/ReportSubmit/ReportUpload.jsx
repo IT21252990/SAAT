@@ -51,7 +51,10 @@ const ReportUpload = ({ onSubmit }) => {
   const [plagiarismResults, setPlagiarismResults] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isExist, setIsExist] = useState(false);
 
+  console.log("user: ", userId)
+  console.log("assign: ", assignmentId)
   // Fetch marking scheme on component mount
   useEffect(() => {
     const fetchMarkingScheme = async () => {
@@ -82,7 +85,6 @@ const ReportUpload = ({ onSubmit }) => {
 
     try {
       console.log('Checking existing submission for:', { assignmentId, userId });
-
       const response = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
         method: "POST",
         headers: {
@@ -94,6 +96,7 @@ const ReportUpload = ({ onSubmit }) => {
       if (response.ok) {
         const result = await response.json();
         console.log('Check submission result:', result);
+        setIsExist(true)
 
         if (result.exists) {
           // Try to fetch submission details
@@ -346,6 +349,7 @@ const ReportUpload = ({ onSubmit }) => {
 
       const reportResult = await reportResponse.json();
       const reportId = reportResult.report.report_id;
+      setReportID(reportId)
 
       // Check if submission exists
       const checkResponse = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
@@ -488,11 +492,9 @@ const ReportUpload = ({ onSubmit }) => {
 
 
 
-
-
-
   const [reportSubmissions, setReportSubmissions] = useState([]);
   const [reportID, setReportID] = useState('');
+  const [submissionID, setSubmissionID] = useState('');
   const [reportData, setReportData] = useState('');
   const [assignmentData, setAssignmentData] = useState('');
 
@@ -517,38 +519,58 @@ const ReportUpload = ({ onSubmit }) => {
 
   // Fetch assignment details
   const fetchAssignmentDetails = async () => {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`,
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setReportID(data.submissions[0].report_id);
-        console.log("name", data.submissions[0].report_id)
-      }
-    } catch (error) {
-      console.error("Error fetching assignment details:", error);
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
+    );
+    const data = await response.json();
+
+    // Replace this with how you get the current user's ID
+    const currentUserId = userId;
+
+    // Find the first submission belonging to the current student
+    const matchingSubmission = data.submissions.find(
+      (submission) => submission.student_id === currentUserId
+    );
+
+    if (response.ok && matchingSubmission) {
+      setSubmissionID(matchingSubmission.submission_id);
+      setReportID(matchingSubmission.report_id);
+      console.log("Matched report ID:", matchingSubmission.report_id);
+    } else {
+      console.warn("No matching submission found for this student.");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching assignment details:", error);
+  }
+};
+
 
 
   useEffect(() => {
     const fetchAllReportSubmissions = async () => {
       try {
+
         setError(null);
         setLoading(true);
 
         await fetchAssignmentDetails();
 
         console.log('Fetching report submissions for assignment ID:', reportID);
-
+        console.log("hellow ")
         const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
 
         console.log("response: ", response);
         const Reportdata = await response.json();
+        console.log("report", Reportdata.student_id);
+
+
         if (response.ok) {
-          setReportData(Reportdata);
-          console.log("report", Reportdata);
+          if (Reportdata.student_id === userId) {
+            console.log("user have existing submission", Reportdata);
+            setReportData(Reportdata);
+          }
+
 
           // Set the individual state variables based on the response structure
           // setAiContentResults(Reportdata.aiContent || {});
@@ -609,6 +631,7 @@ const ReportUpload = ({ onSubmit }) => {
     );
   };
 
+  console.log("iii", reportID)
   return (
     <div>
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
@@ -625,14 +648,14 @@ const ReportUpload = ({ onSubmit }) => {
         </Stepper>
 
         {/* Show submission status card if submission exists and not updating */}
-        {submissionStatus && !isUpdating && (
+        {reportData && !isUpdating && (
           <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <CheckCircle sx={{ color: '#4caf50', mr: 2, fontSize: 32 }} />
                 <Box>
                   <Typography variant="h5" color="primary" gutterBottom>
-                    Assignment Submitted Successfully 
+                    Assignment Submitted Successfully
                   </Typography>
                   <Chip
                     label="SUBMITTED"
@@ -710,7 +733,7 @@ const ReportUpload = ({ onSubmit }) => {
         )}
 
         {/* Upload section - show when no submission or updating */}
-        {(!submissionStatus || isUpdating) && (
+        {(!reportData || isUpdating) && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom>
               {isUpdating ? 'Update Student Report' : 'Upload Student Report'}

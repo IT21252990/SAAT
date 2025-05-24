@@ -6,9 +6,9 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
     if (!criteria || criteria.length === 0) return null;
 
     // Get the weight for this submission type
-    const typeWeight = marking?.submission_type_weights?.[type] || 
-                      assignment?.submission_type_weights?.[type] || 
-                      0;
+    const typeWeight = marking?.submission_type_weights?.[type] ||
+      assignment?.submission_type_weights?.[type] ||
+      0;
 
     return (
       <div className="mt-4">
@@ -102,11 +102,11 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
 
   // Calculate total weight for enabled submission types
   const calculateTotalWeight = () => {
-    const weights = marking?.submission_type_weights || 
-                   assignment?.submission_type_weights || {};
-    const types = marking?.submission_types || 
-                 assignment?.submission_types || {};
-    
+    const weights = marking?.submission_type_weights ||
+      assignment?.submission_type_weights || {};
+    const types = marking?.submission_types ||
+      assignment?.submission_types || {};
+
     return Object.keys(types).reduce((total, type) => {
       return types[type] ? total + (weights[type] || 0) : total;
     }, 0);
@@ -176,9 +176,9 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
             {Object.entries(assignment.submission_types)
               .filter(([type, isAccepted]) => isAccepted)
               .map(([type], index) => {
-                const weight = marking?.submission_type_weights?.[type] || 
-                             assignment?.submission_type_weights?.[type] || 
-                             0;
+                const weight = marking?.submission_type_weights?.[type] ||
+                  assignment?.submission_type_weights?.[type] ||
+                  0;
                 return (
                   <li key={index} className="capitalize">
                     {type} {weight > 0 && `(${weight}% of total grade)`}
@@ -197,7 +197,7 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
       <h3 className="mt-6 mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
         Marking Criteria
       </h3>
-      
+
       {/* Display marking scheme from the marking prop if available */}
       {marking && marking.criteria ? (
         <>
@@ -209,26 +209,26 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
         // Fallback to assignment's marking_criteria if no marking scheme is available
         assignment.marking_criteria && (
           <>
-            {assignment.marking_criteria.report && 
+            {assignment.marking_criteria.report &&
               renderSimpleCriteriaList(assignment.marking_criteria.report, "report")}
-            {assignment.marking_criteria.code && 
+            {assignment.marking_criteria.code &&
               renderSimpleCriteriaList(assignment.marking_criteria.code, "code")}
-            {assignment.marking_criteria.video && 
+            {assignment.marking_criteria.video &&
               renderSimpleCriteriaList(assignment.marking_criteria.video, "video")}
           </>
         )
       )}
 
       {/* Show message if no marking criteria available at all */}
-      {(!marking || !marking.criteria) && 
-       (!assignment.marking_criteria || 
-        (Object.keys(assignment.marking_criteria).every(
-          key => !assignment.marking_criteria[key] || assignment.marking_criteria[key].length === 0
-        ))) && (
-        <p className="text-gray-600 dark:text-gray-400">
-          No marking criteria available.
-        </p>
-      )}
+      {(!marking || !marking.criteria) &&
+        (!assignment.marking_criteria ||
+          (Object.keys(assignment.marking_criteria).every(
+            key => !assignment.marking_criteria[key] || assignment.marking_criteria[key].length === 0
+          ))) && (
+          <p className="text-gray-600 dark:text-gray-400">
+            No marking criteria available.
+          </p>
+        )}
     </div>
   );
 };

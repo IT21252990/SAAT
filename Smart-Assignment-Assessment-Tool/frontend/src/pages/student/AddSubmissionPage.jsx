@@ -201,32 +201,32 @@ const AddSubmissionPage = () => {
       }
 
       // Check if submission already exists in Firestore
-      const existingId = await checkExistingSubmission();
-      if (existingId) {
-        setSubmissionId(existingId);
+      // const existingId = await checkExistingSubmission();
+      // if (existingId) {
+      //   setSubmissionId(existingId);
 
-        const { code_id, video_id, report_id } = await fetchSubmissionData(existingId);
+      //   const { code_id, video_id, report_id } = await fetchSubmissionData(existingId);
 
-        if (code_id) {
-          const url = await fetchGithubUrlByCodeId(code_id);
-          setGithubUrl(url);
-        }
-        if (video_id) {
-          setVideoDocId(video_id);
-        }
-        if (report_id) {
-          setReportId(report_id);
-        }
+      //   if (code_id) {
+      //     const url = await fetchGithubUrlByCodeId(code_id);
+      //     setGithubUrl(url);
+      //   }
+      //   if (video_id) {
+      //     setVideoDocId(video_id);
+      //   }
+      //   if (report_id) {
+      //     setReportId(report_id);
+      //   }
 
-      } else {
-        // If not, create a new submission
-        const newId = await createEmptySubmission();
-        if (newId) {
-          setSubmissionId(newId);
-        } else {
-          setError("Could not create initial submission");
-        }
-      }
+      // } else {
+      //   // If not, create a new submission
+      //   const newId = await createEmptySubmission();
+      //   if (newId) {
+      //     setSubmissionId(newId);
+      //   } else {
+      //     setError("Could not create initial submission");
+      //   }
+      // }
     })();
   }, [assignmentId, userId]);
 
