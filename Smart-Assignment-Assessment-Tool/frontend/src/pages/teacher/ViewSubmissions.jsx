@@ -538,6 +538,7 @@ const ViewSubmissions = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {submissions.map((submission) => (
+                      console.log(submission),
                       <tr 
                         key={submission.submission_id} 
                         className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
