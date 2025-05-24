@@ -79,7 +79,7 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
 
       // Make API call to check code comments accuracy
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/naming/check-code_comments_accuracy`,
+        `${import.meta.env.VITE_BACKEND_URL}/naming/check-code-comments-accuracy`,
         {
           code_id: code_id,
           repo_url: github_url,
