@@ -12,13 +12,68 @@ def create_marking_scheme():
         data = request.get_json()
 
         rubric_name = data.get("rubricName")
-        criteria = data.get("criteria")
+        criteria = data.get("criteria")  # Now expects: {"code": [], "report": [], "video": []}
         module_code = data.get("moduleCode")
         assignment_id = data.get("assignment_id")
+        submission_types = data.get("submissionTypes", {})  # Get selected submission types
+        submission_type_weights  = data.get("submissionTypeWeights", {})  # Get weights for each submission type
         # tutor = request.user["_id"] if request.user else None  # Assuming user info is stored in request
 
-        if not rubric_name or not criteria or not module_code :
+        if not rubric_name or not criteria or not module_code:
             return jsonify({"error": "Missing required fields"}), 400
+        
+        # Validate submission type weights
+        if submission_types:
+            total_weight = sum(
+                weight for type, weight in submission_type_weights.items() 
+                if submission_types.get(type, False)
+            )
+            if total_weight != 100:
+                return jsonify({
+                    "error": f"Submission type weights must total 100%. Current total: {total_weight}%"
+                }), 400
+
+        # Process criteria for each submission type
+        processed_criteria = {}
+        
+        # Process code criteria if code submission is enabled
+        if submission_types.get("code", False) and criteria.get("code"):
+            processed_criteria["code"] = [
+                {
+                    "criterion": criterion["name"],
+                    "low_description": criterion["lowDescription"],
+                    "medium_description": criterion["mediumDescription"],
+                    "high_description": criterion["highDescription"],
+                    "weightage": criterion["weight"],
+                    "type_weight": submission_type_weights.get("code", 0)
+                } for criterion in criteria["code"]
+            ]
+
+        # Process report criteria if report submission is enabled
+        if submission_types.get("report", False) and criteria.get("report"):
+            processed_criteria["report"] = [
+                {
+                    "criterion": criterion["name"],
+                    "low_description": criterion["lowDescription"],
+                    "medium_description": criterion["mediumDescription"],
+                    "high_description": criterion["highDescription"],
+                    "weightage": criterion["weight"],
+                    "type_weight": submission_type_weights.get("report", 0)
+                } for criterion in criteria["report"]
+            ]
+
+        # Process video criteria if video submission is enabled
+        if submission_types.get("video", False) and criteria.get("video"):
+            processed_criteria["video"] = [
+                {
+                    "criterion": criterion["name"],
+                    "low_description": criterion["lowDescription"],
+                    "medium_description": criterion["mediumDescription"],
+                    "high_description": criterion["highDescription"],
+                    "weightage": criterion["weight"],
+                    "type_weight": submission_type_weights.get("video", 0)
+                } for criterion in criteria["video"]
+            ]
 
         # Create new marking scheme document
         marking_scheme_ref = db.collection("marking_schemes").document()
@@ -27,15 +82,9 @@ def create_marking_scheme():
             "module_code": module_code,
             "status": "Active",
             "assignment_id": assignment_id,
-            "criteria": [
-                {
-                    "criterion": criterion["name"],
-                    "low_description": criterion["lowDescription"],
-                    "medium_description": criterion["mediumDescription"],
-                    "high_description": criterion["highDescription"],
-                    "weightage": criterion["weight"]
-                } for criterion in criteria
-            ],
+            "criteria": processed_criteria,  # Now stores as {"code": [], "report": [], "video": []}
+            "submission_types": submission_types,  # Store which submission types are enabled
+            "submission_type_weights": submission_type_weights,  # Store weights for each submission type
             # "tutor": tutor,
             "marking_scheme_file_url": ""  # Provide URL if necessary
         })
@@ -43,6 +92,8 @@ def create_marking_scheme():
         return jsonify({"message": "Marking scheme created successfully!"}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
 
 # Get All Marking Schemes
 @marking_scheme_bp.route("/markingSchemes", methods=["GET"])
