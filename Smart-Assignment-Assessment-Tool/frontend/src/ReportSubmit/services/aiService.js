@@ -26,8 +26,9 @@ export const analyzeReport = async (
     onProgress(50);
 
     const response = await fetch(`http://127.0.0.1:5000/api/v1/marking-scheme/markingScheme/${assignmentId}`);
-    const markingScheme = await response.json();
-    const critirions = markingScheme.marking_schemes[0].criteria;
+    const markingScheme = await response.json(); 
+    console.log("Marking scheme fetched:", markingScheme.marking_schemes[0].criteria.report);
+    const critirions = markingScheme.marking_schemes[0].criteria.report;
 
     if (!markingScheme || !critirions) {
       throw new Error("Invalid marking scheme format");
