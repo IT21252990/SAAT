@@ -21,6 +21,11 @@ def create_assignment():
         if not module_id or not name or not marking_criteria:
             return jsonify({"error": "Missing required fields"}), 400
         
+         # Generate general questions using Gemini
+        from app.utils.generate_questions import generate_questions_from_assignment
+        viva_questions = generate_questions_from_assignment(description)
+        print("[DEBUG] Viva Questions to save in DB:", viva_questions)
+
         assignment_id = str(uuid.uuid4())  # Generate a unique assignment ID
 
         # Save in Firestore
@@ -33,7 +38,8 @@ def create_assignment():
             "deadline": deadline,
             "submission_types": submission_types,
             "marking_criteria": marking_criteria,
-            "details": details
+            "details": details,
+            "viva_questions": viva_questions
         })
 
         return jsonify({"message": "Assignment created successfully!", "assignment_id": assignment_id}), 200

@@ -141,3 +141,67 @@ def generate_questions_from_video(combined_text, metric_type):
         return response.text if response else None
     except Exception as e:
         return str(e)
+    
+
+#generate some general questions from assignment
+def generate_questions_from_assignment(description):
+    """
+    Generate 3 general viva question-answer pairs from an assignment description using Gemini.
+    """
+
+    prompt = f"""
+    You are an AI tutor preparing viva questions.
+
+    Given the following assignment description, generate exactly 3 general viva question-answer pairs
+    that a teacher might ask to test a student's understanding.
+
+    Assignment Description:
+    {description}
+
+    Format:
+    - Question 1: <question>
+      Answer: <answer>
+    - Question 2: <question>
+      Answer: <answer>
+    - Question 3: <question>
+      Answer: <answer>
+
+    Only include questions and answers in this format. Avoid any extra text.
+    """
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+
+        if not response or not response.text:
+            print("[ERROR] No response from Gemini.")
+            return []
+
+        print("[INFO] Raw Gemini response:")
+        print(response.text)
+
+        lines = response.text.strip().splitlines()
+
+        questions = []
+        current_q = {}
+
+        for line in lines:
+            line = line.strip().lstrip("-").strip()
+            if line.lower().startswith("question") and ":" in line:
+                current_q = {}  # start new question
+                current_q["question"] = line.split(":", 1)[1].strip()
+            elif line.lower().startswith("answer") and ":" in line:
+                current_q["answer"] = line.split(":", 1)[1].strip()
+                if "question" in current_q:
+                    questions.append(current_q)
+                    current_q = {}
+
+        print("[INFO] Parsed Questions and Answers:")
+        for i, qa in enumerate(questions, 1):
+            print(f"Q{i}: {qa['question']}")
+            print(f"A{i}: {qa['answer']}")
+
+        return questions[:3]  # Ensure exactly 3
+    except Exception as e:
+        print("[ERROR] Failed to generate Q&A:", str(e))
+        return []

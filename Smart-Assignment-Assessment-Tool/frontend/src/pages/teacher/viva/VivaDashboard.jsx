@@ -12,7 +12,8 @@ const VivaDashboard = () => {
   const [questions, setQuestions] = useState([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [expandedAnswers, setExpandedAnswers] = useState({});
-
+  const [generalQuestions, setGeneralQuestions] = useState([]);
+  
   const fetchSubmissionDetails = async () => {
     try {
       const response = await fetch(
@@ -22,6 +23,7 @@ const VivaDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         setSubmissionData(data.submission_data);
+        setGeneralQuestions(data.submission_data.viva_questions || []);
       } else {
         setError("Failed to fetch submission details.");
       }
@@ -126,6 +128,7 @@ const VivaDashboard = () => {
           </div>
 
           {/* Content */}
+          
           <div className="p-6">
             {error && (
               <Alert color="failure" className="mb-6">
@@ -177,103 +180,168 @@ const VivaDashboard = () => {
             )}
 
             {/* Questions Section */}
-            <div className="mt-8">
+            <div className="mt-6">
               <div className="flex items-center mb-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   Viva Questions
                 </h3>
-                <span className="ml-3 bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300">
-                  {questions.length} Questions
+                <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
+                  {questions.length + generalQuestions.length} Total
                 </span>
               </div>
-              
-              {isLoadingQuestions ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-primary-600"></div>
-                </div>
-              ) : questions.length > 0 ? (
-                <div className="overflow-hidden border border-gray-200 rounded-lg dark:border-gray-700">
-                  <div className="overflow-x-auto">
-                    <table className="w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
-                      <thead className="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                          <th scope="col" className="w-16 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
-                            Type
-                          </th>
-                          <th scope="col" className="w-20 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
-                            Metric
-                          </th>
-                          <th scope="col" className="w-24 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
-                            Difficulty
-                          </th>
-                          <th scope="col" className="w-1/3 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
-                            Question
-                          </th>
-                          <th scope="col" className="w-1/3 px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400">
-                            Answer
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-800">
-                        {questions.map((question, index) => {
-                          const questionId = `${question.document_id}-${index}`;
-                          const isExpanded = expandedAnswers[questionId];
-                          
-                          return (
-                            <tr 
-                              key={questionId}
-                              className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                            >
-                              <td className="px-4 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <span className="mr-1">{getTypeIcon(question.type)}</span>
-                                  <span className="text-sm font-medium text-gray-900 capitalize dark:text-white">
-                                    {question.type}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="px-4 py-4 whitespace-nowrap">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                                  {question.metric_type}
-                                </span>
-                              </td>
-                              <td className="px-4 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium capitalize ${getDifficultyColor(question.difficulty)}`}>
-                                  {question.difficulty}
-                                </span>
-                              </td>
-                              <td className="px-4 py-4">
-                                <div className="text-sm text-gray-900 break-words dark:text-white">
-                                  {question.question_text}
-                                </div>
-                              </td>
-                              <td className="px-4 py-4">
-                                <div className={`text-sm text-gray-700 dark:text-gray-300 ${isExpanded ? '' : 'line-clamp-3'} break-words`}>
-                                  {question.answer}
-                                </div>
-                                <button 
-                                  onClick={() => toggleAnswerExpansion(questionId)}
-                                  className="mt-1 text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                                >
-                                  {isExpanded ? 'Show less' : 'View full answer'}
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+
+              {/* General Questions Section */}
+              {generalQuestions.length > 0 && (
+                <Card className="mb-4 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center mb-3">
+                    <div className="flex items-center justify-center w-6 h-6 mr-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded">
+                      <span className="text-white text-xs">📋</span>
+                    </div>
+                    <h4 className="text-base font-semibold text-gray-900 dark:text-white">
+                      General Questions
+                    </h4>
+                    <span className="ml-2 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded-full dark:bg-purple-900 dark:text-purple-300">
+                      {generalQuestions.length}
+                    </span>
                   </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-8 border border-gray-300 border-dashed rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                  <svg className="w-16 h-16 mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                  </svg>
-                  <p className="text-lg font-medium text-gray-600 dark:text-gray-400">No questions found for this submission</p>
-                  <p className="mt-2 text-center text-gray-500 dark:text-gray-500">Generate new viva questions using the button above</p>
-                </div>
+                  
+                  <div className="space-y-2">
+                    {generalQuestions.map((q, index) => (
+                      <div 
+                        key={index} 
+                        className="p-3 border border-gray-200 rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700 hover:shadow-sm transition-shadow duration-200"
+                      >
+                        <div className="flex items-start mb-1">
+                          <span className="inline-flex items-center justify-center w-5 h-5 mr-2 text-xs font-bold text-white bg-purple-500 rounded-full flex-shrink-0">
+                            {index + 1}
+                          </span>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-900 font-medium dark:text-white">
+                              {q.question}
+                            </p>
+                          </div>
+                        </div>
+                        {q.answer && (
+                          <div className="ml-7 mt-2">
+                            <div className="p-2 bg-white dark:bg-gray-700 rounded border-l-3 border-purple-500">
+                              <p className="text-xs text-gray-700 dark:text-gray-300">
+                                {q.answer}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </Card>
               )}
+
+              {/* Specific Questions Section */}
+              <div className="mt-4">
+                <div className="flex items-center mb-3">
+                  <div className="flex items-center justify-center w-6 h-6 mr-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded">
+                    <span className="text-white text-xs">🎯</span>
+                  </div>
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white">
+                    Submission-Specific Questions
+                  </h4>
+                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
+                    {questions.length}
+                  </span>
+                </div>
+
+                {isLoadingQuestions ? (
+                  <div className="flex items-center justify-center h-24">
+                    <div className="w-6 h-6 border-b-2 rounded-full animate-spin border-blue-600"></div>
+                  </div>
+                ) : questions.length > 0 ? (
+                  <Card className="overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div className="overflow-x-auto">
+                      <table className="w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                          <tr>
+                            <th scope="col" className="w-16 px-3 py-2 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
+                              Type
+                            </th>
+                            <th scope="col" className="w-20 px-3 py-2 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
+                              Metric
+                            </th>
+                            <th scope="col" className="w-24 px-3 py-2 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
+                              Difficulty
+                            </th>
+                            <th scope="col" className="w-1/3 px-3 py-2 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
+                              Question
+                            </th>
+                            <th scope="col" className="w-1/3 px-3 py-2 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
+                              Answer
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-800">
+                          {questions.map((question, index) => {
+                            const questionId = `${question.document_id}-${index}`;
+                            const isExpanded = expandedAnswers[questionId];
+                            
+                            return (
+                              <tr 
+                                key={questionId}
+                                className="transition-all duration-200 hover:bg-blue-50 dark:hover:bg-gray-700/50"
+                              >
+                                <td className="px-3 py-2 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <span className="mr-1 text-sm">{getTypeIcon(question.type)}</span>
+                                    <span className="text-xs font-medium text-gray-900 capitalize dark:text-white">
+                                      {question.type}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 whitespace-nowrap">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                    {question.metric_type}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2 whitespace-nowrap">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getDifficultyColor(question.difficulty)}`}>
+                                    {question.difficulty}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2">
+                                  <div className="text-xs text-gray-900 break-words dark:text-white">
+                                    {question.question_text}
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2">
+                                  <div className={`text-xs text-gray-700 dark:text-gray-300 ${isExpanded ? '' : 'line-clamp-2'} break-words`}>
+                                    {question.answer}
+                                  </div>
+                                  <button 
+                                    onClick={() => toggleAnswerExpansion(questionId)}
+                                    className="mt-1 inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 rounded transition-colors duration-200"
+                                  >
+                                    {isExpanded ? 'Less' : 'More'}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="flex flex-col items-center justify-center p-6 border-2 border-gray-300 border-dashed bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                    <div className="flex items-center justify-center w-12 h-12 mb-3 bg-gray-200 rounded-full dark:bg-gray-700">
+                      <svg className="w-6 h-6 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                      </svg>
+                    </div>
+                    <h5 className="mb-1 text-base font-semibold text-gray-600 dark:text-gray-400">No document-specific questions found</h5>
+                    <p className="text-center text-sm text-gray-500 dark:text-gray-500">
+                      Generate new viva questions using the button above.
+                    </p>
+                  </Card>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -45,11 +45,11 @@ const TeacherModulePage = () => {
           setError(assignmentsData.error || "Failed to load assignments!");
         }
 
-    } catch (error) {
-      setError("Connection error: " + error.message);
-    } finally {
-      setLoading(false);
-    }
+      } catch (error) {
+        setError("Connection error: " + error.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -69,20 +69,20 @@ const TeacherModulePage = () => {
       const data = await response.json();
 
 
-       // Fetch marking
-       const assignmentsReportMarking = await fetch(
+      // Fetch marking
+      const assignmentsReportMarking = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignmentId}`
       );
       const markingData = await assignmentsReportMarking.json();
 
       if (assignmentsReportMarking.ok) {
         setMarking(markingData.marking_schemes[0]);
-        console.log('success',markingData.marking_schemes[0])
+        console.log('success', markingData.marking_schemes[0])
       } else {
         setError(markingData.error || "Failed to load marking!");
       }
 
-    
+
       if (response.ok) {
         setExpandedAssignment(data);
       } else {
@@ -96,28 +96,28 @@ const TeacherModulePage = () => {
   };
 
   const deleteAssignment = async (assignmentId) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
-  if (!confirmDelete) return;
+    const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
+    if (!confirmDelete) return;
 
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}/assignment/deleteAssignment/${assignmentId}`,
-      { method: "DELETE" }
-    );
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/assignment/deleteAssignment/${assignmentId}`,
+        { method: "DELETE" }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      // Remove deleted assignment from list
-      setAssignments(prev => prev.filter(a => a.assignment_id !== assignmentId));
-      setExpandedAssignment(null);
-    } else {
-      setError(data.error || "Failed to delete assignment.");
+      if (response.ok) {
+        // Remove deleted assignment from list
+        setAssignments(prev => prev.filter(a => a.assignment_id !== assignmentId));
+        setExpandedAssignment(null);
+      } else {
+        setError(data.error || "Failed to delete assignment.");
+      }
+    } catch (error) {
+      setError("Error deleting assignment: " + error.message);
     }
-  } catch (error) {
-    setError("Error deleting assignment: " + error.message);
-  }
-};
+  };
 
 
   // Function to dismiss error
@@ -130,9 +130,9 @@ const TeacherModulePage = () => {
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
         <Header />
       </div>
-            <main className="container px-4 pt-20 pb-5 mx-auto">
-        <Button 
-          color="light" 
+      <main className="container px-4 pt-20 pb-5 mx-auto">
+        <Button
+          color="light"
           onClick={() => navigate("/teacher-home")}
           className="mb-3 transition-all duration-300 group hover:bg-primary-100 dark:hover:bg-gray-700"
         >
@@ -158,7 +158,7 @@ const TeacherModulePage = () => {
                 Browse and manage all assignments in this module
               </p>
             </div>
-            
+
             <Button
               color="blue"
               onClick={() =>
@@ -223,7 +223,7 @@ const TeacherModulePage = () => {
                               Edit
                             </Button>
                           </Tooltip> */}
-                          
+
                           <Tooltip content="View all student submissions">
                             <Button
                               color="success"
@@ -240,40 +240,40 @@ const TeacherModulePage = () => {
 
                       {/* Expanded assignment details with animation */}
                       {expandedAssignment && expandedAssignment.assignment_id === assignment.assignment_id && (
-  <>
-    
-    {/* Assignment details section */}
-    <div className="pt-2 border-t dark:border-gray-700">
-      <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} marking={marking}/>
-    </div>
+                        <>
 
-    {/* Control panel for expanded assignment */}
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50  dark:bg-gray-700">
-      <div className="mb-2 ml-2 sm:mb-0 text-sm font-medium text-gray-700 dark:text-gray-300">
-        Manage this assignment:
-      </div>
-      <div className="flex gap-3">
-        <Button
-          color="warning"
-          size="sm"
-          onClick={() => navigate(`/edit-assignment/${assignment.assignment_id}`)}
-        >
-          <HiPencil className="w-4 h-4 mr-2" />
-          Edit
-        </Button>
-        <Button
-        color="failure"
-        size="sm"
-        onClick={() => deleteAssignment(assignment.assignment_id)}
-        className="transition-transform duration-300 hover:scale-105"
-      >
-          <HiX className="w-4 h-4 mr-2" />
-          Delete
-        </Button>
-      </div>
-    </div>
-  </>
-)}
+                          {/* Assignment details section */}
+                          <div className="pt-2 border-t dark:border-gray-700">
+                            <AssignmentDetails assignment={expandedAssignment} moduleName={moduleName} marking={marking} />
+                          </div>
+
+                          {/* Control panel for expanded assignment */}
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50  dark:bg-gray-700">
+                            <div className="mb-2 ml-2 sm:mb-0 text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Manage this assignment:
+                            </div>
+                            <div className="flex gap-3">
+                              <Button
+                                color="warning"
+                                size="sm"
+                                onClick={() => navigate(`/edit-assignment/${assignment.assignment_id}`)}
+                              >
+                                <HiPencil className="w-4 h-4 mr-2" />
+                                Edit
+                              </Button>
+                              <Button
+                                color="failure"
+                                size="sm"
+                                onClick={() => deleteAssignment(assignment.assignment_id)}
+                                className="transition-transform duration-300 hover:scale-105"
+                              >
+                                <HiX className="w-4 h-4 mr-2" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </>
+                      )}
 
 
 

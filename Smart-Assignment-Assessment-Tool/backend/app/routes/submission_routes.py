@@ -89,6 +89,49 @@ def update_submission():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@submission_bp.route("/update-video", methods=["POST"])
+def update_video_id():
+    try:
+        db = current_app.db
+        data = request.get_json()
+
+        submission_id = data.get("submission_id")
+        video_id = data.get("video_id")
+
+        if not submission_id or not video_id:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_ref.update({"video_id": video_id})
+
+        return jsonify({"message": "Video ID updated successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@submission_bp.route("/update-fields", methods=["PATCH"])
+def update_submission_fields():
+    try:
+        db = current_app.db
+        data = request.get_json()
+
+        submission_id = data.pop("submission_id", None)
+        if not submission_id:
+            return jsonify({"error": "Missing submission_id"}), 400
+
+        allowed_fields = {"code_id", "report_id", "video_id", "status"}
+        update_data = {k: v for k, v in data.items() if k in allowed_fields}
+
+        if not update_data:
+            return jsonify({"error": "No valid fields provided for update"}), 400
+
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_ref.update(update_data)
+
+        return jsonify({"message": "Submission updated successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # get all submissions by assignment id
@@ -130,6 +173,7 @@ def get_submissions_by_relevant_submission_id(submission_id):
         return jsonify({"error": str(e)}), 500
 
 
+#submission data of an assignmnet including the module name, assignment name, student email, and submitted date
 @submission_bp.route("/getSubmissionData/<submission_id>", methods=["GET"])
 def get_viva_dashboard_data(submission_id):
     try:
@@ -155,6 +199,7 @@ def get_viva_dashboard_data(submission_id):
         assignment = assignment_data.to_dict()
         module_id = assignment.get("module_id")
         assignment_name = assignment.get("name")
+        viva_questions = assignment.get("viva_questions", [])  
 
         # Fetch module details 
         module_ref = db.collection("modules").document(module_id)
@@ -185,7 +230,8 @@ def get_viva_dashboard_data(submission_id):
             "module_year": module_year,
             "assignment_name": assignment_name,
             "student_email": student_email,
-            "submitted_date": created_at
+            "submitted_date": created_at,
+            "viva_questions": viva_questions
         }
 
         # Log viva dashboard data for debugging
