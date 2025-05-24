@@ -30,11 +30,13 @@
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.4.19",
     "axios": "^1.8.3",
+    "bluebird": "^3.7.2",
     "dotenv": "^16.4.7",
     "firebase": "^11.4.0",
     "flowbite-react": "^0.8.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.483.0",
     "mammoth": "^1.8.0",
@@ -58,7 +60,8 @@
     "swal": "^0.1.0",
     "sweetalert2": "^11.10.8",
     "swiper": "^11.1.15",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

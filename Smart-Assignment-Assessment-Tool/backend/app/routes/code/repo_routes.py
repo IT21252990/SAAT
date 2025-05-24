@@ -460,3 +460,90 @@ def get_final_feedback():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@repo_bp.route('/update-final-feedback', methods=['POST'])
+def update_final_feedback():
+    try:
+        db = current_app.db
+        data = request.get_json()
+        
+        code_id = data.get("code_id")
+        file_path = data.get("file_path")
+        line_number = str(data.get("line_number"))
+        comment = data.get("comment")
+        old_comment = data.get("old_comment")
+        
+        if not code_id or not file_path or not line_number or not comment:
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+            
+        code_data = doc.to_dict()
+        comments = code_data.get("comments", {})
+        
+        # Update the specific comment
+        if (file_path in comments and 
+            line_number in comments[file_path] and 
+            old_comment in comments[file_path][line_number]):
+            
+            index = comments[file_path][line_number].index(old_comment)
+            comments[file_path][line_number][index] = comment
+            
+            doc_ref.update({"comments": comments})
+            
+            return jsonify({"message": "Comment updated successfully"}), 200
+        else:
+            return jsonify({"error": "Comment not found"}), 404
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@repo_bp.route('/delete-final-feedback', methods=['POST'])
+def delete_final_feedback():
+    try:
+        db = current_app.db
+        data = request.get_json()
+        
+        code_id = data.get("code_id")
+        file_path = data.get("file_path")
+        line_number = str(data.get("line_number"))
+        comment = data.get("comment")
+        
+        if not code_id or not file_path or not line_number or not comment:
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+            
+        code_data = doc.to_dict()
+        comments = code_data.get("comments", {})
+        
+        # Remove the specific comment
+        if (file_path in comments and 
+            line_number in comments[file_path] and 
+            comment in comments[file_path][line_number]):
+            
+            comments[file_path][line_number].remove(comment)
+            
+            # Clean up empty structures
+            if not comments[file_path][line_number]:
+                del comments[file_path][line_number]
+                
+                if not comments[file_path]:
+                    del comments[file_path]
+            
+            doc_ref.update({"comments": comments})
+            
+            return jsonify({"message": "Comment deleted successfully"}), 200
+        else:
+            return jsonify({"error": "Comment not found"}), 404
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

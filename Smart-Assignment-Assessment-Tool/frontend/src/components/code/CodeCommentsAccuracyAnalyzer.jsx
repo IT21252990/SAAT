@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Alert, Button, Progress, Spinner } from 'flowbite-react';
 import {
@@ -14,11 +14,22 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
 
-  // Fetch existing results on component mount
+  // Update the useEffect hook to trigger analysis if no results exist
   useEffect(() => {
-    fetchExistingResults();
-  }, [code_id]);
+      const fetchData = async () => {
+        setIsInitialLoading(true);
+        await fetchExistingResults();
+        // If no results exist, automatically analyze
+        if (!results || shouldReanalyze(results.analyzed_at)) {
+    await analyzeCodeComments();
+  }
+        setIsInitialLoading(false);
+      };
+      fetchData();
+    }, [code_id]);
 
   const fetchExistingResults = async () => {
     setIsLoading(true);
@@ -47,10 +58,12 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
     }
   };
 
-  const analyzeCodeComments = async () => {
+  const analyzeCodeComments = async (isManual = false) => {
+  if (isManual) {
     setIsAnalyzing(true);
     setProgress(0);
-    setError(null);
+  }
+  setError(null);
 
     try {
       // Simulate progress while waiting for API response
@@ -77,15 +90,27 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
       setProgress(100);
       setResults(response.data.results);
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to analyze code comments accuracy");
-      clearInterval(progressInterval);
-      setProgress(0);
+      setError(err.response?.data?.error || "Failed to analyze");
+  if (isManual) {
+    clearInterval(progressInterval);
+    setProgress(0);
+  }
     } finally {
+      if (isManual) {
       setTimeout(() => {
         setIsAnalyzing(false);
       }, 500);
     }
+    }
   };
+
+  const shouldReanalyze = (lastAnalyzed) => {
+  if (!lastAnalyzed) return true;
+  const lastDate = new Date(lastAnalyzed);
+  const now = new Date();
+  return (now - lastDate) > (24 * 60 * 60 * 1000); // Re-analyze if older than 24 hours
+};
+
 
   const renderIssuesList = () => {
     if (!results || results.status === "Pass") return null;
@@ -95,12 +120,12 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
         <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
           Comments with accuracy issues:
         </h3>
-        <div className="max-h-96 overflow-y-auto rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+        <div className="p-4 overflow-y-auto rounded-lg max-h-96 bg-gray-50 dark:bg-gray-800">
           <ul className="space-y-2">
             {results.issues.map((issue, index) => (
               <li
                 key={index}
-                className="flex items-start gap-2 rounded-md bg-white p-2 shadow-sm dark:bg-gray-700"
+                className="flex items-start gap-2 p-2 bg-white rounded-md shadow-sm dark:bg-gray-700"
               >
                 <XCircleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
                 <div>
@@ -119,9 +144,9 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     <span className="font-medium">Issue:</span> {issue.issue}
                   </p>
-                  <div className="mt-2 rounded-md bg-gray-100 p-2 dark:bg-gray-600">
+                  <div className="p-2 mt-2 bg-gray-100 rounded-md dark:bg-gray-600">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Suggested improvement:</p>
-                    <p className="whitespace-pre-line text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-gray-600 whitespace-pre-line dark:text-gray-300">
                       {issue.suggestion}
                     </p>
                   </div>
@@ -134,15 +159,24 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
     );
   };
 
+  if (isInitialLoading) {
+        return (
+          <div className="flex items-center justify-center p-8">
+        <Spinner size="xl" />
+        <span className="ml-2 text-black dark:text-white">Initial analysis in progress...</span>
+      </div>
+        );
+      }
+
   return (
     <>
       {onBack && (
         <button
           onClick={onBack}
-          className="hover:bg-primary-50 text-primary-700 dark:text-primary-300 mb-6 inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm transition-all duration-300 hover:shadow dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
+          className="inline-flex items-center px-4 py-2 mb-6 transition-all duration-300 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-primary-50 text-primary-700 dark:text-primary-300 hover:shadow dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
         >
           <svg
-            className="mr-2 h-4 w-4"
+            className="w-4 h-4 mr-2"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -158,8 +192,8 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
           Back to Repository Analysis Tools
         </button>
       )}
-      <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Code Comments Accuracy Analysis
@@ -171,21 +205,21 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
               onClick={fetchExistingResults}
               disabled={isLoading || isAnalyzing}
               color="light"
-              className="rounded-lg px-2 py-2 text-sm font-medium dark:bg-gray-700 lg:px-3 lg:py-2"
+              className="px-2 py-2 text-sm font-medium rounded-lg dark:bg-gray-700 lg:px-3 lg:py-2"
             >
-              <ArrowPathIcon className="mr-2 h-5 w-5" />
+              <ArrowPathIcon className="w-5 h-5 mr-2" />
               Refresh
             </Button>
 
             <Button
-              onClick={analyzeCodeComments}
+              onClick={() => analyzeCodeComments(true)}
               disabled={isAnalyzing || isLoading}
-              className="bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 rounded-lg px-2 py-2 text-sm font-medium text-white focus:outline-none focus:ring-4 lg:px-3 lg:py-2"
+              className="px-2 py-2 text-sm font-medium text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 focus:outline-none focus:ring-4 lg:px-3 lg:py-2"
             >
               {isAnalyzing ? (
                 <Spinner size="sm" className="mr-2" />
               ) : (
-                <DocumentTextIcon className="mr-2 h-5 w-5" />
+                <DocumentTextIcon className="w-5 h-5 mr-2" />
               )}
               {isAnalyzing ? "Analyzing..." : "Re-analyze"}
             </Button>
@@ -194,12 +228,12 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
 
         {(isAnalyzing || isLoading) && (
           <div className="mb-4">
-            <div className="mb-1 flex justify-between">
-              <span className="text-primary-700 text-sm font-medium dark:text-white">
+            <div className="flex justify-between mb-1">
+              <span className="text-sm font-medium text-primary-700 dark:text-white">
                 {isAnalyzing ? "Analyzing code comments..." : "Loading results..."}
               </span>
               {isAnalyzing && (
-                <span className="text-primary-700 text-sm font-medium dark:text-white">
+                <span className="text-sm font-medium text-primary-700 dark:text-white">
                   {progress}%
                 </span>
               )}
@@ -232,14 +266,14 @@ const CodeCommentsAccuracyAnalyzer = ({ github_url, code_id, onBack }) => {
           <div className="mt-4">
             {results.status === "Pass" ? (
               <Alert color="success" className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5" />
+                <CheckCircleIcon className="w-5 h-5" />
                 All code comments accurately describe their corresponding code!
               </Alert>
             ) : (
               <div>
                 <Alert color="warning" className="mb-4">
                   <div className="flex items-center gap-2">
-                    <XCircleIcon className="h-5 w-5" />
+                    <XCircleIcon className="w-5 h-5" />
                     <span>
                       Found {results.issues.length}{" "}
                       {results.issues.length === 1 ? "issue" : "issues"} with code comments accuracy.

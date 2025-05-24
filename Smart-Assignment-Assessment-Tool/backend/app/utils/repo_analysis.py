@@ -94,8 +94,8 @@ def check_code_naming_conventions(RepoURL):
     Returns a JSON object with the analysis results.
     """
     prompt = f"""
-    You are an expert code reviewer analyzing a GitHub repository at {RepoURL}. Examine all code elements including:
-    
+    You are an expert code reviewer analyzing a GitHub repository at {RepoURL}. Your analysis must be based SOLELY on the actual code found in this repository - do not make assumptions or include examples from other projects. Examine all code elements including:
+
     1. Variable declarations
     2. Function/method declarations
     3. Class declarations
@@ -103,39 +103,11 @@ def check_code_naming_conventions(RepoURL):
     5. Parameter names
     6. Interface/abstract class names
     7. Enum declarations
-    
+
     Apply these language-specific naming conventions:
-    
-    Python:
-    - Variables/Functions: snake_case (e.g., user_count, calculate_total)
-    - Classes: PascalCase (e.g., UserProfile, DataProcessor)
-    - Constants: UPPER_SNAKE_CASE (e.g., MAX_RETRY_COUNT)
-    - Private attributes/methods: leading underscore (e.g., _internal_method)
-    - Magic methods: double underscores (e.g., __init__, __str__)
-    
-    JavaScript/TypeScript:
-    - Variables/Functions: camelCase (e.g., userData, fetchUserData)
-    - Classes/Interfaces: PascalCase (e.g., UserService, ApiResponse)
-    - Constants: UPPER_SNAKE_CASE (e.g., API_KEY)
-    - Private class fields: #fieldName or _fieldName pattern
-    
-    Java:
-    - Variables/Methods: camelCase (e.g., userData, calculateTotal)
-    - Classes: PascalCase (e.g., UserService)
-    - Constants: UPPER_SNAKE_CASE (e.g., MAX_POOL_SIZE)
-    - Packages: all lowercase (e.g., com.example.project)
-    
-    C#:
-    - Variables/Methods: PascalCase for public, camelCase for private
-    - Classes/Interfaces: PascalCase
-    - Constants: PascalCase or UPPER_SNAKE_CASE
-    
-    PHP:
-    - Variables: camelCase (e.g., $userData)
-    - Functions: snake_case or camelCase (depending on framework)
-    - Classes: PascalCase (e.g., UserModel)
-    - Constants: UPPER_SNAKE_CASE (e.g., MAX_UPLOAD_SIZE)
-    
+
+    [Keep all the existing language convention details exactly as in the original prompt]
+
     For any language, check if:
     - Names are descriptive and meaningful
     - No single-letter variables (except in limited contexts like loop counters)
@@ -144,27 +116,37 @@ def check_code_naming_conventions(RepoURL):
     - Function names reflect actions (verbs)
     - Class names reflect entities (nouns)
     - Boolean variables have prefixes like 'is', 'has', 'can', etc.
-    
+
+    STRICT REQUIREMENTS:
+    1. All findings must be verified against the actual repository content
+    2. File paths must be exact and correct relative to the repository root
+    3. Line numbers must be precise
+    4. Only report issues you can confirm exist in the provided repository
+    5. Never include hypothetical examples or general advice
+
     Exclude from analysis:
     - Generated code
     - Third-party libraries
     - Known framework conventions that intentionally differ
     - Build files and configuration
     - Test fixture data
-    
+    - Any files not actually present in the repository
+
     IMPORTANT: Return ONLY a valid JSON object with no additional text, markdown, or formatting, following this exact structure:
     {{"status": "Yes"}} // If all code elements follow appropriate naming conventions
     OR
     {{"status": "No", "issues": [
         {{
-            "file_path": "path/to/file.ext",
-            "line_number": 42,
-            "element_type": "variable|function|class|etc",
-            "element_name": "badlyNamedVariable",
-            "suggested_name": "properly_named_variable",
-            "reason": "Concise explanation of the issue"
+            "file_path": "exact/correct/path/from/repo/root/file.ext", // MUST be accurate
+            "line_number": 42, // MUST be precise
+            "element_type": "variable|function|class|etc", // MUST match actual element
+            "element_name": "badlyNamedVariable", // MUST be the exact name found
+            "suggested_name": "properly_named_variable", // MUST follow conventions
+            "reason": "Concise explanation based ONLY on repository content"
         }}
     ]}}
+
+    DO NOT include any markdown formatting, additional explanations, or text outside the JSON object. The response must be parseable as pure JSON.
     """
 
     model = genai.GenerativeModel("gemini-1.5-flash")
