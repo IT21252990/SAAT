@@ -234,82 +234,88 @@ def update_student_mark_and_status(report_id):
         return jsonify({"error": str(e)}), 400
 
 
-# Update All Submissions Status to Published
-@report_submission_bp.route("/report-submissions/publish-all", methods=["PUT"])
-def publish_all_submissions():
+# Publish All Submissions for Specific Assignment
+@report_submission_bp.route("/report-submissions/publish-assignment", methods=["PUT"])
+def publish_assignment_submissions():
     """
-    Update all report submissions status to 'published'
-    Optional JSON payload:
+    Update all submissions for a specific assignment to 'published' status
+    This will change ALL statuses (submitted, reviewed, etc.) to published for the given assignment
+    Required JSON payload:
     {
-        "module_code": "CS101",  # Optional: Only publish submissions for specific module
-        "marking_reference": "assignment_123"  # Optional: Only publish submissions for specific assignment
+        "marking_reference": "assignment_123"  # Required: Assignment ID to publish
     }
     """
     try:
         db = current_app.db
-        data = request.get_json() or {}
+        data = request.get_json()
         
-        # Build query
-        submissions_ref = db.collection("report_submissions")
+        # Validate required field
+        if not data or "marking_reference" not in data:
+            return jsonify({"error": "marking_reference is required"}), 400
         
-        # Add filters if provided
-        module_code = data.get("module_code")
         marking_reference = data.get("marking_reference")
         
-        # Start with base query
-        query = submissions_ref
+        if not marking_reference:
+            return jsonify({"error": "marking_reference cannot be empty"}), 400
         
-        # Apply filters if specified
-        if module_code:
-            query = query.where("module_code", "==", module_code)
-        
-        if marking_reference:
-            query = query.where("marking_reference", "==", marking_reference)
+        # Query all submissions for this specific assignment
+        submissions_ref = db.collection("report_submissions")
+        query = submissions_ref.where("marking_reference", "==", marking_reference)
         
         # Get all matching submissions
-        submissions = query.stream()
+        submissions = list(query.stream())
         
-        updated_count = 0
+        if not submissions:
+            return jsonify({
+                "message": f"No submissions found for assignment: {marking_reference}",
+                "updated_count": 0,
+                "assignment_id": marking_reference
+            }), 200
+        
+        # Track status changes for reporting
+        status_changes = {"submitted": 0, "reviewed": 0, "published": 0, "other": 0}
         batch = db.batch()  # Use batch for efficient bulk updates
         
         # Prepare batch updates
         for submission in submissions:
+            submission_data = submission.to_dict()
+            current_status = submission_data.get("status", "submitted")
+            
+            # Track current status for reporting
+            if current_status in status_changes:
+                status_changes[current_status] += 1
+            else:
+                status_changes["other"] += 1
+            
             submission_ref = db.collection("report_submissions").document(submission.id)
             
             update_data = {
                 "status": "published",
-                "published_date": datetime.now().isoformat()
+                "published_date": datetime.now().isoformat(),
+                "previous_status": current_status  # Keep track of what it was before
             }
             
             batch.update(submission_ref, update_data)
-            updated_count += 1
         
         # Execute batch update
-        if updated_count > 0:
-            batch.commit()
-            
-            filter_info = ""
-            if module_code or marking_reference:
-                filters = []
-                if module_code:
-                    filters.append(f"module: {module_code}")
-                if marking_reference:
-                    filters.append(f"assignment: {marking_reference}")
-                filter_info = f" (filtered by {', '.join(filters)})"
-            
-            return jsonify({
-                "message": f"Successfully published {updated_count} submissions{filter_info}!",
-                "updated_count": updated_count
-            }), 200
-        else:
-            return jsonify({
-                "message": "No submissions found to publish",
-                "updated_count": 0
-            }), 200
+        batch.commit()
+        
+        total_updated = len(submissions)
+        
+        return jsonify({
+            "message": f"Successfully published all {total_updated} submissions for assignment: {marking_reference}",
+            "assignment_id": marking_reference,
+            "updated_count": total_updated,
+            "status_breakdown": {
+                "previously_submitted": status_changes["submitted"],
+                "previously_reviewed": status_changes["reviewed"],
+                "previously_published": status_changes["published"],
+                "other_statuses": status_changes["other"]
+            }
+        }), 200
             
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
 
 # Bulk Update Multiple Submissions
 @report_submission_bp.route("/report-submissions/bulk-update", methods=["PUT"])
