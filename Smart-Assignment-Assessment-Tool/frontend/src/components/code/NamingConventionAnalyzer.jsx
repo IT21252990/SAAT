@@ -150,7 +150,7 @@ const NamingConventionAnalyzer = ({ github_url, code_id, onBack }) => {
     return (
       <div className="flex items-center justify-center p-8">
     <Spinner size="xl" />
-    <span className="ml-2 text-black dark:text-white">Initial analysis in progress...</span>
+    <span className="ml-2 text-black dark:text-white">Loading Data...</span>
   </div>
     );
   }
