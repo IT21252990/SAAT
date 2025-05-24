@@ -265,7 +265,7 @@ const AssignmentPage = () => {
 
                 <Button
                   color="success"
-                  onClick={() => generatePDF(assignment, moduleName)}
+                  onClick={() => generatePDF(assignment, moduleName, marking)}
                   className="w-full py-3 font-medium text-center transition-transform duration-300 hover:scale-105"
                 >
                   <HiDocumentDownload className="w-5 h-5 mr-2" />
