@@ -73,7 +73,7 @@ def generate_questions_from_github_url(repo_url, metric_type):
 
 
 
-# Code repo
+# report
 def generate_questions_from_report(summary, metric_type):
     """
     Generate viva questions from a report summary.
@@ -109,7 +109,7 @@ def generate_questions_from_report(summary, metric_type):
     except Exception as e:
         return str(e)
 
-#Code repo
+#Video
 def generate_questions_from_video(combined_text, metric_type):
     """
     Generate viva questions from a video.
@@ -205,3 +205,12 @@ def generate_questions_from_assignment(description):
     except Exception as e:
         print("[ERROR] Failed to generate Q&A:", str(e))
         return []
+
+#Customized questions
+def generate_answer(prompt) :
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        return response.text if response else None
+    except Exception as e:
+        return str(e)

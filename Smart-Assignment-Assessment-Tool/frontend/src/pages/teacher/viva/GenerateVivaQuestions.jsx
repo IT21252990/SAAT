@@ -3,14 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/Header";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AddCustomQuestionModal from '../../../components/viva/CustomVivaQuestion'
 import { Card, Alert, Button } from "flowbite-react";
 import {
   HiArrowLeft,
-  HiOutlineCode,
-  HiDocumentText,
-  HiVideoCamera,
-  HiChevronRight,
-  HiExclamation,
 } from "react-icons/hi";
 
 const GenerateVivaQuestions = () => {
@@ -22,6 +18,7 @@ const GenerateVivaQuestions = () => {
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
 
   // Function to go back to previous page
   const handleGoBack = () => {
@@ -245,6 +242,11 @@ const GenerateVivaQuestions = () => {
     }
   };
 
+  const handleAddCustomQuestion = (customQuestionObj) => {
+    setGeneratedQuestions(prev => [...prev, customQuestionObj]);
+    setShowAddQuestionModal(false);
+  };
+
   const typeColors = {
     general: "bg-gradient-to-r from-indigo-500 to-purple-500",
     code: "bg-gradient-to-r from-sky-500 to-blue-500",
@@ -339,7 +341,7 @@ const GenerateVivaQuestions = () => {
             </h1>
 
             {/* Stepper */}
-            <div className="mb-10">
+            <div className="mb-6">
               <ol className="flex items-center">
                 <li
                   className={`flex items-center ${step >= 1 ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-400"}`}
@@ -399,12 +401,12 @@ const GenerateVivaQuestions = () => {
                       onClick={() => handleButtonClick(type)}
                       disabled={!availableTypes[type]}
                       className={`flex flex-col items-center justify-center rounded-xl p-6 shadow-md transition-all duration-200 
-      ${
-        availableTypes[type]
-          ? `hover:shadow-lg ${typeColors[type]} transform text-white hover:scale-105`
-          : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-      }
-    `}
+                        ${
+                          availableTypes[type]
+                            ? `hover:shadow-lg ${typeColors[type]} transform text-white hover:scale-105`
+                            : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                        }
+                      `}
                     >
                       {typeIcons[type]}
                       <span className="text-lg font-medium capitalize">
@@ -505,11 +507,19 @@ const GenerateVivaQuestions = () => {
                   >
                     Back
                   </button>
+
                   <button
-                    onClick={() => setStep(3)}
-                    className="rounded-lg bg-primary-600 px-5 py-2.5 text-white hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700"
+                    onClick={async () => {
+                      setStep(3);
+                      // Automatically generate questions when moving to step 3
+                      if (generatedQuestions.length === 0) {
+                        await generateQuestions();
+                      }
+                    }}
+                    disabled={metrics.length === 0}
+                    className="rounded-lg bg-primary-600 px-5 py-2.5 text-white hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Continue
+                    Continue to Questions
                   </button>
                 </div>
               </div>
@@ -518,10 +528,10 @@ const GenerateVivaQuestions = () => {
             {/* Step 3: Generate Questions */}
             {step === 3 && (
               <div className="mt-6">
-                <div className="p-4 mb-8 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                  <div className="flex items-start gap-16">
                     <div>
-                      <p className="flex items-center mb-2 text-gray-700 dark:text-gray-300">
+                      <p className="flex items-center text-gray-700 dark:text-gray-300">
                         <span className="mr-2 font-semibold">
                           Submission Type:
                         </span>
@@ -531,79 +541,29 @@ const GenerateVivaQuestions = () => {
                           <span className="capitalize">{selectedContent}</span>
                         </span>
                       </p>
-
-                      <div className="mt-4">
-                        <p className="mb-2 font-semibold text-gray-700 dark:text-gray-300">
-                          Evaluation Metrics:
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {metrics.map((metric, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 text-sm text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300"
-                            >
-                              {metric}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
                     </div>
 
-                    <button
-                      onClick={generateQuestions}
-                      disabled={loading}
-                      className={`inline-flex items-center rounded-lg px-5 py-2.5 text-center text-white ${loading ? "bg-gray-400 dark:bg-gray-600" : "bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700"}`}
-                    >
-                      {loading ? (
-                        <>
-                          <svg
-                            className="w-4 h-4 mr-2 animate-spin"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                    <div>
+                      <p className="mb-2 font-semibold text-gray-700 dark:text-gray-300">
+                        Evaluation Metrics:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {metrics.map((metric, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 text-sm text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300"
                           >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            className="w-5 h-5 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M13 10V3L4 14h7v7l9-11h-7z"
-                            ></path>
-                          </svg>
-                          Generate Questions
-                        </>
-                      )}
-                    </button>
+                            {metric}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Generated Questions */}
                 {generatedQuestions.length > 0 && (
-                  <div className="mt-8">
+                  <div className="mt-4">
                     <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-white">
                       Generated Questions
                     </h3>
@@ -753,6 +713,34 @@ const GenerateVivaQuestions = () => {
                   </div>
                 )}
 
+                {loading && (
+                  <div className="flex flex-col items-center justify-center p-8 mt-6 text-center bg-white border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-gray-800">
+                    <svg
+                      className="w-12 h-12 mb-3 text-primary-600 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Generating questions based on your selected metrics...
+                    </p>
+                  </div>
+                )}
+
                 {!loading && generatedQuestions.length === 0 && (
                   <div className="flex flex-col items-center justify-center p-8 mt-6 text-center bg-white border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-gray-800">
                     <svg
@@ -770,19 +758,98 @@ const GenerateVivaQuestions = () => {
                       ></path>
                     </svg>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Click the "Generate Questions" button to create questions
-                      based on your selected metrics
+                      No questions generated yet. Click "Generate Questions" to create new questions.
                     </p>
                   </div>
                 )}
 
-                <div className="flex justify-end mt-8">
+                <div className="flex items-center justify-between mt-8">
+                  {/* Left side - Action buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowAddQuestionModal(true)}
+                      className="inline-flex items-center rounded-lg bg-green-600 px-5 py-2.5 text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 transition-colors"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      </svg>
+                      Add Custom Question
+                    </button>
+
+
+                    <button
+                      onClick={generateQuestions}
+                      disabled={loading}
+                      className={`inline-flex items-center rounded-lg px-5 py-2.5 text-center text-white focus:outline-none focus:ring-4 transition-colors ${
+                        loading 
+                          ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed" 
+                          : "bg-primary-600 hover:bg-primary-700 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                      }`}
+                    >
+                      {loading ? (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-2 animate-spin"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M13 10V3L4 14h7v7l9-11h-7z"
+                            ></path>
+                          </svg>
+                          Re-generate Questions
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Right side - Back button */}
                   <button
                     onClick={() => setStep(2)}
-                    className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                    className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-700 transition-colors"
                   >
                     Back to Metrics
                   </button>
+
+                  {/* Modal */}
+                  {showAddQuestionModal && (
+                    <AddCustomQuestionModal
+                      isOpen={showAddQuestionModal}
+                      onClose={() => setShowAddQuestionModal(false)}
+                      onAddQuestion={handleAddCustomQuestion}
+                      selectedContent={selectedContent}
+                      submissionId={submissionId}
+                    />
+                  )}
                 </div>
               </div>
             )}

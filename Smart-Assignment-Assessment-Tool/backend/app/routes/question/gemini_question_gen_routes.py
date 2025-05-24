@@ -3,6 +3,7 @@ import uuid
 from app.utils.generate_questions import generate_questions_gemini 
 from app.utils.generate_questions import generate_questions_from_github_url
 from app.utils.generate_questions import generate_questions_from_video
+from app.utils.generate_questions import generate_answer 
 
 qgenerate_bp = Blueprint("qgenerate", __name__)
 
@@ -302,6 +303,111 @@ def generate_video_questions():
             })
 
         return jsonify({"message": "Code questions generated successfully", "data": question_data}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@qgenerate_bp.route("/GenerateAnswerForCustomQuestions", methods=["POST"])
+def generate_answer_for_custom_questions():
+    try:
+        data = request.get_json()
+        question = data.get("question")
+        submission_id = data.get("submissionId")
+        submission_type = data.get("submissionType")
+
+        if not all([question, submission_id, submission_type]):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Get submission document from Firestore
+        db = current_app.db
+        doc = db.collection("submissions").document(submission_id).get()
+
+        if not doc.exists:
+            return jsonify({"error": "Submission not found"}), 404
+
+        submission = doc.to_dict()
+
+        # Determine content based on submission type
+        if submission_type == "code":
+            code_id = submission.get("code_id")
+
+            if not code_id:
+                return jsonify({"error": "code ID not found in submission"}), 404
+
+            # Fetch the code url from the code collection
+            code_doc = db.collection("codes").document(code_id).get()
+            if not code_doc.exists:
+                return jsonify({"error": "code not found"}), 404
+            
+            code_data = code_doc.to_dict()
+            github_url = code_data.get("github_url")
+
+            if not github_url:
+                return jsonify({"error": "github_url not found"}), 404
+            prompt = f"You are given a GitHub repository URL: {github_url}. Analyze it and answer the following question:\n\n{question}"
+
+        elif submission_type == "report":
+            report_id = submission.get("report_id")
+
+            if not report_id:
+                return jsonify({"error": "report ID not found in submission"}), 404
+
+            # Fetch the report summary from the report collection
+            report_doc = db.collection("report_submissions").document(report_id).get()
+            if not report_doc.exists:
+                return jsonify({"error": "report not found"}), 404
+            
+            report_data = report_doc.to_dict()
+            summary = report_data.get("summary")
+
+            if not summary:
+                return jsonify({"error": "report summary not found"}), 404
+            prompt = f"You are given a project report summary:\n\n{summary}\n\nAnswer the following question based on the report:\n\n{question}"
+
+        elif submission_type == "video":
+            video_id = submission.get("video_id")
+
+            if not video_id:
+                return jsonify({"error": "video ID not found in submission"}), 404
+
+            # Fetch the video url from the video collection
+            video_doc = db.collection("videos").document(video_id).get()
+            if not video_doc.exists:
+                return jsonify({"error": "video not found"}), 404
+            
+            video_data = video_doc.to_dict()
+            segments = video_data.get("segments", [])
+            prompt = f"You are given a spoken video segment transcript:\n\n{segments}\n\nAnswer the following question based on the video content:\n\n{question}"
+
+        elif submission_type == "general":
+            assignment_id = submission.get("assignment_id")
+        
+            if not assignment_id:
+                return jsonify({"error": "Assignment ID not found in submission"}), 404
+
+            # Fetch the assignment description from the assignments collection
+            assignment_doc = db.collection("assignments").document(assignment_id).get()
+            if not assignment_doc.exists:
+                return jsonify({"error": "Assignment not found"}), 404
+            
+            assignment_data = assignment_doc.to_dict()
+            description = assignment_data.get("description")
+
+            if not description:
+                return jsonify({"error": "Assignment description not found"}), 404
+            prompt = f"You are given the following assignment description:\n\n{description}\n\nAnswer the following question:\n\n{question}"
+
+        else:
+            return jsonify({"error": "Invalid submission type"}), 400
+
+        # Generate answer via Gemini util function
+        answer = generate_answer(prompt)
+
+        if not answer:
+            return jsonify({"error": "Failed to generate answer"}), 500
+
+        return jsonify({"answer": answer}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
