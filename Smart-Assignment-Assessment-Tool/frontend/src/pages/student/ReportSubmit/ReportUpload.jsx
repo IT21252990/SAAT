@@ -51,7 +51,10 @@ const ReportUpload = ({ onSubmit }) => {
   const [plagiarismResults, setPlagiarismResults] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isExist, setIsExist] = useState(false);
 
+  console.log("user: ", userId)
+  console.log("assign: ", assignmentId)
   // Fetch marking scheme on component mount
   useEffect(() => {
     const fetchMarkingScheme = async () => {
@@ -82,7 +85,6 @@ const ReportUpload = ({ onSubmit }) => {
 
     try {
       console.log('Checking existing submission for:', { assignmentId, userId });
-
       const response = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
         method: "POST",
         headers: {
@@ -94,6 +96,7 @@ const ReportUpload = ({ onSubmit }) => {
       if (response.ok) {
         const result = await response.json();
         console.log('Check submission result:', result);
+        setIsExist(true)
 
         if (result.exists) {
           // Try to fetch submission details
@@ -288,7 +291,7 @@ const ReportUpload = ({ onSubmit }) => {
         return;
       }
 
-      const aiScore = (fakeResult.score * 100000).toFixed(2);
+      const aiScore = (fakeResult.score * 100).toFixed(2);
 
       // Set all the results first
       setAnalysisResults(result);
@@ -346,6 +349,7 @@ const ReportUpload = ({ onSubmit }) => {
 
       const reportResult = await reportResponse.json();
       const reportId = reportResult.report.report_id;
+      setReportID(reportId)
 
       // Check if submission exists
       const checkResponse = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
@@ -447,52 +451,240 @@ const ReportUpload = ({ onSubmit }) => {
     setActiveStep(3);
   };
 
-  const handleDownloadPdf = () => {
-    const doc = new jsPDF();
-    doc.setFont("helvetica");
-    let yPosition = 20;
+const handleDownloadPdf = () => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const margin = 20;
+  let yPosition = margin;
 
-    // Title
-    doc.setFontSize(16);
-    doc.setTextColor(25, 118, 210);
-    doc.text("Analysis Results", 14, yPosition);
-    yPosition += 10;
-
-    // Function to create styled boxes
-    const createResultBox = (title, percentage) => {
-      doc.setDrawColor(25, 118, 210);
-      doc.setLineWidth(0.5);
-      doc.rect(10, yPosition, 90, 30);
-
-      doc.setFontSize(14);
-      doc.setTextColor(25, 118, 210);
-      doc.text(`${percentage}%`, 14, yPosition + 10);
-
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.text(title, 14, yPosition + 20);
-
-      yPosition += 40;
-    };
-
-    if (aiContentResults) {
-      createResultBox("of this report appears to be AI-generated", aiContentResults.percentage || "N/A");
+  // Helper function to add page break if needed
+  const checkPageBreak = (neededHeight) => {
+    if (yPosition + neededHeight > pageHeight - margin) {
+      doc.addPage();
+      yPosition = margin;
     }
-    if (plagiarismResults !== undefined) {
-      createResultBox("Found significant plagiarism in your report", plagiarismResults || "N/A");
-    }
-
-    // Add more content to PDF as needed...
-    doc.save("analysis_results.pdf");
   };
 
+  // Helper function to add text with word wrapping
+  const addWrappedText = (text, x, y, maxWidth, fontSize = 10) => {
+    doc.setFontSize(fontSize);
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, y);
+    return y + (lines.length * fontSize * 0.4);
+  };
 
+  // Header
+  doc.setFillColor(25, 118, 210); // Primary blue color
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont(undefined, 'bold');
+  doc.text('Analysis Report', margin, 25);
+  
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 35);
 
+  yPosition = 60;
+
+  // AI Content and Plagiarism Summary
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text('Summary', margin, yPosition);
+  yPosition += 15;
+
+  // Create summary boxes
+  const boxWidth = (pageWidth - margin * 3) / 2;
+  const boxHeight = 40;
+
+  // AI Content Box
+  doc.setFillColor(227, 242, 253); // Light blue
+  doc.rect(margin, yPosition, boxWidth, boxHeight, 'F');
+  doc.setDrawColor(25, 118, 210);
+  doc.setLineWidth(1);
+  doc.rect(margin, yPosition, boxWidth, boxHeight, 'S');
+
+  doc.setFontSize(20);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(25, 118, 210);
+  doc.text(`${reportData?.aiContent?.percentage || "0"}%`, margin + 10, yPosition + 15);
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, 'normal');
+  doc.text('of this report appears to be', margin + 10, yPosition + 25);
+  doc.text('AI-generated', margin + 10, yPosition + 32);
+
+  // Plagiarism Box
+  doc.setFillColor(227, 242, 253); // Light blue
+  doc.rect(margin * 2 + boxWidth, yPosition, boxWidth, boxHeight, 'F');
+  doc.setDrawColor(25, 118, 210);
+  doc.rect(margin * 2 + boxWidth, yPosition, boxWidth, boxHeight, 'S');
+
+  doc.setFontSize(20);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(25, 118, 210);
+  doc.text(`${reportData?.plagiarism || "0"}%`, margin * 2 + boxWidth + 10, yPosition + 15);
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, 'normal');
+  doc.text('Found significant plagiarism', margin * 2 + boxWidth + 10, yPosition + 25);
+  doc.text('in your report', margin * 2 + boxWidth + 10, yPosition + 32);
+
+  yPosition += boxHeight + 20;
+
+  // Total Score Section
+  if (reportData?.analysis_report?.totalScore) {
+    checkPageBreak(30);
+    
+    doc.setFillColor(227, 242, 253);
+    doc.rect(margin, yPosition, pageWidth - margin * 2, 25, 'F');
+    doc.setDrawColor(25, 118, 210);
+    doc.rect(margin, yPosition, pageWidth - margin * 2, 25, 'S');
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(25, 118, 210);
+    doc.text(`Total Score: ${reportData.analysis_report.totalScore}/20`, margin + 10, yPosition + 15);
+
+    yPosition += 40;
+  }
+
+  // Detailed Analysis Section
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text('Detailed Analysis', margin, yPosition);
+  yPosition += 15;
+
+  // Criteria Analysis
+  if (reportData?.analysis_report?.criteria) {
+    reportData.analysis_report.criteria.forEach((criterion, index) => {
+      const estimatedHeight = 80; // Estimated height for each criterion
+      checkPageBreak(estimatedHeight);
+
+      // Criterion header
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, yPosition, pageWidth - margin * 2, 20, 'F');
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(margin, yPosition, pageWidth - margin * 2, 20, 'S');
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text(criterion.description, margin + 5, yPosition + 12);
+
+      // Score
+      const scoreText = `${criterion.awarded}/${(criterion.weightage * 20) / 100} marks`;
+      const scoreWidth = doc.getTextWidth(scoreText);
+      doc.setTextColor(25, 118, 210);
+      doc.text(scoreText, pageWidth - margin - scoreWidth - 5, yPosition + 12);
+
+      yPosition += 25;
+
+      // Weightage
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Weightage:', margin + 5, yPosition);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${criterion.weightage}%`, margin + 35, yPosition);
+
+      yPosition += 10;
+
+      // Justification
+      doc.setFont(undefined, 'bold');
+      doc.text('Justification:', margin + 5, yPosition);
+      yPosition += 5;
+      
+      doc.setFont(undefined, 'normal');
+      yPosition = addWrappedText(
+        criterion.justification, 
+        margin + 5, 
+        yPosition, 
+        pageWidth - margin * 2 - 10, 
+        9
+      );
+
+      yPosition += 5;
+
+      // Suggestions
+      if (criterion.suggestions && criterion.suggestions.length > 0) {
+        doc.setFont(undefined, 'bold');
+        doc.text('Suggestions for improvement:', margin + 5, yPosition);
+        yPosition += 8;
+
+        criterion.suggestions.forEach((suggestion, idx) => {
+          checkPageBreak(15);
+          doc.setFont(undefined, 'normal');
+          doc.text(`• ${suggestion}`, margin + 10, yPosition);
+          yPosition = addWrappedText(
+            suggestion, 
+            margin + 15, 
+            yPosition, 
+            pageWidth - margin * 2 - 20, 
+            9
+          );
+          yPosition += 3;
+        });
+      }
+
+      yPosition += 10;
+    });
+  }
+
+  // General Feedback Section
+  if (reportData?.analysis_report?.feedback) {
+    checkPageBreak(50);
+
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('General Feedback', margin, yPosition);
+    yPosition += 15;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    yPosition = addWrappedText(
+      reportData.analysis_report.feedback,
+      margin,
+      yPosition,
+      pageWidth - margin * 2,
+      10
+    );
+  }
+
+  // Footer
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(
+      `Page ${i} of ${totalPages}`,
+      pageWidth - margin - 20,
+      pageHeight - 10
+    );
+    doc.text(
+      'Generated by Analysis System',
+      margin,
+      pageHeight - 10
+    );
+  }
+
+  // Save the PDF
+  const fileName = `Analysis_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+  doc.save(fileName);
+};
 
 
 
   const [reportSubmissions, setReportSubmissions] = useState([]);
   const [reportID, setReportID] = useState('');
+  const [submissionID, setSubmissionID] = useState('');
   const [reportData, setReportData] = useState('');
   const [assignmentData, setAssignmentData] = useState('');
 
@@ -517,38 +709,58 @@ const ReportUpload = ({ onSubmit }) => {
 
   // Fetch assignment details
   const fetchAssignmentDetails = async () => {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`,
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setReportID(data.submissions[0].report_id);
-        console.log("name", data.submissions[0].report_id)
-      }
-    } catch (error) {
-      console.error("Error fetching assignment details:", error);
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
+    );
+    const data = await response.json();
+
+    // Replace this with how you get the current user's ID
+    const currentUserId = userId;
+
+    // Find the first submission belonging to the current student
+    const matchingSubmission = data.submissions.find(
+      (submission) => submission.student_id === currentUserId
+    );
+
+    if (response.ok && matchingSubmission) {
+      setSubmissionID(matchingSubmission.submission_id);
+      setReportID(matchingSubmission.report_id);
+      console.log("Matched report ID:", matchingSubmission.report_id);
+    } else {
+      console.warn("No matching submission found for this student.");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching assignment details:", error);
+  }
+};
+
 
 
   useEffect(() => {
     const fetchAllReportSubmissions = async () => {
       try {
+
         setError(null);
         setLoading(true);
 
         await fetchAssignmentDetails();
 
         console.log('Fetching report submissions for assignment ID:', reportID);
-
+        console.log("hellow ")
         const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
 
         console.log("response: ", response);
         const Reportdata = await response.json();
+        console.log("report", Reportdata.student_id);
+
+
         if (response.ok) {
-          setReportData(Reportdata);
-          console.log("report", Reportdata);
+          if (Reportdata.student_id === userId) {
+            console.log("user have existing submission", Reportdata);
+            setReportData(Reportdata);
+          }
+
 
           // Set the individual state variables based on the response structure
           // setAiContentResults(Reportdata.aiContent || {});
@@ -609,6 +821,7 @@ const ReportUpload = ({ onSubmit }) => {
     );
   };
 
+  console.log("iii", reportID)
   return (
     <div>
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
@@ -625,14 +838,14 @@ const ReportUpload = ({ onSubmit }) => {
         </Stepper>
 
         {/* Show submission status card if submission exists and not updating */}
-        {submissionStatus && !isUpdating && (
+        {reportData && !isUpdating && (
           <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <CheckCircle sx={{ color: '#4caf50', mr: 2, fontSize: 32 }} />
                 <Box>
                   <Typography variant="h5" color="primary" gutterBottom>
-                    Assignment Submitted Successfully 
+                    Assignment Submitted Successfully
                   </Typography>
                   <Chip
                     label="SUBMITTED"
@@ -710,7 +923,7 @@ const ReportUpload = ({ onSubmit }) => {
         )}
 
         {/* Upload section - show when no submission or updating */}
-        {(!submissionStatus || isUpdating) && (
+        {(!reportData || isUpdating) && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom>
               {isUpdating ? 'Update Student Report' : 'Upload Student Report'}
@@ -755,7 +968,7 @@ const ReportUpload = ({ onSubmit }) => {
                   onClick={handleAnalyze}
                   sx={{ mt: 2 }}
                 >
-                  {isUpdating ? 'Update & Analyze Report' : 'Analyze Report'}
+                  {isUpdating ? 'Update & Analyze Report' : 'Analyze and Submit Report'}
                 </Button>
 
                 {isUpdating && (
