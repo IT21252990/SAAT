@@ -39,8 +39,33 @@ def add_repo_submission():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
+@repo_bp.route('/get-repo/<code_id>', methods=['GET'])
+def get_repo_by_code_id(code_id):
+    """
+    Returns the GitHub URL for a given code_id.
+    """
+    try:
+        db = current_app.db
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
 
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+
+        code_data = doc.to_dict()
+        github_url = code_data.get("github_url")
+
+        if not github_url:
+            return jsonify({"error": "GitHub URL not found for this code ID"}), 404
+
+        return jsonify({"github_url": github_url}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
 
 @repo_bp.route('/repo-details', methods=['GET'])
 def get_repo_details():
