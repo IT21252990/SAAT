@@ -45,7 +45,7 @@ const ViewCodeSubmission = () => {
       case "analyze_code_base":
         return <RepositoryAnalyzer github_url={githubUrl} code_id={codeId}/>
       case "code_analysis_results":
-        return <CodeAnalysisResults codeId={codeId}/>
+        return <CodeAnalysisResults codeId={codeId} submission_id={submissionId}/>
       case "submission_details":
         return <DisplayAssignmentDetails submission_id={submissionId} />
       default:
