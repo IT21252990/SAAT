@@ -40,6 +40,7 @@ const AddAssignment = () => {
     code: false,
     report: false,
     video: false,
+    viva: false, 
   });
 
   const [markingCriteria, setMarkingCriteria] = useState({
@@ -101,11 +102,27 @@ const AddAssignment = () => {
     weight: "",
   });
 
-  //------------------------
+  // Viva marking criteria states
+  const [showVivaModal, setShowVivaModal] = useState(false);
+  const [vivaRubric, setVivaRubric] = useState({
+    startDate: "",
+    dueDate: "",
+    rubricName: "",
+    criteria: [],
+  });
+  const [newVivaCriterion, setNewVivaCriterion] = useState({
+    name: "",
+    lowDescription: "",
+    mediumDescription: "",
+    highDescription: "",
+    weight: "",
+  });
+
   const [submissionTypeWeights, setSubmissionTypeWeights] = useState({
     code: 0,
     report: 0,
     video: 0,
+    viva: 0, 
   });
 
   const calculateSubmissionTypeWeightTotal = () => {
@@ -136,6 +153,8 @@ const AddAssignment = () => {
       setShowCodeModal(true);
     } else if (type === 'video') {
       setShowVideoModal(true);
+    } else if (type === 'viva') {
+      setShowVivaModal(true);
     }
   }
 };
@@ -373,6 +392,82 @@ const AddAssignment = () => {
     setError("");
   };
 
+  // Viva rubric handlers
+  const handleVivaCriterionChange = (e) => {
+    setNewVivaCriterion({ ...newVivaCriterion, [e.target.name]: e.target.value });
+  };
+
+  const calculateVivaTotalWeight = () => {
+    return vivaRubric.criteria.reduce((sum, criterion) => sum + Number(criterion.weight), 0);
+  };
+
+  const addVivaCriterion = () => {
+    if (!newVivaCriterion.name || !newVivaCriterion.lowDescription || 
+        !newVivaCriterion.mediumDescription || !newVivaCriterion.highDescription || 
+        !newVivaCriterion.weight) {
+      setError("All fields are required.");
+      return;
+    }
+
+    const weightNum = Number(newVivaCriterion.weight);
+    if (weightNum <= 0 || weightNum > 100) {
+      setError("Weight must be between 1 and 100.");
+      return;
+    }
+
+    if (calculateVivaTotalWeight() + weightNum > 100) {
+      setError("Total weight cannot exceed 100%.");
+      return;
+    }
+
+    setVivaRubric({
+      ...vivaRubric,
+      criteria: [...vivaRubric.criteria, { ...newVivaCriterion, weight: weightNum }],
+    });
+    setNewVivaCriterion({ name: "", lowDescription: "", mediumDescription: "", highDescription: "", weight: "" });
+    setError("");
+  };
+
+  const removeVivaCriterion = (index) => {
+    setVivaRubric({
+      ...vivaRubric,
+      criteria: vivaRubric.criteria.filter((_, i) => i !== index),
+    });
+  };
+
+  const saveVivaRubric = () => {
+    const totalWeight = calculateVivaTotalWeight();
+    
+    if (vivaRubric.criteria.length === 0) {
+      setError("Please add at least one criterion before saving.");
+      return;
+    }
+
+    if (totalWeight !== 100) {
+      setError(`Total weight must equal 100%. Current total: ${totalWeight}%`);
+      return;
+    }
+
+    setShowVivaModal(false);
+    setError("");
+    alert("Viva rubric saved successfully! You can now save the assignment.");
+  };
+
+  const closeVivaModalAndUncheck = () => {
+    setShowVivaModal(false);
+    setSubmissionTypes({
+      ...submissionTypes,
+      viva: false,
+    });
+    setVivaRubric({
+      startDate: "",
+      dueDate: "",
+      rubricName: "",
+      criteria: [],
+    });
+    setError("");
+  };
+
   // Add new marking criteria
   const handleAddCriteria = (type) => {
     setMarkingCriteria((prev) => ({
@@ -496,6 +591,21 @@ const AddAssignment = () => {
       }
     }
 
+    if (submissionTypes.viva) {
+      if (vivaRubric.criteria.length === 0) {
+        setError("Please create a rubric for the viva submission type!");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const vivaTotalWeight = calculateVivaTotalWeight();
+      if (vivaTotalWeight !== 100) {
+        setError(`Viva rubric total weight must equal 100%. Current total: ${vivaTotalWeight}%`);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     // Check if submission type weights total 100%
     if (calculateSubmissionTypeWeightTotal() !== 100) {
       setError("Submission type weights must total 100%!");
@@ -563,6 +673,16 @@ const AddAssignment = () => {
 
       if (submissionTypes.video && videoRubric.criteria.length > 0) {
         allCriteria.video = videoRubric.criteria.map((criterion) => ({
+          name: criterion.name,
+          lowDescription: criterion.lowDescription,
+          mediumDescription: criterion.mediumDescription,
+          highDescription: criterion.highDescription,
+          weight: criterion.weight,
+        }));
+      }
+
+      if (submissionTypes.viva && vivaRubric.criteria.length > 0) {
+        allCriteria.viva = vivaRubric.criteria.map((criterion) => ({
           name: criterion.name,
           lowDescription: criterion.lowDescription,
           mediumDescription: criterion.mediumDescription,
@@ -855,41 +975,13 @@ const AddAssignment = () => {
             <div className="p-4 space-y-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
               <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
                 <HiOutlineDocumentText className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
-                Submission Requirements
+                Deliverables
               </h3>
               <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-                Select the types of submissions students need to provide for this assignment
+                Select the types of Deliverables students need to provide for this assignment
               </p>
 
-              {/* <div className="grid gap-3 sm:grid-cols-3">
-                {Object.keys(submissionTypes).map((type) => (
-                  <div key={type} className={`
-                    p-3 rounded-lg border-2 transition-all duration-200
-                    ${submissionTypes[type] 
-                      ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/30' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}
-                  `}>
-                    <Label className="flex items-center space-x-3 cursor-pointer">
-                      <Checkbox
-                        checked={submissionTypes[type]}
-                        onChange={(e) => handleSubmissionTypeChange(type, e.target.checked)}
-                        className="text-primary-600 focus:ring-primary-500"
-                      />
-                      <div>
-                        <span className="block font-medium text-gray-800 dark:text-gray-200">
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {type === 'code' && 'Programming solutions'}
-                          {type === 'report' && 'Written document/PDF'}
-                          {type === 'video' && 'Video presentation'}
-                        </span>
-                      </div>
-                    </Label>
-                  </div>
-                ))}
-              </div> */}
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-4">
                 {Object.keys(submissionTypes).map((type) => (
                   <div key={type} className={`
                     p-3 rounded-lg border-2 transition-all duration-200
@@ -911,6 +1003,7 @@ const AddAssignment = () => {
                           {type === 'code' && 'Programming solutions'}
                           {type === 'report' && 'Written document/PDF'}
                           {type === 'video' && 'Video presentation'}
+                          {type === 'viva' && 'Oral examination'} 
                         </span>
                       </div>
                     </div>
@@ -1022,6 +1115,30 @@ const AddAssignment = () => {
                       onClick={() => setShowVideoModal(true)}
                     >
                       {videoRubric.criteria.length > 0 ? 'Edit Rubric' : 'Create Rubric'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {submissionTypes.viva && (
+                <div className="p-3 mt-4 border rounded-lg border-amber-200 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-amber-800 dark:text-amber-200">Viva Rubric</h4>
+                      {vivaRubric.criteria.length > 0 ? (
+                        <p className="text-sm text-amber-600 dark:text-amber-300">
+                          {vivaRubric.criteria.length} criteria added (Total: {calculateVivaTotalWeight()}%)
+                        </p>
+                      ) : (
+                        <p className="text-sm text-amber-600 dark:text-amber-300">No rubric created yet</p>
+                      )}
+                    </div>
+                    <Button
+                      color="warning"
+                      size="sm"
+                      onClick={() => setShowVivaModal(true)}
+                    >
+                      {vivaRubric.criteria.length > 0 ? 'Edit Rubric' : 'Create Rubric'}
                     </Button>
                   </div>
                 </div>
@@ -1226,7 +1343,7 @@ const AddAssignment = () => {
                 disabled={calculateTotalWeight() >= 100}
               >
                 <HiPlusCircle className="w-5 h-5 mr-2" />
-                Add Criterion
+                Save
               </Button>
             </div>
 
@@ -1428,7 +1545,7 @@ const AddAssignment = () => {
                 disabled={calculateCodeTotalWeight() >= 100}
               >
                 <HiPlusCircle className="w-5 h-5 mr-2" />
-                Add Code Criterion
+                Save
               </Button>
             </div>
 
@@ -1630,7 +1747,7 @@ const AddAssignment = () => {
                 disabled={calculateVideoTotalWeight() >= 100}
               >
                 <HiPlusCircle className="w-5 h-5 mr-2" />
-                Add Video Criterion
+                Save
               </Button>
             </div>
 
@@ -1663,6 +1780,208 @@ const AddAssignment = () => {
                 Save Video Rubric ({calculateVideoTotalWeight()}%)
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Viva Modal */}
+      {showVivaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-[90%] max-w-6xl max-h-[90vh] overflow-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold text-amber-600 dark:text-amber-400">Create Viva Marking Scheme</h1>
+              <Button
+                color="light"
+                size="sm"
+                onClick={closeVivaModalAndUncheck}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <HiX className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Current Viva Criteria Display */}
+            {vivaRubric.criteria.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    Current Viva Criteria ({vivaRubric.criteria.length})
+                  </h2>
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    calculateVivaTotalWeight() === 100 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  }`}>
+                    Total Weight: {calculateVivaTotalWeight()}%
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="grid grid-cols-12 gap-2 p-3 font-medium text-gray-800 rounded bg-amber-100 dark:bg-amber-900/30 dark:text-gray-200">
+                    <div className="col-span-3">Criterion Name</div>
+                    <div className="col-span-3">Low Marks Description</div>
+                    <div className="col-span-3">Medium Marks Description</div>
+                    <div className="col-span-2">High Marks Description</div>
+                    <div className="col-span-1">Weight (%)</div>
+                    <div className="col-span-1">Action</div>
+                  </div>
+
+                  {vivaRubric.criteria.map((criterion, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 p-3 rounded bg-gray-50 dark:bg-gray-700">
+                      <div className="col-span-3 font-medium text-gray-800 dark:text-gray-200">
+                        {criterion.name}
+                      </div>
+                      <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
+                        {criterion.lowDescription}
+                      </div>
+                      <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">
+                        {criterion.mediumDescription}
+                      </div>
+                      <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
+                        {criterion.highDescription}
+                      </div>
+                      <div className="col-span-1 font-medium text-gray-800 dark:text-gray-200">
+                        {criterion.weight}%
+                      </div>
+                      <div className="col-span-1">
+                        <Button
+                          color="red"
+                          size="xs"
+                          onClick={() => removeVivaCriterion(index)}
+                        >
+                          <HiMinusCircle className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Add New Viva Criterion Form */}
+            <div className="p-4 mb-6 border border-gray-200 rounded-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">Add New Viva Criterion</h3>
+
+              <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
+                <div>
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Criterion Name *
+                  </Label>
+                  <TextInput
+                    type="text"
+                    name="name"
+                    value={newVivaCriterion.name}
+                    onChange={handleVivaCriterionChange}
+                    placeholder="e.g., Presentation Quality, Content Clarity"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Weight (%) *
+                  </Label>
+                  <TextInput
+                    type="number"
+                    name="weight"
+                    value={newVivaCriterion.weight}
+                    onChange={handleVivaCriterionChange}
+                    placeholder="e.g., 25"
+                    min="1"
+                    max="100"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Remaining: {100 - calculateVivaTotalWeight()}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 mb-4">
+                <div className="w-1/3">
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Low Marks Description *
+                  </Label>
+                  <Textarea
+                    rows="4"
+                    name="lowDescription"
+                    value={newVivaCriterion.lowDescription}
+                    onChange={handleVivaCriterionChange}
+                    placeholder="Requirements for achieving low marks in this criterion..."
+                    required
+                  />
+                </div>
+
+                <div className="w-1/3">
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Medium Marks Description *
+                  </Label>
+                  <Textarea
+                    rows="4"
+                    name="mediumDescription"
+                    value={newVivaCriterion.mediumDescription}
+                    onChange={handleVivaCriterionChange}
+                    placeholder="Requirements for achieving medium marks in this criterion..."
+                    required
+                  />
+                </div>
+
+                <div className="w-1/3">
+                  <Label className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    High Marks Description *
+                  </Label>
+                  <Textarea
+                    rows="4"
+                    name="highDescription"
+                    value={newVivaCriterion.highDescription}
+                    onChange={handleVivaCriterionChange}
+                    placeholder="Requirements for achieving high marks in this criterion..."
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                onClick={addVivaCriterion}
+                color="warning"
+                className="w-full"
+                disabled={calculateVivaTotalWeight() >= 100}
+              >
+                <HiPlusCircle className="w-5 h-5 mr-2" />
+                Save
+              </Button>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <Alert color="failure" className="mb-4">
+                <HiX className="w-5 h-5 mr-2" />
+                {error}
+              </Alert>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col justify-end gap-3 sm:flex-row">
+              <Button
+                color="light"
+                onClick={closeVivaModalAndUncheck}
+                className="w-full sm:w-auto"
+              >
+                Cancel
+              </Button>
+              
+              <Button
+                type="button"
+                color="warning"
+                onClick={saveVivaRubric}
+                className="w-full sm:w-auto"
+                disabled={vivaRubric.criteria.length === 0 || calculateVivaTotalWeight() !== 100}
+              >
+                <HiSave className="w-5 h-5 mr-2" />
+                Save Viva Rubric ({calculateVivaTotalWeight()}%)
+              </Button>
+            </div> 
           </div>
         </div>
       )}

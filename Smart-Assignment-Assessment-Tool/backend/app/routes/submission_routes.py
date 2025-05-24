@@ -292,3 +292,25 @@ def check_submission():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+# get assignment id by submission id
+@submission_bp.route("/get-assignment-id/<submission_id>", methods=["GET"])
+def get_assignment_id_by_submission_id(submission_id):
+    try:
+        db = current_app.db
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_data = submission_ref.get()
+
+        if not submission_data.exists:
+            return jsonify({"error": "Submission not found"}), 404
+
+        assignment_id = submission_data.to_dict().get("assignment_id")
+
+        if not assignment_id:
+            return jsonify({"error": "Assignment ID not found in submission"}), 404
+
+        return jsonify({"assignment_id": assignment_id}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

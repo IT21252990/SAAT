@@ -15,7 +15,7 @@ import { autoTable } from 'jspdf-autotable'
 import { FaEdit, FaTrash, FaCheck, FaTimes, FaFilePdf } from 'react-icons/fa';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const CodeAnalysisResults = ({ codeId }) => {
+const CodeAnalysisResults = ({ codeId , submission_id }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fileNamingResults, setFileNamingResults] = useState({});
@@ -28,8 +28,7 @@ const CodeAnalysisResults = ({ codeId }) => {
   const [feedbackError, setFeedbackError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
   const [generatingPDF, setGeneratingPDF] = useState(false);
-  const [submissionDetails, setSubmissionDetails] = useState(null);
-  const [evaluatorDetails, setEvaluatorDetails] = useState(null);
+  const [assignment_id, setAssignment_id] = useState(null);
   const [assignmentDetails, setAssignmentDetails] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -42,6 +41,162 @@ const CodeAnalysisResults = ({ codeId }) => {
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [pdfDownloadUrl, setPdfDownloadUrl] = useState(null);
   const [pdfGenerating, setPdfGenerating] = useState(false);
+
+  const [markingScheme, setMarkingScheme] = useState(null);
+  const [marks, setMarks] = useState({});
+  const [savingMarks, setSavingMarks] = useState(false);
+  const [marksError, setMarksError] = useState(null);
+  const [marksSuccess, setMarksSuccess] = useState(false);
+
+  const fetchAssignmentID = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/submission/get-assignment-id/${submission_id}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAssignment_id(data.assignment_id);
+        return data.assignment_id; // Return the assignment ID
+      } else {
+        setError("Failed to fetch submission details.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching submission details:", error);
+      setError("Error fetching submission details.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const fetchAssignmentDetails = async (assignmentId) => {
+  if (!assignmentId) return;
+  
+  try {
+    setLoading(true);
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      setAssignmentDetails(data);
+    } else {
+      setError("Failed to fetch Assignment details.");
+    }
+  } catch (error) {
+    console.error("Error fetching Assignment details:", error);
+    setError("Error fetching Assignment details.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  const fetchData = async () => {
+    const assignmentId = await fetchAssignmentID();
+    if (assignmentId) {
+      await fetchAssignmentDetails(assignmentId);
+    }
+  };
+  
+  fetchData();
+}, [submission_id]);
+
+useEffect(() => {
+  if (!codeId || !assignment_id) return;
+  
+  const fetchMarkingScheme = async () => {
+    try {
+      const [schemeResponse, marksResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignment_id}`),
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/get-marks/${codeId}`)
+      ]);
+      
+      const [schemeData, marksData] = await Promise.all([
+        schemeResponse.json(),
+        marksResponse.json()
+      ]);
+      
+      if (!schemeResponse.ok) {
+        throw new Error(schemeData.error || "Failed to fetch marking scheme");
+      }
+
+      const markingScheme = schemeData.marking_scheme || schemeData;
+      setMarkingScheme(markingScheme);
+      
+      // Initialize marks with existing marks or 0
+      const initialMarks = {};
+      const existingMarks = marksResponse.ok ? marksData.marks || {} : {};
+
+      if (Array.isArray(markingScheme.criteria)) {
+        markingScheme.criteria.forEach(criteria => {
+          initialMarks[criteria.criterion] = existingMarks[criteria.criterion] || 0;
+        });
+      } else if (markingScheme.criteria && typeof markingScheme.criteria === 'object') {
+        Object.values(markingScheme.criteria).forEach(criteria => {
+          initialMarks[criteria.criterion] = existingMarks[criteria.criterion] || 0;
+        });
+      }
+      
+      setMarks(initialMarks);
+    } catch (err) {
+      console.error("Error fetching marking scheme:", err);
+      setError("Failed to fetch marking scheme");
+    }
+  };
+
+  fetchMarkingScheme();
+}, [codeId, assignment_id]);
+
+
+const handleSaveMarks = async () => {
+  setSavingMarks(true);
+  setMarksError(null);
+  setMarksSuccess(false);
+
+  try {
+    const codeCriteria = markingScheme.marking_schemes[0].criteria.code || [];
+    
+    // Validate marks
+    const validatedMarks = {};
+    for (const criterion of codeCriteria) {
+      const mark = parseFloat(marks[criterion.criterion]);
+      if (isNaN(mark) || mark > 100 || mark < 0) {
+        throw new Error(`Marks for ${criterion.criterion} must be between 0 and 100`);
+      }
+      validatedMarks[criterion.criterion] = mark;
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/save-marks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code_id: codeId,
+        marks: validatedMarks,
+        marking_scheme_id: markingScheme.marking_schemes[0].id
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to save marks");
+    }
+
+    setMarksSuccess(true);
+    setTimeout(() => setMarksSuccess(false), 3000);
+  } catch (err) {
+    console.error("Error saving marks:", err);
+    setMarksError(err.message);
+  } finally {
+    setSavingMarks(false);
+  }
+};
 
   // Fetch all required data
   useEffect(() => {
@@ -60,19 +215,13 @@ const CodeAnalysisResults = ({ codeId }) => {
           codeNamingResponse,
           commentsAccuracyResponse,
           evaluatorCommentsResponse,
-          finalFeedbackResponse,
-          // submissionResponse,
-          // evaluatorResponse,
-          // assignmentResponse
+          finalFeedbackResponse
         ] = await Promise.all([
           fetch(`${import.meta.env.VITE_BACKEND_URL}/naming/file-naming-convention-results?code_id=${codeId}`),
           fetch(`${import.meta.env.VITE_BACKEND_URL}/naming/code-naming-convention-results?code_id=${codeId}`),
           fetch(`${import.meta.env.VITE_BACKEND_URL}/naming/code-comments-accuracy-results?code_id=${codeId}`),
           fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/code-comments?code_id=${codeId}`),
-          fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/get-final-feedback?code_id=${codeId}`),
-          // fetch(`${import.meta.env.VITE_BACKEND_URL}/submissions/details?code_id=${codeId}`),
-          // fetch(`${import.meta.env.VITE_BACKEND_URL}/evaluator/details?code_id=${codeId}`),
-          // fetch(`${import.meta.env.VITE_BACKEND_URL}/assignments/details?code_id=${codeId}`)
+          fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/get-final-feedback?code_id=${codeId}`)
         ]);
         
         // Process responses
@@ -81,19 +230,13 @@ const CodeAnalysisResults = ({ codeId }) => {
           codeNamingData,
           commentsAccuracyData,
           evaluatorCommentsData,
-          finalFeedbackData,
-          // submissionData,
-          // evaluatorData,
-          // assignmentData
+          finalFeedbackData
         ] = await Promise.all([
           fileNamingResponse.json(),
           codeNamingResponse.json(),
           commentsAccuracyResponse.json(),
           evaluatorCommentsResponse.json(),
-          finalFeedbackResponse.json(),
-          // submissionResponse.json(),
-          // evaluatorResponse.json(),
-          // assignmentResponse.json()
+          finalFeedbackResponse.json()
         ]);
         
         // Update state with fetched data
@@ -102,9 +245,6 @@ const CodeAnalysisResults = ({ codeId }) => {
         setCommentsAccuracyResults(commentsAccuracyData.code_naming_convention_results || {});
         setEvaluatorComments(evaluatorCommentsData.comments || {});
         setFinalFeedback(typeof finalFeedbackData.final_feedback === 'string' ? finalFeedbackData.final_feedback : '');
-        // setSubmissionDetails(submissionData.details || {});
-        // setEvaluatorDetails(evaluatorData.evaluator || {});
-        // setAssignmentDetails(assignmentData.assignment || {});
         
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -344,18 +484,19 @@ const handleConfirmDelete = async () => {
   // Generate professional PDF report
   const generatePDF = async () => {
     setGeneratingPDF(true);
+    setPdfGenerating(true);
     
     try {
       const doc = new jsPDF();
       
       // Set document properties
-      doc.setProperties({
-        title: `Code Analysis Report - ${assignmentDetails?.name || 'Assignment'}`,
-        subject: 'Code Quality Analysis',
-        author: evaluatorDetails?.name || 'Evaluator',
-        keywords: 'code, analysis, quality, report',
-        creator: 'Code Analysis Tool'
-      });
+    doc.setProperties({
+      title: `Code Analysis Report - ${assignmentDetails?.name || 'Assignment'}`,
+      subject: 'Code Quality Analysis',
+      author: 'SAAT',
+      keywords: 'code, analysis, quality, report',
+      creator: 'Code Analysis Tool'
+    });
 
       // Store page references for TOC
       const pageRefs = {
@@ -363,6 +504,7 @@ const handleConfirmDelete = async () => {
         codeNaming: null,
         comments: null,
         evaluatorComments: null,
+        markingScheme: null,
         finalFeedback: null
       };
 
@@ -378,23 +520,26 @@ const handleConfirmDelete = async () => {
       doc.setTextColor(255, 255, 255);
       doc.text('CODE ANALYSIS REPORT', 105, 25, { align: 'center' });
 
-      doc.setFontSize(18);
-      doc.setTextColor(40, 53, 147);
-      doc.text(assignmentDetails?.name || 'Assignment', 105, 80, { align: 'center' });
+       // Add assignment details to cover page
+    doc.setFontSize(18);
+    doc.setTextColor(40, 53, 147);
+    doc.text(assignmentDetails?.name || 'Assignment', 105, 60, { align: 'center' });
+    
+    // Add module name if available
+    if (assignmentDetails?.module_name) {
+      doc.setFontSize(16);
+      doc.text(`Module: ${assignmentDetails.module_name}`, 105, 75, { align: 'center' });
+    }
 
-      // Add decorative line under title
-      doc.setDrawColor(40, 53, 147);
-      doc.setLineWidth(0.5);
-      doc.line(60, 85, 150, 85);
+      // Add submission ID
+    doc.setFontSize(14);
+    doc.text(`Submission ID: ${submission_id}`, 105, 90, { align: 'center' });
 
-      // Add submission details in a box
-      doc.setFillColor(240, 240, 240);
-      doc.roundedRect(50, 100, 110, 60, 3, 3, 'F');
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Submitted by: ${submissionDetails?.student_name || 'Student'}`, 105, 110, { align: 'center' });
-      doc.text(`Evaluated by: ${evaluatorDetails?.name || 'Evaluator'}`, 105, 120, { align: 'center' });
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, 130, { align: 'center' });
+    // Add decorative line under title
+    doc.setDrawColor(40, 53, 147);
+    doc.setLineWidth(0.5);
+    doc.line(60, 95, 150, 95);
+
 
       // Add footer to cover page
       doc.setFontSize(10);
@@ -414,13 +559,13 @@ const handleConfirmDelete = async () => {
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       
-      // Add TOC items with page numbers that will be updated later
       const tocItems = [
         { text: '1. File Naming Analysis', y: 60, ref: 'fileNaming' },
         { text: '2. Code Naming Analysis', y: 70, ref: 'codeNaming' },
         { text: '3. Comments Accuracy Analysis', y: 80, ref: 'comments' },
         { text: '4. Evaluator Comments', y: 90, ref: 'evaluatorComments' },
-        { text: '5. Final Feedback', y: 100, ref: 'finalFeedback' }
+        { text: '5. Marking Scheme', y: 100, ref: 'markingScheme' },
+        { text: '6. Final Feedback', y: 110, ref: 'finalFeedback' }
       ];
 
       tocItems.forEach(item => {
@@ -618,6 +763,75 @@ const handleConfirmDelete = async () => {
           });
         });
       }
+
+      // Add marking scheme section
+    doc.addPage();
+    doc.setDrawColor(40, 53, 147);
+    doc.rect(10, 10, 190, 277); // Page border
+    pageRefs.markingScheme = doc.internal.getCurrentPageInfo().pageNumber;
+    
+    doc.setFontSize(18);
+    doc.setTextColor(40, 53, 147);
+    doc.text('5. Marking Scheme', 20, 30);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    // Add marking scheme title
+    doc.text(`Marking Scheme: ${markingScheme.marking_schemes[0].title}`, 20, 45);
+    
+    // Add submission type weights
+    doc.text('Submission Type Weights:', 20, 60);
+    const weights = markingScheme.marking_schemes[0].submission_type_weights;
+    doc.text(`Code: ${weights.code}%`, 40, 70);
+    doc.text(`Report: ${weights.report}%`, 40, 80);
+    doc.text(`Video: ${weights.video}%`, 40, 90);
+    
+    // Add code criteria
+    doc.text('Code Assessment Criteria:', 20, 110);
+    
+    const codeCriteria = markingScheme.marking_schemes[0].criteria.code || [];
+    let yPosition = 120;
+    
+    codeCriteria.forEach((criterion, index) => {
+      if (yPosition > 250) {
+        doc.addPage();
+        doc.setDrawColor(40, 53, 147);
+        doc.rect(10, 10, 190, 277); // Page border
+        yPosition = 30;
+      }
+      
+      // Criterion title and weight
+      doc.setFontSize(14);
+      doc.setTextColor(40, 53, 147);
+      doc.text(`${index + 1}. ${criterion.criterion} (Weight: ${criterion.weightage}%)`, 20, yPosition);
+      yPosition += 10;
+      
+      // Descriptions
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      
+      doc.text(`High (80-100%): ${criterion.high_description}`, 30, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Medium (50-79%): ${criterion.medium_description}`, 30, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Low (0-49%): ${criterion.low_description}`, 30, yPosition);
+      yPosition += 15;
+      
+      // Add marks if available
+      if (marks[criterion.criterion] !== undefined) {
+        doc.text(`Awarded Marks: ${marks[criterion.criterion]}%`, 30, yPosition);
+        yPosition += 15;
+      }
+      
+      // Add separator line
+      doc.setDrawColor(200);
+      doc.setLineWidth(0.2);
+      doc.line(20, yPosition, 190, yPosition);
+      yPosition += 10;
+    });
       
       // Add final feedback section
       doc.addPage();
@@ -627,7 +841,7 @@ const handleConfirmDelete = async () => {
       
       doc.setFontSize(18);
       doc.setTextColor(40, 53, 147);
-      doc.text('5. Final Feedback', 20, 30);
+      doc.text('6. Final Feedback', 20, 30);
       
       if (finalFeedback.trim()) {
         doc.setFontSize(12);
@@ -638,7 +852,6 @@ const handleConfirmDelete = async () => {
         doc.text('No final feedback provided yet', 30, 45);
       }
       
-      // Now update the TOC with actual page numbers and links
       doc.setPage(2); // Go back to TOC page
       
       tocItems.forEach(item => {
@@ -671,7 +884,7 @@ const handleConfirmDelete = async () => {
 
       // Generate the PDF blob
       const pdfBlob = doc.output('blob');
-      const fileName = `Code_Analysis_Report_${codeId}_${Date.now()}.pdf`;
+      const fileName = `Code_Analysis_Report_${submission_id}.pdf`;
       
       // Upload to Firebase Storage
       const storage = getStorage();
@@ -700,7 +913,7 @@ const handleDownloadPdf = () => {
     link.href = pdfDownloadUrl;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.download = `Code_Analysis_Report_${codeId}.pdf`;
+    link.download =`Code_Analysis_Report_${submission_id}.pdf`;
     
     // Some browsers require the link to be in the DOM to trigger download
     document.body.appendChild(link);
@@ -1239,6 +1452,125 @@ const PdfGenerationDialog = () => {
     );
   };
 
+  const renderMarkingSchemeSection = () => {
+  if (!markingScheme) {
+    return (
+      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <Spinner size="sm" />
+          <p className="font-medium text-gray-700 dark:text-gray-200">Loading marking scheme...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract code criteria from the marking scheme
+  const codeCriteria = markingScheme.marking_schemes?.[0]?.criteria?.code || [];
+
+  return (
+    <div className="space-y-6">
+      <div className="overflow-hidden border border-gray-200 rounded-lg shadow-sm dark:border-gray-700">
+        <div className="flex items-center px-4 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+          <svg className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          <h5 className="font-semibold text-gray-900 dark:text-white">Marking Scheme: {markingScheme.marking_schemes[0].title}</h5>
+        </div>
+        
+        <div className="p-5">
+          {marksSuccess && (
+            <div className="p-4 mb-4 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-900">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-600 bg-green-100 rounded-full dark:bg-green-800 dark:text-green-200">
+                  <FaCheck className="w-5 h-5" />
+                </span>
+                <p className="font-medium text-green-700 dark:text-green-200">Marks saved successfully!</p>
+              </div>
+            </div>
+          )}
+          
+          {marksError && (
+  <div className="p-4 mb-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-900">
+    <div className="flex items-center gap-3">
+      <span className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-600 bg-red-100 rounded-full dark:bg-red-800 dark:text-red-200">
+        <FaTimes className="w-5 h-5" />
+      </span>
+      <p className="font-medium text-red-700 dark:text-red-200">{marksError}</p>
+    </div>
+  </div>
+)}
+
+          <div className="space-y-6">
+{codeCriteria.map((criterion, index) => (
+  <div key={index} className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <h4 className="font-medium text-gray-900 dark:text-white">{criterion.criterion}</h4>
+        <div className="grid grid-cols-3 gap-4 mt-2">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">High:</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{criterion.high_description}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Medium:</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{criterion.medium_description}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Low:</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{criterion.low_description}</p>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                      Weightage: {criterion.weightage}%
+                    </p>
+      </div>
+      <div className="w-24 ml-4">
+        <TextInput
+          type="number"
+          min="0"
+          max="100"
+          value={marks[criterion.criterion] ?? 0}
+          onChange={(e) => {
+            const value = parseFloat(e.target.value);
+            setMarks({
+              ...marks,
+              [criterion.criterion]: isNaN(value) ? 0 : Math.min(100, Math.max(0, value))
+            });
+          }}
+          placeholder="0-100"
+        />
+      </div>
+    </div>
+  </div>
+))}
+          </div>
+
+          <div className="flex justify-end mt-6">
+            <Button 
+              onClick={handleSaveMarks}
+              disabled={savingMarks}
+              className="flex items-center"
+              color="blue"
+            >
+              {savingMarks ? (
+                <>
+                  <Spinner size="sm" className="mr-2" />
+                  Saving Marks...
+                </>
+              ) : (
+                <>
+                  <FaCheck className="mr-2" />
+                  Save Marks
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
   // Render final feedback section
   const renderFinalFeedbackSection = () => {
     const feedbackText = String(finalFeedback || '');
@@ -1616,6 +1948,15 @@ const PdfGenerationDialog = () => {
     },
     {
       id: 4,
+      title: "Marking Scheme",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+      )
+    },
+    {
+      id: 5,
       title: "Final Feedback",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1657,12 +1998,19 @@ const PdfGenerationDialog = () => {
           </div>
         );
       case 4:
-        return (
-          <div id="tab-content-4">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-white">Final Feedback</h2>
-            {renderFinalFeedbackSection()}
-          </div>
-        );
+      return (
+        <div id="tab-content-4">
+          <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-white">Marking Scheme Evaluation</h2>
+          {renderMarkingSchemeSection()}
+        </div>
+      );
+    case 5:
+      return (
+        <div id="tab-content-5">
+          <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-white">Final Feedback</h2>
+          {renderFinalFeedbackSection()}
+        </div>
+      );
       default:
         return <p className="text-gray-600 dark:text-gray-400">Select a tab to view content</p>;
     }
@@ -1672,7 +2020,7 @@ const PdfGenerationDialog = () => {
     <div className="container py-6 mx-auto space-y-6 font-sans animate-slide-in-right">
       <Card className="border-0 shadow-lg">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-primary-700 dark:text-primary-400">Code Analysis Results</h1>
+          <h1 className="text-2xl font-bold text-primary-700 dark:text-primary-400">Code Repository Evaluation</h1>
           <div className="flex items-center gap-3">
             <Button
   onClick={generatePDF}

@@ -320,7 +320,7 @@ def delete_code_naming_result():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@check_naming_bp.route('/check-code_comments_accuracy', methods=['POST'])
+@check_naming_bp.route('/check-code-comments-accuracy', methods=['POST'])
 def checking_code_comments_accuracy():
     """
     Check code comments accuracy for a repository and store results in the database

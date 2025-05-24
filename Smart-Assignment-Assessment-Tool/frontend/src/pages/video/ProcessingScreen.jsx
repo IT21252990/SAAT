@@ -1,12 +1,25 @@
 import React from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
-function ProcessingScreen({ progress, assignmentId, moduleId, userId }) {
+function ProcessingScreen({ progress, assignmentId, moduleId, userId, showNavigate }) {
+  
+  const navigate = useNavigate();
+
+  const handleVideoNavigation = () => {
+    navigate(`/add-submission/${assignmentId}`, {
+      state: { moduleId, moduleName, submissionId },
+    });
+  };
+
   return (
     <div style={styles.container}>
       <h2>Processing Video...</h2>
       <div style={styles.progressBar}>
         <div style={{ ...styles.progress, width: `${progress}%` }}></div>
       </div>
+      { showNavigate &&  (
+              <button onClick={handleVideoNavigation}>Go to Assignment</button>
+            )}
       <p>{progress}% Completed</p>
     </div>
   );

@@ -75,6 +75,19 @@ def create_marking_scheme():
                 } for criterion in criteria["video"]
             ]
 
+        # Process Viva criteria if video submission is enabled
+        if submission_types.get("viva", False) and criteria.get("viva"):
+            processed_criteria["viva"] = [
+                {
+                    "criterion": criterion["name"],
+                    "low_description": criterion["lowDescription"],
+                    "medium_description": criterion["mediumDescription"],
+                    "high_description": criterion["highDescription"],
+                    "weightage": criterion["weight"],
+                    "type_weight": submission_type_weights.get("viva", 0)
+                } for criterion in criteria["viva"]
+            ]
+
         # Create new marking scheme document
         marking_scheme_ref = db.collection("marking_schemes").document()
         marking_scheme_ref.set({

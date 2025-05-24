@@ -572,3 +572,60 @@ def delete_final_feedback():
             
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@repo_bp.route('/save-marks', methods=['POST'])
+def save_marks():
+    """ Save marks for each criteria in the marking scheme """
+    try:
+        db = current_app.db
+        data = request.get_json()
+        
+        code_id = data.get("code_id")
+        marks = data.get("marks")
+        marking_scheme_id = data.get("marking_scheme_id")
+        
+        if not code_id or not marks or not marking_scheme_id:
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+            
+        # Update the document with marks
+        doc_ref.update({
+            "marks": marks,
+            "marking_scheme_id": marking_scheme_id,
+            "marks_updated_at": datetime.utcnow().isoformat()
+        })
+        
+        return jsonify({
+            "message": "Marks saved successfully",
+            "code_id": code_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@repo_bp.route('/get-marks/<code_id>', methods=['GET'])
+def get_marks(code_id):
+    """ Get existing marks for a code submission """
+    try:
+        db = current_app.db
+        doc_ref = db.collection("codes").document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return jsonify({"error": "Code ID not found"}), 404
+            
+        code_data = doc.to_dict()
+        existing_marks = code_data.get("marks", {})
+        
+        return jsonify({
+            "marks": existing_marks,
+            "code_id": code_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
