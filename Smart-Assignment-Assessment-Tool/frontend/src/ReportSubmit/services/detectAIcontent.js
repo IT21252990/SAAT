@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Function to detect AI content using Hugging Face API
 export const detectAIcontent = async (content, progressCallback) => {
-  const huggingFaceApiKey = ''; 
+  const huggingFaceApiKey = import.meta.env.VITE_HUGGINGFACE_API_KEY; 
   const endpoint = 'https://api-inference.huggingface.co/models/openai-community/roberta-base-openai-detector';
 
   const cleanedContent = content.trim().replace(/\s+/g, ' '); // Clean up the content, remove extra space

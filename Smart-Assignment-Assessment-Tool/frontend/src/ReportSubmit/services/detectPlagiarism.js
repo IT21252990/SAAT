@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Function to detect plagiarism using alternative methods
 export const detectPlagiarism = async (content, progressCallback) => {
-  const huggingFaceApiKey = '';
+  const huggingFaceApiKey = import.meta.env.VITE_HUGGINGFACE_PLAGIARISAM;
   // Try alternative models that work with Inference API
   const endpoints = [
     "https://api-inference.huggingface.co/models/unitary/toxic-bert",
