@@ -31,7 +31,6 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 // Set PDF.js Worker
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js';
 import Header from '../../../components/Header';
-import { report } from 'process';
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const ReportUpload = ({ onSubmit }) => {
@@ -59,8 +58,8 @@ const ReportUpload = ({ onSubmit }) => {
       try {
         const response = await fetch(`http://127.0.0.1:5000/api/v1/marking-scheme/markingScheme/${assignmentId}`);
         const data = await response.json();
-        console.log('Marking Scheme data:', data);
-        setMarkingScheme(data);
+        console.log('Marking Scheme data:', data.marking_schemes[0].criteria.report);
+        setMarkingScheme(data.marking_schemes[0].criteria.report);
         setActiveStep(1);
       } catch (err) {
         setError('Failed to load marking scheme.');
@@ -269,7 +268,7 @@ const ReportUpload = ({ onSubmit }) => {
     try {
       console.log('Analyzing Report:', studentReport.content);
 
-      const result = await analyzeReport(studentReport.content, markingScheme.criteria, assignmentId, (progress) => {
+      const result = await analyzeReport(studentReport.content, markingScheme, assignmentId, (progress) => {
         setProgress(progress);
       });
 
@@ -626,7 +625,7 @@ const ReportUpload = ({ onSubmit }) => {
         </Stepper>
 
         {/* Show submission status card if submission exists and not updating */}
-        {reportData.status === 'submitted' && !isUpdating && (
+        {submissionStatus && !isUpdating && (
           <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -711,7 +710,7 @@ const ReportUpload = ({ onSubmit }) => {
         )}
 
         {/* Upload section - show when no submission or updating */}
-        {!reportID && (
+        {(!submissionStatus || isUpdating) && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom>
               {isUpdating ? 'Update Student Report' : 'Upload Student Report'}
@@ -777,7 +776,6 @@ const ReportUpload = ({ onSubmit }) => {
 
         {/* analysis Results published reports */}
         {reportData.status === 'published' && (
-
           <div>
             <div className='flex gap-x-4'>
               <Box sx={{ mt: 4 }} className='border-2 p-[1.5rem] rounded-md border-[#1976d22b] w-1/2 mt-8'>
