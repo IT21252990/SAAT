@@ -204,6 +204,7 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
           {marking.criteria.report && renderCriteriaTable(marking.criteria.report, "report")}
           {marking.criteria.code && renderCriteriaTable(marking.criteria.code, "code")}
           {marking.criteria.video && renderCriteriaTable(marking.criteria.video, "video")}
+          {marking.criteria.viva && renderCriteriaTable(marking.criteria.viva, "viva")}
         </>
       ) : (
         // Fallback to assignment's marking_criteria if no marking scheme is available
@@ -215,6 +216,8 @@ const AssignmentDetails = ({ assignment, moduleName, marking }) => {
               renderSimpleCriteriaList(assignment.marking_criteria.code, "code")}
             {assignment.marking_criteria.video &&
               renderSimpleCriteriaList(assignment.marking_criteria.video, "video")}
+            {assignment.marking_criteria.viva &&
+              renderSimpleCriteriaList(assignment.marking_criteria.viva, "viva")}
           </>
         )
       )}
