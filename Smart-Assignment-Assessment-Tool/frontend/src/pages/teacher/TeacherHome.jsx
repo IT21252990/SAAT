@@ -483,7 +483,13 @@ const TeacherHome = () => {
           </form>
         </Modal.Body>
       </Modal>
+
+      <button onClick={() => navigate('/TestingProject')}>
+      Go to Testing Project
+    </button>
+
     </div>
+    
   );
 };
 
