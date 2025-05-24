@@ -31,6 +31,7 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 // Set PDF.js Worker
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js';
 import Header from '../../../components/Header';
+import { report } from 'process';
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const ReportUpload = ({ onSubmit }) => {
@@ -625,7 +626,7 @@ const ReportUpload = ({ onSubmit }) => {
         </Stepper>
 
         {/* Show submission status card if submission exists and not updating */}
-        {submissionStatus && !isUpdating && (
+        {reportData.status === 'submitted' && !isUpdating && (
           <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -710,7 +711,7 @@ const ReportUpload = ({ onSubmit }) => {
         )}
 
         {/* Upload section - show when no submission or updating */}
-        {(!submissionStatus || isUpdating) && (
+        {!reportID && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom>
               {isUpdating ? 'Update Student Report' : 'Upload Student Report'}
