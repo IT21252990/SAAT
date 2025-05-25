@@ -602,6 +602,7 @@ const ViewSubmissions = () => {
                                     state: {
                                       videoId: submission.video_id,
                                       submissionId: submission.submission_id,
+                                      assignmentId: submission.assignment_id,
                                     },
                                   })
                                 }
