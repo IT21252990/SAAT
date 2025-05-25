@@ -5,6 +5,7 @@ from app.models.submission_model import Submission
 
 submission_bp = Blueprint("submission", __name__)
 
+# create_submission
 @submission_bp.route("/create", methods=["POST"])
 def create_submission():
     try:
