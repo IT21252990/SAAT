@@ -48,6 +48,93 @@ const SubmissionResultsPage = () => {
     // You can replace alerts with actual navigation when those pages are ready.
   };
 
+  const [reportSubmissions, setReportSubmissions] = useState([]);
+  const [reportID, setReportID] = useState('');
+  const [submissionID, setSubmissionID] = useState('');
+  const [reportData, setReportData] = useState('');
+  const [assignmentData, setAssignmentData] = useState('');
+
+  const fetchAssignmentDetails = async () => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
+      );
+      const data = await response.json();
+      console.log("ids", data)
+      // Replace this with how you get the current user's ID
+      const currentUserId = userId;
+
+      // Find the first submission belonging to the current student
+      const matchingSubmission = data.submissions.find(
+        (submission) => submission.student_id === currentUserId
+      );
+
+      if (response.ok && matchingSubmission) {
+        setSubmissionID(matchingSubmission.submission_id);
+        setReportID(matchingSubmission.report_id);
+        console.log("Matched report ID:", matchingSubmission.report_id);
+      } else {
+        console.warn("No matching submission found for this student.");
+      }
+    } catch (error) {
+      console.error("Error fetching assignment details:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchAllReportSubmissions = async () => {
+      try {
+
+        // setError(null);
+        setLoading(true);
+
+        await fetchAssignmentDetails();
+
+        console.log('Fetching report submissions for assignment ID:', reportID);
+        console.log("hellow ")
+        const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
+
+        console.log("response: ", response);
+        const Reportdata = await response.json();
+        console.log("report", Reportdata.student_id);
+
+
+        if (response.ok) {
+          if (Reportdata.student_id === userId) {
+            console.log("user have existing submission", Reportdata);
+            setReportData(Reportdata);
+          }
+
+
+          // Set the individual state variables based on the response structure
+          // setAiContentResults(Reportdata.aiContent || {});
+          setPlagiarismResults(Reportdata.plagiarism || "0");
+          setAnalysisResults(Reportdata.analysis_report || {});
+        }
+
+
+        const AssignmentResponse = await fetch(`http://127.0.0.1:5000/api/v1/assignment/getAssignment/${assignmentId}`);
+
+        console.log("AssignmentResponse: ", AssignmentResponse);
+        const assignmentData = await AssignmentResponse.json();
+        if (AssignmentResponse.ok) {
+          setAssignmentData(assignmentData);
+          console.log("assignment", assignmentData);
+        }
+
+      } catch (err) {
+        console.error("Fetch error:", err);
+        // setError("Failed to fetch report submissions");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (assignmentId) {
+      fetchAllReportSubmissions();
+    }
+  }, [assignmentId, reportID]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-4 py-10">
       <div className="max-w-2xl mx-auto">
@@ -78,7 +165,7 @@ const SubmissionResultsPage = () => {
               {/* Report Results Button */}
               <Button
                 color="blue"
-                onClick={() => handleNavigate("report")}
+                onClick={() => navigate(`/view-report-results/${reportId}`)}
                 className="w-full flex items-center justify-center gap-2"
                 disabled={!reportId}
               >
