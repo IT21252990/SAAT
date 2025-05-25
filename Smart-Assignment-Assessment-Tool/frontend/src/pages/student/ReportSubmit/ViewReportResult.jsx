@@ -161,7 +161,7 @@ const handleDownloadPdf = () => {
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(25, 118, 210);
-    doc.text(`Total Score: ${reportData.analysis_report.totalScore}/20`, margin + 10, yPosition + 15);
+    doc.text(`Total Score: ${reportData.analysis_report.totalScore}/100`, margin + 10, yPosition + 15);
 
     yPosition += 40;
   }
@@ -344,7 +344,7 @@ const handleDownloadPdf = () => {
                       {reportData?.analysis_report?.totalScore && (
                         <Box sx={{ mb: 2, p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
                           <Typography variant="h6" color="primary">
-                            Total Score: {reportData.analysis_report.totalScore}/20
+                            Total Score: {reportData.analysis_report.totalScore}/100
                           </Typography>
                         </Box>
                       )}
