@@ -5,6 +5,13 @@ import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import logo from "../asserts/rounded_logo.png";
 
+const UserIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
 const Header = () => {
   const [user, setUser] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
@@ -87,7 +94,18 @@ const Header = () => {
 
           <div className="flex items-center lg:order-2">
             {userDetails ? (
-              <div className="flex items-center">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-gray-200 rounded-full dark:bg-gray-600">
+                  {userDetails.profilePicUrl ? (
+                    <img 
+                      src={userDetails.profilePicUrl} 
+                      alt={userDetails.studentName || "User"} 
+                      className="object-cover w-full h-full rounded-full"
+                    />
+                  ) : (
+                    <UserIcon />
+                  )}
+                </div>
                 {/* Display User Email */}
                 <span className="mr-4 text-gray-700 dark:text-gray-300">
                   {userDetails.studentName ? userDetails.studentName : userDetails.email}
