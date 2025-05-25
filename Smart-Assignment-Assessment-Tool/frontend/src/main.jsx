@@ -26,6 +26,7 @@ import SubmitVideo from "./pages/video/SubmitVideo.jsx";
 import VideoScreen from "./pages/video/VideoScreen.jsx";
 import TestingProject from "./pages/teacher/TestingProject.jsx";
 import SubmissionResultsPage from "./pages/SubmissionResultsPage";
+import ViewReportResult from "./pages/student/ReportSubmit/ViewReportResult.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -62,6 +63,7 @@ root.render(
           <Route path="videoSubmission/video-screen" element={<VideoScreen />} />
 
           <Route path="/submission-results/:submissionId" element={<SubmissionResultsPage />} />
+          <Route path="/view-report-results/:reportID" element={<ViewReportResult />} />
 
           <Route path="TestingProject" element={<TestingProject />} />
         </Route>
