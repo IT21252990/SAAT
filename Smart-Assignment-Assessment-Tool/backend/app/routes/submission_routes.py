@@ -67,6 +67,7 @@ def create_submission():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
 
 # update submission
 @submission_bp.route("/update", methods=["POST"])
@@ -170,6 +171,33 @@ def get_submissions_by_relevant_submission_id(submission_id):
         }
         return jsonify({"submission_data": submission_data}), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@submission_bp.route("/get-result-ids/<submission_id>", methods=["GET"])
+def get_result_ids(submission_id):
+    try:
+        db = current_app.db
+        submission_ref = db.collection("submissions").document(submission_id)
+        submission_data = submission_ref.get()
+
+        if not submission_data.exists:
+            return jsonify({"error": "Submission not found"}), 404
+
+        submission = submission_data.to_dict()
+
+        result_ids = {
+            "submission_id": submission_id,
+            "assignment_id": submission.get("assignment_id"),
+            "video_id": submission.get("video_id"),
+            "code_id": submission.get("code_id"),
+            "report_id": submission.get("report_id")
+        }
+
+        return jsonify(result_ids), 200
+
+    except Exception as e:
+        print("Error in get_result_ids:", str(e))
         return jsonify({"error": str(e)}), 500
 
 

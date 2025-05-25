@@ -30,6 +30,8 @@ const AddAssignment = () => {
   const navigate = useNavigate();
   const { moduleId, moduleName } = location.state || {};
 
+  const userId = localStorage.getItem("userId");
+
   const [assignmentName, setAssignmentName] = useState("");
   const [deadline, setDeadline] = useState("");
   const [error, setError] = useState("");
@@ -623,6 +625,7 @@ const AddAssignment = () => {
       submission_type_weights: submissionTypeWeights,
       markingCriteria: markingCriteria,
       details,
+      user_id: userId
     };
   
     console.log("Sending Payload:", payload);

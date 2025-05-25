@@ -14,21 +14,20 @@ def create_assignment():
         name = data.get("name")
         description = data.get("description")
         deadline = data.get("deadline")
-        submission_types = data.get("submission_types")  # {"code": True/False, "report": True/False, "video": True/False}
-        marking_criteria = data.get("markingCriteria")  # Dict for different submission types
-        details = data.get("details")  # Topics, descriptions, subtopics
-        
-        if not module_id or not name or not marking_criteria:
+        submission_types = data.get("submission_types")
+        marking_criteria = data.get("markingCriteria")
+        details = data.get("details")
+        user_id = data.get("user_id")
+
+        if not module_id or not name or not marking_criteria or not user_id:
             return jsonify({"error": "Missing required fields"}), 400
-        
-         # Generate general questions using Gemini
+
+        # Generate general questions using Gemini
         from app.utils.generate_questions import generate_questions_from_assignment
         viva_questions = generate_questions_from_assignment(description)
-        print("[DEBUG] Viva Questions to save in DB:", viva_questions)
 
-        assignment_id = str(uuid.uuid4())  # Generate a unique assignment ID
+        assignment_id = str(uuid.uuid4())
 
-        # Save in Firestore
         assignment_ref = db.collection("assignments").document(assignment_id)
         assignment_ref.set({
             "assignment_id": assignment_id,
@@ -39,13 +38,15 @@ def create_assignment():
             "submission_types": submission_types,
             "marking_criteria": marking_criteria,
             "details": details,
-            "viva_questions": viva_questions
+            "viva_questions": viva_questions,
+            "user_id": user_id
         })
 
         return jsonify({"message": "Assignment created successfully!", "assignment_id": assignment_id}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # Get Assignments by Module ID
 @assignment_bp.route("/getAssignmentsByModule/<module_id>", methods=["GET"])

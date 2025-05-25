@@ -11,6 +11,7 @@ def create_module():
         year = data.get("year")
         semester = data.get("semester")
         enroll_key = data.get("enroll_key")
+        user_id = data.get("user_id")
 
         if not name or not year or not semester or not enroll_key:
             return jsonify({"error": "Missing required fields"}), 400
@@ -22,6 +23,7 @@ def create_module():
             "year": year,
             "semester": semester,
             "enroll_key": enroll_key,
+            "user_id": user_id
         }
 
         module_ref.set(module_data)
