@@ -31,7 +31,11 @@ const Login = () => {
       const data = await response.json();
       const userRole = data.role;
 
-      navigate(userRole === "student" ? "/student-home" : "/teacher-home");
+      if (userRole == "admin"){
+        navigate("/admin-panel");
+      } else {
+        navigate(userRole === "student" ? "/student-home" : "/teacher-home");
+      }
     } catch (error) {
       alert(error.message);
     }
