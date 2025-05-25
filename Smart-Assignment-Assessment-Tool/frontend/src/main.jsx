@@ -27,6 +27,7 @@ import VideoScreen from "./pages/video/VideoScreen.jsx";
 import TestingProject from "./pages/teacher/TestingProject.jsx";
 import SubmissionResultsPage from "./pages/SubmissionResultsPage";
 import ViewReportResult from "./pages/student/ReportSubmit/ViewReportResult.jsx";
+import AdminPanel from "./pages/user/AdminPanel.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -66,6 +67,7 @@ root.render(
           <Route path="/view-report-results/:reportID" element={<ViewReportResult />} />
 
           <Route path="TestingProject" element={<TestingProject />} />
+          <Route path="admin-panel" element={<AdminPanel />} />
         </Route>
       </Routes>
     </Router>
