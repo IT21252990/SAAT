@@ -67,13 +67,27 @@ const AssignmentPage = () => {
 
         const data = await response.json();
         if (response.ok && data.exists) {
-          setHasSubmitted(true);
-          setSubmissionId(data.submission_id); // Save submission ID for results view
+          setSubmissionId(data.submission_id);
+
+          const resultRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/get-result-ids/${data.submission_id}`);
+          const resultData = await resultRes.json();
+
+          if (resultRes.ok) {
+            const { code_id, report_id, video_id } = resultData;
+
+            // Consider "submitted" only if at least one of the IDs exists
+            if (code_id || report_id || video_id) {
+              setHasSubmitted(true);
+            }
+          } else {
+            console.warn("Result ID fetch failed:", resultData.error);
+          }
         }
       } catch (error) {
         console.error("Error checking submission:", error);
       }
     };
+
 
     fetchAssignmentDetails();
     fetchSubmissionStatus();
@@ -209,8 +223,8 @@ const AssignmentPage = () => {
                           <div>
                             <span className="text-sm text-gray-500 dark:text-gray-400">Deadline:</span>
                             <p className={`font-medium ${isDeadlinePassed(assignment.deadline) ? 'text-red-600 dark:text-red-400' :
-                                isDeadlineApproaching(assignment.deadline) ? 'text-amber-500 dark:text-amber-400' :
-                                  'text-gray-900 dark:text-white'
+                              isDeadlineApproaching(assignment.deadline) ? 'text-amber-500 dark:text-amber-400' :
+                                'text-gray-900 dark:text-white'
                               }`}>
                               {formatDate(assignment.deadline)}
                             </p>
@@ -222,8 +236,8 @@ const AssignmentPage = () => {
                           <div>
                             <span className="text-sm text-gray-500 dark:text-gray-400">Time remaining:</span>
                             <p className={`font-medium ${isDeadlinePassed(assignment.deadline) ? 'text-red-600 dark:text-red-400' :
-                                isDeadlineApproaching(assignment.deadline) ? 'text-amber-500 dark:text-amber-400' :
-                                  'text-gray-900 dark:text-white'
+                              isDeadlineApproaching(assignment.deadline) ? 'text-amber-500 dark:text-amber-400' :
+                                'text-gray-900 dark:text-white'
                               }`}>
                               {getTimeRemaining(assignment.deadline)}
                             </p>
