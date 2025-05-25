@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/Header";
 import { Card, Alert, Button } from "flowbite-react";
-import { HiArrowLeft, HiOutlineCode, HiDocumentText, HiVideoCamera, HiChevronRight, HiExclamation } from "react-icons/hi";
+import { HiArrowLeft, HiPencil} from "react-icons/hi";
+import MarkingPanel from "../../../components/viva/MarkingPanel";
 
 const VivaDashboard = () => {
   const { submissionId } = useParams();
@@ -13,6 +14,8 @@ const VivaDashboard = () => {
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [expandedAnswers, setExpandedAnswers] = useState({});
   const [generalQuestions, setGeneralQuestions] = useState([]);
+  const [isMarkingPanelOpen, setIsMarkingPanelOpen] = useState(false);
+
   
   const fetchSubmissionDetails = async () => {
     try {
@@ -106,10 +109,32 @@ const VivaDashboard = () => {
       {/* Main content with padding to account for fixed header */}
       <main className="container px-4 pt-24 pb-8 mx-auto">
         {/* Main Content Card */}
-        <Button color="light" onClick={handleGoBack} className="mb-4 mr-4">
+        <div className="flex items-center justify-between mb-4">
+          <Button color="light" onClick={handleGoBack} className="mr-4">
             <HiArrowLeft className="w-5 h-5 mr-2" />
             Back to Submissions
           </Button>
+          
+          {/* Floating Marking Button */}
+          <Button 
+            color="orange" 
+            className="rounded-full p-2 flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium"
+            onClick={() => setIsMarkingPanelOpen(true)}
+            title="Mark Viva"
+          >
+            <HiPencil className="w-5 h-5 mr-2" />
+            <span>Mark</span>
+          </Button>
+        </div>
+
+        {/* Marking Panel */}
+        <MarkingPanel 
+          isOpen={isMarkingPanelOpen}
+          onClose={() => setIsMarkingPanelOpen(false)}
+          submissionData={{ id: submissionId }}
+          assignmentId={submissionData?.assignment_id}
+        />
+
         <div className="mb-8 overflow-hidden bg-white shadow-lg rounded-xl dark:bg-gray-800">
           {/* Header with gradient background */}
           <div className="px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-800">

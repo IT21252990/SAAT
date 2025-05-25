@@ -38,6 +38,7 @@ def create_app():
     from app.routes.question.gemini_question_gen_routes import qgenerate_bp
 
     from app.routes.testing_project import project_bp
+    from app.routes.mark_routes import marks_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
     app.register_blueprint(user_bp, url_prefix="/api/v1/user")
@@ -53,5 +54,6 @@ def create_app():
     app.register_blueprint(report_submission_bp, url_prefix="/api/v1/report")
 
     app.register_blueprint(project_bp, url_prefix="/api/v1/project")
+    app.register_blueprint(marks_bp, url_prefix="/api/v1/marks")
 
     return app
