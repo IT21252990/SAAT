@@ -10,17 +10,21 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
   const [expandedCriteria, setExpandedCriteria] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
+  const [existingMarks, setExistingMarks] = useState({});
 
 
   // Fetch marking scheme when panel opens
   useEffect(() => {
     if (isOpen && assignmentId) {
       fetchMarkingScheme();
+
+      if (submissionData?.id) {
+      fetchExistingMarks();
+    }
       // Reset save success state when panel opens
       setSaveSuccess(false);
     }
-  }, [isOpen, assignmentId]);
+  }, [isOpen, assignmentId, submissionData?.id]);
 
   const fetchMarkingScheme = async () => {
     setLoading(true);
@@ -46,12 +50,14 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
       
       setMarkingScheme(markingSchemeData);
       
-      console.log('Marking scheme fetched:', markingSchemeData);
-      // Initialize marks state based on viva criteria
+      // Initialize marks state based on viva criteria and existing marks
       if (markingSchemeData.criteria?.viva) {
         const initialMarks = {};
         markingSchemeData.criteria.viva.forEach((criterion, index) => {
-          initialMarks[`viva_${index}`] = '';
+          const criterionKey = `viva_${index}`;
+          // Check if we have existing marks for this criterion, otherwise assign 0
+          const existingMark = existingMarks[criterion.criterion];
+          initialMarks[criterionKey] = existingMark !== undefined ? existingMark.toString() : '0';
         });
         setMarks(initialMarks);
       }
@@ -60,6 +66,42 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
       console.error('Error fetching marking scheme:', err);
     } finally {
       setLoading(false);
+    }
+  };    
+
+  // useEffect to update marks when existingMarks changes
+  useEffect(() => {
+    if (markingScheme?.criteria?.viva && Object.keys(existingMarks).length >= 0) {
+      const updatedMarks = {};
+      markingScheme.criteria.viva.forEach((criterion, index) => {
+        const criterionKey = `viva_${index}`;
+        const existingMark = existingMarks[criterion.criterion];
+        // If no existing mark found, assign 0 as default
+        updatedMarks[criterionKey] = existingMark !== undefined ? existingMark.toString() : '0';
+      });
+      setMarks(updatedMarks);
+    }
+  }, [existingMarks, markingScheme]);
+
+  const fetchExistingMarks = async () => {
+    if (!submissionData?.id) return;
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marks/get-viva-marks/${submissionData.id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setExistingMarks(data.viva || {});
+      } else if (response.status === 404) {
+        // No existing marks found - assign them to 0
+        setExistingMarks({});
+        console.log('No existing marks found for submission - will assign 0 as default');
+      } else {
+        console.error('Error fetching existing marks:', response.status);
+      }
+    } catch (err) {
+      console.error('Error fetching existing marks:', err);
+      // Don't set error state as this is optional data
     }
   };
 
@@ -85,8 +127,6 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
       [criteriaId]: value
     }));
   };
-
-
 
   const toggleCriteriaExpansion = (criteriaId) => {
     setExpandedCriteria(prev => ({
@@ -131,7 +171,7 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
     // Prepare the marks data in the format expected by your backend
     const vivaMarksData = {};
     vivaCriteria.forEach((criterion, index) => {
-      vivaMarksData[`Criteria${index + 1}`] = parseFloat(marks[criterion.id]) || 0;
+       vivaMarksData[criterion.title] = parseFloat(marks[criterion.id]) || 0;
     });
     
     const payload = {
@@ -214,15 +254,15 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-1/3 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 dark:bg-gray-800 flex flex-col">
+    <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-1/3 transition-transform duration-300 ease-in-out transform bg-white shadow-2xl dark:bg-gray-800">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600 dark:border-gray-700 flex-shrink-0">
+      <div className="flex items-center justify-between flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-white">
           Viva Marking Panel
         </h3>
         <button
           onClick={onClose}
-          className="text-white hover:text-gray-200 transition-colors"
+          className="text-white transition-colors hover:text-gray-200"
         >
           <HiX className="w-5 h-5" />
         </button>
@@ -234,16 +274,16 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
           {/* Loading State */}
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <div className="w-6 h-6 border-b-2 border-blue-600 rounded-full animate-spin"></div>
               <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading...</span>
             </div>
           )}
 
           {/* Error State */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
+            <div className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-800">
               <div className="flex items-center">
-                <HiExclamation className="w-4 h-4 text-red-600 mr-2 flex-shrink-0" />
+                <HiExclamation className="flex-shrink-0 w-4 h-4 mr-2 text-red-600" />
                 <span className="text-sm text-red-800 dark:text-red-200">
                   {error}
                 </span>
@@ -253,9 +293,9 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
 
           {/* Success State */}
           {saveSuccess && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
+            <div className="p-3 mb-4 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800">
               <div className="flex items-center">
-                <HiCheck className="w-4 h-4 text-green-600 mr-2 flex-shrink-0" />
+                <HiCheck className="flex-shrink-0 w-4 h-4 mr-2 text-green-600" />
                 <span className="text-sm text-green-800 dark:text-green-200">
                   Marks saved successfully! Closing panel...
                 </span>
@@ -265,8 +305,8 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
 
           {/* Total Marks Display - Top for better UX */}
           {!loading && !error && markingScheme && (
-            <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-800">
-              <div className="flex justify-between items-center">
+            <div className="p-3 mb-4 border border-blue-200 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-800">
+              <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   Total Score:
                 </span>
@@ -284,15 +324,15 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
           {!loading && !error && markingScheme && (
             <div className="space-y-3">
               {getVivaCriteria().map((criterion, index) => (
-                <div key={criterion.id} className="border border-gray-200 rounded-lg dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm">
+                <div key={criterion.id} className="bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-600 dark:bg-gray-800">
                   {/* Criterion Header - Always Visible */}
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full flex-shrink-0">
+                      <div className="flex items-center flex-1 gap-2">
+                        <span className="inline-flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
                           {index + 1}
                         </span>
-                        <h5 className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                        <h5 className="text-sm font-medium text-gray-900 truncate dark:text-white">
                           {criterion.title}
                         </h5>
                         <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded dark:bg-blue-900 dark:text-blue-200 flex-shrink-0">
@@ -301,7 +341,7 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
                       </div>
                       <button
                         onClick={() => toggleCriteriaExpansion(criterion.id)}
-                        className="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                        className="flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                       >
                         {expandedCriteria[criterion.id] ? 
                           <HiChevronUp className="w-4 h-4" /> : 
@@ -310,8 +350,9 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
                       </button>
                     </div>
                     
-                    {/* Mark Input - Always Visible */}
-                    <div className="flex items-center gap-2">
+                  {/* Mark Input - Always Visible */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
                       <input
                         type="number"
                         min="0"
@@ -319,30 +360,45 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
                         step="0.5"
                         value={marks[criterion.id] || ''}
                         onChange={(e) => handleMarkChange(criterion.id, e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                          existingMarks[criterion.title] ? 'border-blue-300 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300'
+                        }`}
                         placeholder={`0-${criterion.maxMarks}`}
                         disabled={saving}
                       />
-                      <span className="text-sm text-gray-500 dark:text-gray-400 w-12 text-right flex-shrink-0">
-                        /{criterion.maxMarks}
+                      {existingMarks[criterion.title] && (
+                        <div className="absolute top-0 right-0 w-2 h-2 transform translate-x-1 -translate-y-1 bg-blue-500 rounded-full"></div>
+                      )}
+                    </div>
+                    <span className="flex-shrink-0 w-12 text-sm text-right text-gray-500 dark:text-gray-400">
+                      /{criterion.maxMarks}
+                    </span>
+                  </div>
+                </div>
+
+                  {existingMarks[criterion.title] && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <HiInformationCircle className="w-3 h-3 text-blue-500" />
+                      <span className="text-xs text-blue-600 dark:text-blue-400">
+                        Previously saved: {existingMarks[criterion.title]}
                       </span>
                     </div>
-                  </div>
+                  )}
 
                   {/* Expanded Details */}
                   {expandedCriteria[criterion.id] && (
-                    <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 pt-3">
+                    <div className="px-3 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
                       <div className="space-y-2 text-xs">
                         <div className="flex items-start gap-2">
-                          <span className="font-medium text-red-600 w-12 flex-shrink-0">Low:</span>
+                          <span className="flex-shrink-0 w-12 font-medium text-red-600">Low:</span>
                           <span className="text-gray-700 dark:text-gray-300">{criterion.lowDesc}</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="font-medium text-yellow-600 w-12 flex-shrink-0">Mid:</span>
+                          <span className="flex-shrink-0 w-12 font-medium text-yellow-600">Mid:</span>
                           <span className="text-gray-700 dark:text-gray-300">{criterion.mediumDesc}</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="font-medium text-green-600 w-12 flex-shrink-0">High:</span>
+                          <span className="flex-shrink-0 w-12 font-medium text-green-600">High:</span>
                           <span className="text-gray-700 dark:text-gray-300">{criterion.highDesc}</span>
                         </div>
                       </div>
@@ -353,11 +409,9 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
             </div>
           )}
 
-
-
           {/* Default message when no marking scheme */}
           {!loading && !error && !markingScheme && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div className="py-8 text-center text-gray-500 dark:text-gray-400">
               <HiInformationCircle className="w-8 h-8 mx-auto mb-3 text-gray-400" />
               <p className="text-sm">No marking scheme found for this assignment.</p>
             </div>
@@ -366,18 +420,18 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
       </div>
 
       {/* Fixed Action Buttons */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 flex-shrink-0">
+      <div className="flex-shrink-0 p-4 bg-white border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex gap-3">
           <Button
             color="green"
             onClick={handleSubmitMarks}
-            className="flex-1 flex items-center justify-center gap-2 py-2"
+            className="flex items-center justify-center flex-1 gap-2 py-2"
             disabled={calculateTotalMarks() === 0 || saving || !submissionData?.id}
             size="sm"
           >
             {saving ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="w-4 h-4 border-b-2 border-white rounded-full animate-spin"></div>
                 Saving...
               </>
             ) : (
@@ -400,13 +454,13 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
         
         {/* Submission Info */}
         {submissionData?.id && (
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div className="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
             Submission ID: {submissionData.id}
           </div>
         )}
         
         {!submissionData?.id && (
-          <div className="mt-2 text-xs text-red-500 text-center">
+          <div className="mt-2 text-xs text-center text-red-500">
             No submission data - cannot save marks
           </div>
         )}
