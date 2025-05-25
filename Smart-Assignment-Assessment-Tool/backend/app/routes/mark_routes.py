@@ -55,3 +55,35 @@ def get_marks(submission_id):
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@marks_bp.route('/get-all-marks/<submission_id>', methods=['GET'])
+def get_all_marks(submission_id):
+    db = current_app.db
+
+    if not submission_id:
+        return jsonify({'error': 'Missing submission_id parameter'}), 400
+
+    try:
+        # Query Firestore for the document by submission_id
+        docs = db.collection('submissions').where('submission_id', '==', submission_id).limit(1).stream()
+        doc = next(docs, None)
+
+        if not doc or not doc.exists:
+            return jsonify({'error': 'Submission not found'}), 404
+
+        submission_data = doc.to_dict()
+        viva = submission_data.get('marks', {}).get('viva', {})
+
+        # Sum all numeric values in the viva dictionary
+        total = sum(value for value in viva.values() if isinstance(value, (int, float)))
+
+        return jsonify({
+            'submission_id': submission_id,
+            'total_viva_marks': total
+        }), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error calculating viva total: {e}")
+        return jsonify({'error': 'Server error occurred while retrieving viva marks'}), 500
+

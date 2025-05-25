@@ -5,38 +5,6 @@ from app.models.submission_model import Submission
 
 submission_bp = Blueprint("submission", __name__)
 
-# create_submission
-# @submission_bp.route("/create", methods=["POST"])
-# def create_submission():
-#     try:
-#         db = current_app.db  # Use Firestore client from app context
-#         data = request.get_json()
-#         assignment_id = data.get("assignment_id")
-#         student_id = data.get("student_id")
-
-#         if not assignment_id or not student_id:
-#             return jsonify({"error": "Missing required fields"}), 400
-
-#         submission_id = str(uuid4())  # Generate a unique ID
-#         submission_ref = db.collection("submissions").document(submission_id)
-
-#         submission_data = {
-#             "submission_id": submission_id,
-#             "assignment_id": assignment_id,
-#             "student_id": student_id,
-#             "status": "Pending",
-#             "code_id": None,
-#             "report_id": None,
-#             "video_id": None,
-#             "created_at": current_app.firestore.SERVER_TIMESTAMP,
-#         }
-
-#         submission_ref.set(submission_data)
-#         return jsonify({"message": "Submission created successfully!", "submission": submission_data}), 201
-
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
-
 @submission_bp.route("/create", methods=["POST"])
 def create_submission():
     try:
