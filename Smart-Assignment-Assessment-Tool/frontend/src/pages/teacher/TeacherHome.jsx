@@ -32,6 +32,8 @@ const TeacherHome = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const userId = localStorage.getItem("userId");
+  console.log("User ID:", userId);
   const [newModule, setNewModule] = useState({
     name: "",
     year: "",
@@ -106,6 +108,7 @@ const TeacherHome = () => {
       ...newModule,
       year: Number(newModule.year),
       semester: Number(newModule.semester),
+      user_id: userId,
     };
 
     try {
