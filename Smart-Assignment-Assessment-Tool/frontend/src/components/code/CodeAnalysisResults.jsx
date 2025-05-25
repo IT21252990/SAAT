@@ -116,42 +116,38 @@ useEffect(() => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/repo/get-marks/${codeId}`)
       ]);
       
-      const [schemeData, marksData] = await Promise.all([
-        schemeResponse.json(),
-        marksResponse.json()
-      ]);
-      
       if (!schemeResponse.ok) {
-        throw new Error(schemeData.error || "Failed to fetch marking scheme");
+        throw new Error("Failed to fetch marking scheme");
       }
 
+      const schemeData = await schemeResponse.json();
       const markingScheme = schemeData.marking_scheme || schemeData;
+      
+      if (!markingScheme?.marking_schemes?.[0]?.criteria?.code) {
+        throw new Error("Marking scheme data is incomplete");
+      }
+
       setMarkingScheme(markingScheme);
       
       // Initialize marks with existing marks or 0
       const initialMarks = {};
-      const existingMarks = marksResponse.ok ? marksData.marks || {} : {};
+      const existingMarks = marksResponse.ok ? (await marksResponse.json()).marks || {} : {};
 
-      if (Array.isArray(markingScheme.criteria)) {
-        markingScheme.criteria.forEach(criteria => {
-          initialMarks[criteria.criterion] = existingMarks[criteria.criterion] || 0;
-        });
-      } else if (markingScheme.criteria && typeof markingScheme.criteria === 'object') {
-        Object.values(markingScheme.criteria).forEach(criteria => {
-          initialMarks[criteria.criterion] = existingMarks[criteria.criterion] || 0;
-        });
-      }
+      markingScheme.marking_schemes[0].criteria.code.forEach(criteria => {
+        initialMarks[criteria.criterion] = existingMarks[criteria.criterion] || 0;
+      });
       
       setMarks(initialMarks);
+      setMarksError(null);
     } catch (err) {
       console.error("Error fetching marking scheme:", err);
-      setError("Failed to fetch marking scheme");
+      setMarksError(err.message);
+      setMarkingScheme(null);
     }
   };
 
   fetchMarkingScheme();
 }, [codeId, assignment_id]);
-
 
 const handleSaveMarks = async () => {
   setSavingMarks(true);
@@ -159,13 +155,20 @@ const handleSaveMarks = async () => {
   setMarksSuccess(false);
 
   try {
-    const codeCriteria = markingScheme.marking_schemes[0].criteria.code || [];
+    if (!markingScheme?.marking_schemes?.[0]?.criteria?.code) {
+      throw new Error("Marking scheme data is not available");
+    }
+
+    const codeCriteria = markingScheme.marking_schemes[0].criteria.code;
     
     // Validate marks
     const validatedMarks = {};
     for (const criterion of codeCriteria) {
       const mark = parseFloat(marks[criterion.criterion]);
-      if (isNaN(mark) || mark > 100 || mark < 0) {
+      if (!mark) {
+        throw new Error(`Invalid marks for ${criterion.criterion}`);
+      }
+      if (mark < 0 || mark > 100) {
         throw new Error(`Marks for ${criterion.criterion} must be between 0 and 100`);
       }
       validatedMarks[criterion.criterion] = mark;
@@ -1453,13 +1456,27 @@ const PdfGenerationDialog = () => {
   };
 
   const renderMarkingSchemeSection = () => {
+  if (marksError) {
+    return (
+      <div className="p-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-900">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-600 bg-red-100 rounded-full dark:bg-red-800 dark:text-red-200">
+            <FaTimes className="w-5 h-5" />
+          </span>
+          <div>
+            <p className="font-medium text-red-700 dark:text-red-200">Error loading marking scheme</p>
+            <p className="text-sm text-red-600 dark:text-red-300">{marksError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!markingScheme) {
     return (
-      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <Spinner size="sm" />
-          <p className="font-medium text-gray-700 dark:text-gray-200">Loading marking scheme...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-64">
+        <Spinner size="lg" />
+        <p className="mt-4">Loading marking scheme...</p>
       </div>
     );
   }
@@ -1490,23 +1507,23 @@ const PdfGenerationDialog = () => {
           )}
           
           {marksError && (
-  <div className="p-4 mb-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-900">
-    <div className="flex items-center gap-3">
-      <span className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-600 bg-red-100 rounded-full dark:bg-red-800 dark:text-red-200">
-        <FaTimes className="w-5 h-5" />
-      </span>
-      <p className="font-medium text-red-700 dark:text-red-200">{marksError}</p>
-    </div>
-  </div>
-)}
+            <div className="p-4 mb-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-900">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-600 bg-red-100 rounded-full dark:bg-red-800 dark:text-red-200">
+                  <FaTimes className="w-5 h-5" />
+                </span>
+                <p className="font-medium text-red-700 dark:text-red-200">{marksError}</p>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-6">
-{codeCriteria.map((criterion, index) => (
-  <div key={index} className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
-    <div className="flex items-start justify-between">
-      <div className="flex-1">
-        <h4 className="font-medium text-gray-900 dark:text-white">{criterion.criterion}</h4>
-        <div className="grid grid-cols-3 gap-4 mt-2">
+            {codeCriteria.map((criterion, index) => (
+              <div key={index} className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 dark:text-white">{criterion.criterion}</h4>
+                    <div className="grid grid-cols-3 gap-4 mt-2">
                       <div>
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-200">High:</p>
                         <p className="text-sm text-gray-600 dark:text-gray-300">{criterion.high_description}</p>
@@ -1523,26 +1540,26 @@ const PdfGenerationDialog = () => {
                     <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                       Weightage: {criterion.weightage}%
                     </p>
-      </div>
-      <div className="w-24 ml-4">
-        <TextInput
-          type="number"
-          min="0"
-          max="100"
-          value={marks[criterion.criterion] ?? 0}
-          onChange={(e) => {
-            const value = parseFloat(e.target.value);
-            setMarks({
-              ...marks,
-              [criterion.criterion]: isNaN(value) ? 0 : Math.min(100, Math.max(0, value))
-            });
-          }}
-          placeholder="0-100"
-        />
-      </div>
-    </div>
-  </div>
-))}
+                  </div>
+                  <div className="w-24 ml-4">
+                    <TextInput
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={marks[criterion.criterion] ?? 0}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setMarks({
+                          ...marks,
+                          [criterion.criterion]: isNaN(value) ? 0 : Math.min(100, Math.max(0, value))
+                        });
+                      }}
+                      placeholder="0-100"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-end mt-6">
