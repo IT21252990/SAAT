@@ -7,6 +7,7 @@ import logo from "../asserts/rounded_logo.png";
 
 const Header = () => {
   const [user, setUser] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
 
@@ -33,6 +34,7 @@ const Header = () => {
       if (response.ok) {
         const userData = await response.json();
         setUserRole(userData.role);
+        setUserDetails(userData);
       } else {
         console.error("Failed to fetch user role");
       }
@@ -62,6 +64,8 @@ const Header = () => {
       navigate("/teacher-home");
     } else if (userRole === "student") {
       navigate("/student-home");
+    } else if (userRole === "admin") {
+      navigate("/admin-panel");
     } else {
       // Default case if role is not recognized
       navigate("/");
@@ -82,11 +86,11 @@ const Header = () => {
           </a>
 
           <div className="flex items-center lg:order-2">
-            {user ? (
+            {userDetails ? (
               <div className="flex items-center">
                 {/* Display User Email */}
                 <span className="mr-4 text-gray-700 dark:text-gray-300">
-                  {user.email}
+                  {userDetails.studentName ? userDetails.studentName : userDetails.email}
                 </span>
 
                 {/* Logout Button */}
