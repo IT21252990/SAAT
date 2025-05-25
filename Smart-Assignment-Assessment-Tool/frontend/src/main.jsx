@@ -28,6 +28,7 @@ import TestingProject from "./pages/teacher/TestingProject.jsx";
 import SubmissionResultsPage from "./pages/SubmissionResultsPage";
 import ViewReportResult from "./pages/student/ReportSubmit/ViewReportResult.jsx";
 import AdminPanel from "./pages/user/AdminPanel.jsx";
+import ViewCodeSubmissionResults from "./pages/student/ViewCodeSubmissionResults.jsx";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -65,6 +66,9 @@ root.render(
 
           <Route path="/submission-results/:submissionId" element={<SubmissionResultsPage />} />
           <Route path="/view-report-results/:reportID" element={<ViewReportResult />} />
+          <Route path="/view-code-submission-results" element={<ViewCodeSubmissionResults />} />
+
+          {/* Teacher Testing Project */}
 
           <Route path="TestingProject" element={<TestingProject />} />
           <Route path="admin-panel" element={<AdminPanel />} />

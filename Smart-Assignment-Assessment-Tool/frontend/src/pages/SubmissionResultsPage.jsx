@@ -7,6 +7,7 @@ import {
   HiVideoCamera,
   HiArrowLeft,
 } from "react-icons/hi";
+import Header from "../components/Header";
 
 const SubmissionResultsPage = () => {
   const { submissionId } = useParams();
@@ -42,11 +43,6 @@ const SubmissionResultsPage = () => {
 
     fetchResultIds();
   }, [submissionId]);
-
-  const handleNavigate = (type) => {
-    alert(`Open ${type} results for submission ID: ${submissionId}`);
-    // You can replace alerts with actual navigation when those pages are ready.
-  };
 
   const [reportSubmissions, setReportSubmissions] = useState([]);
   const [reportID, setReportID] = useState('');
@@ -136,10 +132,14 @@ const SubmissionResultsPage = () => {
   }, [assignmentId, reportID]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-4 py-10">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
+        <Header />
+      </div>
+
+      <main className="container max-w-4xl px-4 pt-40 pb-5 mx-auto">
         <Card className="p-8 shadow-xl dark:border-gray-700">
-          <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
+          <h1 className="mb-6 text-2xl font-bold text-center text-gray-900 dark:text-white">
             Submission Results
           </h1>
 
@@ -155,8 +155,10 @@ const SubmissionResultsPage = () => {
               {/* Code Results Button */}
               <Button
                 color="purple"
-                onClick={() => handleNavigate("code")}
-                className="w-full flex items-center justify-center gap-2"
+                onClick={() => navigate("/view-code-submission-results", {
+                  state: { codeId, submissionId }
+                })}
+                className="flex items-center justify-center w-full gap-2"
                 disabled={!codeId}
               >
                 <HiCode className="w-5 h-5" /> Code Results
@@ -166,7 +168,7 @@ const SubmissionResultsPage = () => {
               <Button
                 color="blue"
                 onClick={() => navigate(`/view-report-results/${reportId}`)}
-                className="w-full flex items-center justify-center gap-2"
+                className="flex items-center justify-center w-full gap-2"
                 disabled={!reportId}
               >
                 <HiDocumentText className="w-5 h-5" /> Report Results
@@ -180,7 +182,7 @@ const SubmissionResultsPage = () => {
                     state: { videoId, assignmentId, submissionId },
                   })
                 }
-                className="w-full flex items-center justify-center gap-2"
+                className="flex items-center justify-center w-full gap-2"
                 disabled={!videoId}
               >
                 <HiVideoCamera className="w-5 h-5" /> Video Results
@@ -191,12 +193,12 @@ const SubmissionResultsPage = () => {
           <Button
             color="light"
             onClick={() => navigate(-1)}
-            className="mt-6 flex items-center justify-center gap-2"
+            className="flex items-center justify-center gap-2 mt-6"
           >
             <HiArrowLeft className="w-5 h-5" /> Back to Assignment
           </Button>
         </Card>
-      </div>
+      </main>
     </div>
   );
 };
