@@ -5,9 +5,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddCustomQuestionModal from '../../../components/viva/CustomVivaQuestion'
 import { Card, Alert, Button } from "flowbite-react";
-import {
-  HiArrowLeft,
-} from "react-icons/hi";
+import { HiArrowLeft, HiPencil} from "react-icons/hi";
+import MarkingPanel from "../../../components/viva/MarkingPanel";
 
 const GenerateVivaQuestions = () => {
   const navigate = useNavigate();
@@ -19,6 +18,8 @@ const GenerateVivaQuestions = () => {
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
+  const [isMarkingPanelOpen, setIsMarkingPanelOpen] = useState(false);
+  const [assignmentId, setAssignmentId] = useState(null);
 
   // Function to go back to previous page
   const handleGoBack = () => {
@@ -53,6 +54,8 @@ const GenerateVivaQuestions = () => {
             submission_data.report_id !== null &&
             submission_data.report_id !== undefined,
         });
+        console.log("assignmentID", submission_data.assignment_id);
+        setAssignmentId(submission_data.assignment_id);
       } else {
         console.error("Error fetching submission data:", data.error);
         toast.error("Failed to load submission data");
@@ -68,14 +71,10 @@ const GenerateVivaQuestions = () => {
   }, [submissionId]);
 
   const defaultMetrics = {
-    general: [
-      "Conceptual Understanding",
-      "Problem Solving",
-      "Justification & Reflection",
-    ],
+    general: ["Conceptual Understanding","Problem Solving","Reflection"],
     code: ["Functionality", "Code Structure", "Error Handling"],
     video: ["Clarity of Explanation", "Demonstration of Work"],
-    report: ["Technical Accuracy", "Analysis & Justification"],
+    report: ["Technical Accuracy", "Justification"],
   };
 
   const handleButtonClick = (content) => {
@@ -331,10 +330,32 @@ const GenerateVivaQuestions = () => {
       {/* Main content with padding to account for fixed header */}
       <div className="container px-4 pt-24 pb-8 mx-auto">
         <div className="mx-auto max-w-7xl">
-          <Button color="light" onClick={handleGoBack} className="mb-4 mr-4">
-            <HiArrowLeft className="w-5 h-5 mr-2" />
-            Back to Viva Dashboard
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button color="light" onClick={handleGoBack} className="mr-4">
+              <HiArrowLeft className="w-5 h-5 mr-2" />
+              Back to Viva Dashboard
+            </Button>
+            
+            {/* Floating Marking Button */}
+            <Button 
+              color="orange" 
+              className="rounded-full p-2 flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-600 text-white font-medium"
+              onClick={() => setIsMarkingPanelOpen(true)}
+              title="Mark Viva"
+            >
+              <HiPencil className="w-5 h-5 mr-2" />
+              <span>Mark</span>
+            </Button>
+          </div>
+
+          {/* Marking Panel */}
+          <MarkingPanel 
+            isOpen={isMarkingPanelOpen}
+            onClose={() => setIsMarkingPanelOpen(false)}
+            submissionData={{ id: submissionId }}
+            assignmentId={assignmentId}
+          />
+
           <div className="p-5 bg-white rounded-lg shadow-lg dark:bg-gray-800">
             <h1 className="mb-6 text-3xl font-bold text-gray-800 dark:text-white">
               Generate Viva Questions

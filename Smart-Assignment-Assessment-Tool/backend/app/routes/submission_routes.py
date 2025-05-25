@@ -163,11 +163,13 @@ def get_submissions_by_relevant_submission_id(submission_id):
         code_id = submission.get("code_id")
         report_id = submission.get("report_id")
         video_id = submission.get("video_id")
+        assignment_id = submission.get("assignment_id")
 
         submission_data = {
             "code_id": code_id,
             "report_id": report_id,
             "video_id": video_id,
+            "assignment_id": assignment_id,
         }
         return jsonify({"submission_data": submission_data}), 200
     except Exception as e:
