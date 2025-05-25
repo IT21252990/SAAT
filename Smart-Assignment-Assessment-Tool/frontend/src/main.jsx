@@ -25,6 +25,7 @@ import GenerateVivaQuestions from "./pages/teacher/viva/GenerateVivaQuestions.js
 import SubmitVideo from "./pages/video/SubmitVideo.jsx";
 import VideoScreen from "./pages/video/VideoScreen.jsx";
 import TestingProject from "./pages/teacher/TestingProject.jsx";
+import SubmissionResultsPage from "./pages/SubmissionResultsPage";
 
 // Create root for React 18+
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -59,6 +60,8 @@ root.render(
           <Route path="/generate-viva-questions/:submissionId" element={<GenerateVivaQuestions />} />
           <Route path="videoSubmission/:assignmentId" element={<SubmitVideo />} />
           <Route path="videoSubmission/video-screen" element={<VideoScreen />} />
+
+          <Route path="/submission-results/:submissionId" element={<SubmissionResultsPage />} />
 
           <Route path="TestingProject" element={<TestingProject />} />
         </Route>

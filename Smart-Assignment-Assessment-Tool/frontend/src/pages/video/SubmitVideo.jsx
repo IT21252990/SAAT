@@ -7,7 +7,7 @@ import { firestore } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
-const pub_url = "https://2e40-34-125-71-217.ngrok-free.app";
+const pub_url = "https://illegally-talented-crane.ngrok-free.app";
 
 function SubmitVideo() {
   const [videoURL, setVideoURL] = useState("");
