@@ -341,10 +341,10 @@ const handleDownloadPdf = () => {
                       </Typography>
         
                       {/* Display Total Score */}
-                      {reportData?.analysis_report?.totalScore && (
+                      {reportData?.mark && (
                         <Box sx={{ mb: 2, p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
                           <Typography variant="h6" color="primary">
-                            Total Score: {reportData.analysis_report.totalScore}/100
+                            Total Score: {reportData.mark}/100
                           </Typography>
                         </Box>
                       )}
@@ -396,6 +396,13 @@ const handleDownloadPdf = () => {
                           </Typography>
                           <Typography variant="body1" sx={{ mb: 2 }}>
                             {reportData.analysis_report.feedback}
+                          </Typography>
+
+                          <Typography variant="h6" gutterBottom>
+                            Teacher Feedback
+                          </Typography>
+                          <Typography variant="body1" sx={{ mb: 2 }}>
+                            {reportData.instructor_feedback}
                           </Typography>
         
                           {/* Display Summary if available */}

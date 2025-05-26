@@ -680,8 +680,6 @@ const handleDownloadPdf = () => {
   doc.save(fileName);
 };
 
-
-
   const [reportSubmissions, setReportSubmissions] = useState([]);
   const [reportID, setReportID] = useState('');
   const [submissionID, setSubmissionID] = useState('');
@@ -707,89 +705,91 @@ const handleDownloadPdf = () => {
     }
   };
 
-  // Fetch assignment details
-  const fetchAssignmentDetails = async () => {
+// Modify fetchAssignmentDetails to return the matched submission
+const fetchAssignmentDetails = async () => {
+  console.log("yako", assignmentId)
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
+      `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`
     );
     const data = await response.json();
-
-    // Replace this with how you get the current user's ID
+    console.log("datas:", data)
+    
     const currentUserId = userId;
-
-    // Find the first submission belonging to the current student
     const matchingSubmission = data.submissions.find(
-      (submission) => submission.student_id === currentUserId
+      (submission) => {
+        console.log("Checking submission:", submission);
+        console.log("Submission student_id:", submission.student_id);
+        console.log("Match check:", submission.student_id === currentUserId);
+        return submission.student_id === currentUserId;
+      }
     );
 
     if (response.ok && matchingSubmission) {
       setSubmissionID(matchingSubmission.submission_id);
       setReportID(matchingSubmission.report_id);
       console.log("Matched report ID:", matchingSubmission.report_id);
+      return matchingSubmission.report_id; // Return the report ID
     } else {
       console.warn("No matching submission found for this student.");
+      console.log("Available student IDs:", data.submissions.map(s => s.student_id));
+      return null;
     }
   } catch (error) {
     console.error("Error fetching assignment details:", error);
+    return null;
   }
 };
 
+useEffect(() => {
+  const fetchAllReportSubmissions = async () => {
+    try {
+      setError(null);
+      setLoading(true);
 
-
-  useEffect(() => {
-    const fetchAllReportSubmissions = async () => {
-      try {
-
-        setError(null);
-        setLoading(true);
-
-        await fetchAssignmentDetails();
-
-        console.log('Fetching report submissions for assignment ID:', reportID);
-        console.log("hellow ")
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${reportID}`);
+      // Get report ID directly from the function
+      const reportId = await fetchAssignmentDetails();
+      
+      if (reportId) {
+        console.log('Fetching report submissions for assignment ID:', reportId);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${reportId}`);
 
         console.log("response: ", response);
         const Reportdata = await response.json();
         console.log("report", Reportdata.student_id);
-
 
         if (response.ok) {
           if (Reportdata.student_id === userId) {
             console.log("user have existing submission", Reportdata);
             setReportData(Reportdata);
           }
-
-
-          // Set the individual state variables based on the response structure
-          // setAiContentResults(Reportdata.aiContent || {});
           setPlagiarismResults(Reportdata.plagiarism || "0");
           setAnalysisResults(Reportdata.analysis_report || {});
         }
-
-
-        const AssignmentResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
-
-        console.log("AssignmentResponse: ", AssignmentResponse);
-        const assignmentData = await AssignmentResponse.json();
-        if (AssignmentResponse.ok) {
-          setAssignmentData(assignmentData);
-          console.log("assignment", assignmentData);
-        }
-
-      } catch (err) {
-        console.error("Fetch error:", err);
-        // setError("Failed to fetch report submissions");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    if (assignmentId) {
-      fetchAllReportSubmissions();
+      // Fetch assignment data
+      const AssignmentResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
+      console.log("AssignmentResponse: ", AssignmentResponse);
+      const assignmentData = await AssignmentResponse.json();
+      console.log("assignmentData: ", assignmentData);
+      if (AssignmentResponse.ok) {
+        setAssignmentData(assignmentData);
+        console.log("assignment is", assignmentData.assignment_id);
+      }
+
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [assignmentId, reportID]);
+  };
+
+  // Execute when both assignmentId and userId are available
+  if (assignmentId && userId) {
+    fetchAllReportSubmissions();
+  }
+}, [assignmentId, userId]); // This will run on page reload when these values are available
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -811,6 +811,7 @@ const handleDownloadPdf = () => {
 
     const config = statusConfig[status] || { color: "default", label: status || 'Unknown' };
 
+    
     return (
       <Chip
         label={config.label}
@@ -821,7 +822,7 @@ const handleDownloadPdf = () => {
     );
   };
 
-  console.log("iii", reportID)
+  // console.log("iii", reportID)
   return (
     <div>
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
@@ -836,7 +837,7 @@ const handleDownloadPdf = () => {
             </Step>
           ))}
         </Stepper>
-
+{/* <h1>{reportData.status}</h1> */}
         {/* Show submission status card if submission exists and not updating */}
         {reportData && !isUpdating && (
           <Card sx={{ mb: 4, border: '2px solid #4caf50' }}>
