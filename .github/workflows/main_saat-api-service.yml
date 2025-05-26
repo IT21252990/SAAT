@@ -1,0 +1,73 @@
+name: Build and deploy Python app to Azure Web App - saat-api-service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up environment and install dependencies
+        working-directory: Smart-Assignment-Assessment-Tool/backend
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Zip backend folder for deployment
+        run: |
+          cd Smart-Assignment-Assessment-Tool/backend
+          zip -r release.zip . -x "venv/*" ".venv/*" "__pycache__/*" "*.pyc"
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: Smart-Assignment-Assessment-Tool/backend/release.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FC525CBAA55A4EB7952C70D60392E0DD }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6B47FC36CEE249149691C89E16B51733 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_88BB26B55695485C95F4D205CF1B7433 }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: 'saat-api-service'
+          slot-name: 'Production'
+          package: release.zip
