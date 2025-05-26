@@ -53,7 +53,7 @@ const SubmissionResultsPage = () => {
   const fetchAssignmentDetails = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
+        `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`
       );
       const data = await response.json();
       console.log("ids", data)
@@ -88,7 +88,7 @@ const SubmissionResultsPage = () => {
 
         console.log('Fetching report submissions for assignment ID:', reportID);
         console.log("hellow ")
-        const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${reportID}`);
 
         console.log("response: ", response);
         const Reportdata = await response.json();
@@ -109,7 +109,7 @@ const SubmissionResultsPage = () => {
         }
 
 
-        const AssignmentResponse = await fetch(`http://127.0.0.1:5000/api/v1/assignment/getAssignment/${assignmentId}`);
+        const AssignmentResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
 
         console.log("AssignmentResponse: ", AssignmentResponse);
         const assignmentData = await AssignmentResponse.json();

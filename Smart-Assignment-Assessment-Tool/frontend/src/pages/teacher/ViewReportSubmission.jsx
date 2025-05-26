@@ -44,7 +44,7 @@ const ViewReportSubmission = () => {
     const fetchReport = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:5000/api/v1/report/report-submissions/${report_id}`
+          `${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${report_id}`
         );
         setReportData(response.data);
       } catch (err) {
@@ -78,7 +78,7 @@ const ViewReportSubmission = () => {
 
     try {
       const response = await axios.put(
-        `http://127.0.0.1:5000/api/v1/report/report-submissions/${report_id}/review`,
+        `${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${report_id}/review`,
         {
           mark: parseFloat(editMark),
           feedback: editFeedback

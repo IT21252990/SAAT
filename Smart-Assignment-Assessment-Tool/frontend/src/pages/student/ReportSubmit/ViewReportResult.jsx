@@ -36,7 +36,7 @@ useEffect(() => {
   const fetchAllReportSubmissions = async () => {
     try {
       console.log('Fetching report submissions for assignment ID:', reportID);
-      const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${reportID}`);
       const Reportdata = await response.json();
 
       console.log("report", Reportdata.student_id);
@@ -352,7 +352,7 @@ const handleDownloadPdf = () => {
                       {/* Display Criteria */}
                       {reportData?.analysis_report?.criteria?.map((criterion, index) => (
                         <Box key={index} sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                          <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-start justify-between mb-2">
                             <Typography variant="subtitle1" fontWeight="bold">
                               {criterion.description}
                             </Typography>
@@ -427,14 +427,14 @@ const handleDownloadPdf = () => {
 ) : (
   <div className="mt-6 p-4 w-[60%] mx-auto bg-yellow-50 border-2 border-yellow-200 rounded-xl shadow-sm">
   <div className="flex items-start gap-3">
-    <div className="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-      <span className="text-yellow-600 text-lg">⚠️</span>
+    <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full">
+      <span className="text-lg text-yellow-600">⚠️</span>
     </div>
     <div>
-      <h6 className="text-lg font-semibold text-yellow-800 mb-1">
+      <h6 className="mb-1 text-lg font-semibold text-yellow-800">
         Results Pending Publication
       </h6>
-      <p className="text-yellow-700 leading-relaxed">
+      <p className="leading-relaxed text-yellow-700">
         This results is not published yet. Analysis results will be displayed once the lecturer published the results. Please check back later for your detailed assessment and feedback.
       </p>
     </div>

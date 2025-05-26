@@ -59,7 +59,7 @@ const ReportUpload = ({ onSubmit }) => {
   useEffect(() => {
     const fetchMarkingScheme = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/api/v1/marking-scheme/markingScheme/${assignmentId}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignmentId}`);
         const data = await response.json();
         console.log('Marking Scheme data:', data.marking_schemes[0].criteria.report);
         setMarkingScheme(data.marking_schemes[0].criteria.report);
@@ -85,7 +85,7 @@ const ReportUpload = ({ onSubmit }) => {
 
     try {
       console.log('Checking existing submission for:', { assignmentId, userId });
-      const response = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/check-submission`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const ReportUpload = ({ onSubmit }) => {
         if (result.exists) {
           // Try to fetch submission details
           try {
-            const submissionResponse = await fetch(`http://127.0.0.1:5000/api/v1/submission/${result.submission_id}`);
+            const submissionResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/${result.submission_id}`);
             if (submissionResponse.ok) {
               const submissionData = await submissionResponse.json();
               console.log('Submission data:', submissionData);
@@ -335,7 +335,7 @@ const ReportUpload = ({ onSubmit }) => {
     };
 
     try {
-      const reportResponse = await fetch("http://127.0.0.1:5000/api/v1/report/report-submissions", {
+      const reportResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/report/report-submissions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -352,7 +352,7 @@ const ReportUpload = ({ onSubmit }) => {
       setReportID(reportId)
 
       // Check if submission exists
-      const checkResponse = await fetch("http://127.0.0.1:5000/api/v1/submission/check-submission", {
+      const checkResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/check-submission`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -368,7 +368,7 @@ const ReportUpload = ({ onSubmit }) => {
 
       if (checkResult.exists) {
         // Update existing submission
-        const updateResponse = await fetch("http://127.0.0.1:5000/api/v1/submission/update-report", {
+        const updateResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/update-report`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -381,7 +381,7 @@ const ReportUpload = ({ onSubmit }) => {
         }
       } else {
         // Create new submission
-        const createResponse = await fetch("http://127.0.0.1:5000/api/v1/submission/create", {
+        const createResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/submission/create`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -711,7 +711,7 @@ const handleDownloadPdf = () => {
   const fetchAssignmentDetails = async () => {
   try {
     const response = await fetch(
-      `http://127.0.0.1:5000/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
+      `${import.meta.env.VITE_BACKEND_URL}/api/v1/submission/getSubmissionsByAssignment/${assignmentId}`
     );
     const data = await response.json();
 
@@ -748,7 +748,7 @@ const handleDownloadPdf = () => {
 
         console.log('Fetching report submissions for assignment ID:', reportID);
         console.log("hellow ")
-        const response = await fetch(`http://127.0.0.1:5000/api/v1/report/report-submissions/${reportID}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/report/report-submissions/${reportID}`);
 
         console.log("response: ", response);
         const Reportdata = await response.json();
@@ -769,7 +769,7 @@ const handleDownloadPdf = () => {
         }
 
 
-        const AssignmentResponse = await fetch(`http://127.0.0.1:5000/api/v1/assignment/getAssignment/${assignmentId}`);
+        const AssignmentResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/assignment/getAssignment/${assignmentId}`);
 
         console.log("AssignmentResponse: ", AssignmentResponse);
         const assignmentData = await AssignmentResponse.json();
@@ -1039,7 +1039,7 @@ const handleDownloadPdf = () => {
               {/* Display Criteria */}
               {reportData?.analysis_report?.criteria?.map((criterion, index) => (
                 <Box key={index} sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-start justify-between mb-2">
                     <Typography variant="subtitle1" fontWeight="bold">
                       {criterion.description}
                     </Typography>

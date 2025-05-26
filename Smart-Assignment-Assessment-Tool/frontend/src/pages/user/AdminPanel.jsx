@@ -58,7 +58,7 @@ const [errors, setErrors] = useState({});
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/v1/user/getAllUsers");
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/getAllUsers`);
         const data = await response.json();
         console.log("Fetched users:", data);
         if (!response.ok) {

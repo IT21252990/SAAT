@@ -25,7 +25,7 @@ export const analyzeReport = async (
     console.log("Fetching marking scheme from DB...");
     onProgress(50);
 
-    const response = await fetch(`http://127.0.0.1:5000/api/v1/marking-scheme/markingScheme/${assignmentId}`);
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignmentId}`);
     const markingScheme = await response.json(); 
     console.log("Marking scheme fetched:", markingScheme.marking_schemes[0].criteria.report);
     const critirions = markingScheme.marking_schemes[0].criteria.report;
