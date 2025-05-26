@@ -30,15 +30,13 @@ jobs:
       - name: Zip backend folder for deployment
         run: |
           cd Smart-Assignment-Assessment-Tool/backend
-          zip -r ../../../release.zip . -x "venv/*" ".venv/*" "__pycache__/*" "*.pyc"
-
-
+          zip -r release.zip . -x "venv/*" ".venv/*" "__pycache__/*" "*.pyc"
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: release.zip
+          path: Smart-Assignment-Assessment-Tool/backend/release.zip
 
   deploy:
     runs-on: ubuntu-latest
