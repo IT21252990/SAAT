@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Change to backend directory and set up environment
-        working-directory: .Smart-Assignment-Assessment-Tool/backend
+      - name: Set up environment and install dependencies
+        working-directory: ./.Smart-Assignment-Assessment-Tool/backend
         run: |
           python -m venv venv
           source venv/bin/activate
@@ -29,8 +29,9 @@ jobs:
 
       - name: Zip backend folder for deployment
         run: |
-          cd backend
-          zip -r ../release.zip . -x "venv/*" ".venv/*" "__pycache__/*" "*.pyc"
+          cd .Smart-Assignment-Assessment-Tool/backend
+          zip -r ../../../release.zip . -x "venv/*" ".venv/*" "__pycache__/*" "*.pyc"
+
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
