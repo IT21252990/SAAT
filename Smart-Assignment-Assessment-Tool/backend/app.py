@@ -1,4 +1,4 @@
-# import os
+import os  # UNCOMMENT THIS LINE
 import json
 from dotenv import load_dotenv
 from flask import Flask
