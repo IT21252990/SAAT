@@ -21,7 +21,7 @@ jobs:
           python-version: '3.12'
 
       - name: Change to backend directory and set up environment
-        working-directory: ./backend
+        working-directory: .Smart-Assignment-Assessment-Tool/backend
         run: |
           python -m venv venv
           source venv/bin/activate
