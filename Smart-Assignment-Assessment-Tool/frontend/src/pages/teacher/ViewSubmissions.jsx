@@ -1,255 +1,62 @@
-// import React, { useEffect, useState } from "react";
-// import { useParams, useNavigate } from "react-router-dom";
-// import axios from "axios";
-// import Header from "../../components/Header";
-
-// const ViewSubmissions = () => {
-//   const { assignmentId } = useParams();
-//   const [submissions, setSubmissions] = useState([]);
-//   const [github_url, setGithub_url] = useState("");
-//   const [codeId, setCodeId] = useState("");
-//   const [error, setError] = useState("");
-//   const navigate = useNavigate();
-
-//   const fetchUserEmail = async (uid) => {
-//     try {
-//       const response = await fetch(
-//         `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`,
-//       );
-//       const data = await response.json();
-//       if (response.ok) {
-//         return data.email;
-//       } else {
-//         throw new Error(data.error || "Failed to fetch user.");
-//       }
-//     } catch (error) {
-//       setError("Error fetching user data: " + error.message);
-//       return null;
-//     }
-//   };
-
-//   const getRepoUrl = async (codeId, submissionId) => {
-//     try {
-//       const response = await axios.get(
-//         `${import.meta.env.VITE_BACKEND_URL}/repo/get-github-url`,
-//         {
-//           params: { code_id: codeId },
-//         },
-//       );
-
-//       if (response.status === 200) {
-//         const githubUrl = response.data.github_url;
-//         setGithub_url(githubUrl);
-//         await handleFetchRepo(githubUrl, codeId, submissionId);
-//       } else {
-//         setError("GitHub URL not found for this submission.");
-//       }
-//     } catch (error) {
-//       console.error("Error fetching GitHub URL:", error);
-//       setError("Failed to fetch the GitHub URL.");
-//     }
-//   };
-
-//   const handleFetchRepo = async (githubUrl, codeId, submissionId) => {
-//     try {
-//       const response = await axios.get(
-//         `${import.meta.env.VITE_BACKEND_URL}/repo/repo-details`,
-//         { params: { repo_url: githubUrl } },
-//       );
-
-//       if (response.status === 200) {
-//         navigate(`/view-code/${codeId}`, {
-//           state: { githubUrl, repoDetails: response.data, submissionId, codeId },
-//         });
-//       } else {
-//         alert("Failed to fetch repository details.");
-//       }
-//     } catch (error) {
-//       console.error("Error fetching repository:", error);
-//       alert("Failed to fetch the repository. Please check the URL.");
-//     }
-//   };
-
-//   useEffect(() => {
-//     const fetchSubmissions = async () => {
-//       try {
-//         const response = await fetch(
-//           `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`,
-//         );
-//         const data = await response.json();
-
-//         if (response.ok) {
-//           const submissionsWithEmails = await Promise.all(
-//             data.submissions.map(async (submission) => {
-//               const email = await fetchUserEmail(submission.student_id);
-//               setCodeId(submission.code_id);
-//               return { ...submission, email };
-//             }),
-//           );
-//           setSubmissions(submissionsWithEmails);
-//         } else {
-//           setError(data.error || "Failed to fetch submissions.");
-//         }
-//       } catch (error) {
-//         setError("Error fetching submissions: " + error.message);
-//       }
-//     };
-
-//     fetchSubmissions();
-//   }, [assignmentId]);
-
-//   return (
-//     <div className="flex flex-col items-center h-full min-h-screen bg-gray-100 dark:bg-gray-900">
-//       <Header />
-//       <div className="w-full max-w-6xl p-6 mt-10 mb-10 bg-white rounded-lg shadow-lg dark:bg-gray-800">
-//         <h2 className="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
-//           Student Submissions
-//         </h2>
-
-//         {error && <p className="text-red-500">{error}</p>}
-
-//         {submissions.length > 0 ? (
-//           <div className="relative overflow-x-auto border border-gray-300 shadow-md dark:border-gray-600 sm:rounded-lg">
-//             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 rtl:text-right">
-//               <thead className="text-gray-700 uppercase text-s bg-gray-50 dark:bg-gray-700 dark:text-gray-200">
-//                 <tr>
-//                   <th scope="col" className="px-6 py-3">
-//                     #
-//                   </th>
-//                   <th scope="col" className="px-6 py-3">
-//                     Student Email
-//                   </th>
-//                   <th scope="col" className="px-6 py-3">
-//                     Submitted Time
-//                   </th>
-//                   <th scope="col" className="px-6 py-3">
-//                     Actions
-//                   </th>
-//                   <th scope="col" className="px-6 py-3">
-//                     Viva Dashboard
-//                   </th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {submissions.map((submission, index) => (
-//                   <tr
-//                     key={submission.submission_id}
-//                     className="bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-gray-800"
-//                   >
-//                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-//                       {index + 1}
-//                     </td>
-//                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">
-//                       {submission.email}
-//                     </td>
-//                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-300">
-//                       {new Date(submission.created_at).toLocaleString()}
-//                     </td>
-//                     <td className="px-6 py-4">
-//                       {/* View Code */}
-//                       {submission.code_id && (
-//                         <button
-//                           className="px-3 py-1 mr-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-//                           onClick={() =>
-//                             getRepoUrl(
-//                               submission.code_id,
-//                               submission.submission_id,
-//                             )
-//                           }
-//                         >
-//                           View Code
-//                         </button>
-//                       )}
-
-//                       {/* View Report */}
-//                       {submission.report_id && (
-//                         <button
-//                           className="px-3 py-1 mr-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
-//                           onClick={() =>
-//                             navigate(`/view-report/${submission.report_id}`)
-//                           }
-//                         >
-//                           View Report
-//                         </button>
-//                       )}
-
-//                       {/* View Video */}
-//                       {submission.video_id && (
-//                         <button
-//                           className="px-3 py-1 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
-//                           onClick={() =>
-//                             navigate(`/videoSubmission/video-screen`, {
-//                               state: {
-//                                 videoId: submission.video_id,
-//                                 submissionId: submission.submission_id,
-//                               },
-//                             })
-//                           }
-//                         >
-//                           View Video
-//                         </button>
-//                       )}
-//                     </td>
-//                     <td className="px-6 py-4 text-right">
-//                       <button
-//                         className="px-3 py-1 text-white bg-purple-600 rounded-md hover:bg-purple-700"
-//                         onClick={() =>
-//                           navigate(
-//                             `/viva-dashboard/${submission.submission_id}`,
-//                           )
-//                         }
-//                       >
-//                         Go
-//                       </button>
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         ) : (
-//           <p className="text-gray-600 dark:text-gray-300">
-//             No submissions found for this assignment.
-//           </p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ViewSubmissions;
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../../components/Header";
-import { Card, Spinner, Button, Alert, Badge } from "flowbite-react";
-import { HiArrowLeft, HiOutlineCode, HiDocumentText, HiVideoCamera, HiChevronRight, HiExclamation, HiCheck } from "react-icons/hi";
+import { Card, Spinner, Button, Alert, Badge, TextInput } from "flowbite-react";
+import { 
+  HiArrowLeft, 
+  HiOutlineCode, 
+  HiDocumentText, 
+  HiVideoCamera, 
+  HiChevronRight, 
+  HiExclamation, 
+  HiCheck,
+  HiSearch,
+  HiFilter,
+  HiDownload,
+  HiUsers,
+  HiAcademicCap,
+  HiTrendingUp,
+  HiClipboardList,
+  HiStar
+} from "react-icons/hi";
 
 const ViewSubmissions = () => {
   const { assignmentId } = useParams();
   const [submissions, setSubmissions] = useState([]);
+  const [filteredSubmissions, setFilteredSubmissions] = useState([]);
   const [assignmentName, setAssignmentName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
+  
 
-  const fetchUserEmail = async (uid) => {
+  const fetchUserData = async (uid) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/user/getUser/${uid}`,
       );
       const data = await response.json();
       if (response.ok) {
-        return data.email;
+        return {
+          email: data.email,
+          studentId: data.studentId || "N/A",
+          studentName: data.studentName || "N/A"
+        };
       } else {
         throw new Error(data.error || "Failed to fetch user.");
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      return null;
+      return {
+        email: null,
+        studentId: uid,
+        studentName: "Unknown"
+      };
     }
   };
 
@@ -368,24 +175,87 @@ const ViewSubmissions = () => {
     }
   };
 
+  const fetchWeight = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/marks/mark-weight/${assignmentId}`
+      );
+      const data = await response.json();
+
+      console.log("Marking Scheme Data:", data);
+
+      if (response.ok && data) {
+        return data; // Return the marking scheme data directly
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching marking scheme:", error);
+      return null;
+    }
+  };
+
   const fetchSubmissions = async () => {
     try {
+      // First fetch the marking scheme
+      const weight = await fetchWeight();
+      
+      // Then fetch submissions as before
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/submission/getSubmissionsByAssignment/${assignmentId}`,
       );
       const data = await response.json();
 
       if (response.ok) {
-        const submissionsWithEmails = await Promise.all(
+        const submissionsWithUserData = await Promise.all(
           data.submissions.map(async (submission) => {
-            const email = await fetchUserEmail(submission.student_id);
+            const userData = await fetchUserData(submission.student_id);
             const reportStatus = await fetchReportSubmissionStatus(submission.report_id);
             
+            // Fetch all marks for this submission
+            let marksData = {};
+            try {
+              const marksResponse = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/marks/get-all-marks/${submission.submission_id}`
+              );
+              if (marksResponse.data) {
+                marksData = marksResponse.data;
+              }
+            } catch (error) {
+              console.error("Error fetching marks:", error);
+            }
+
+            // Calculate weighted final mark if marking scheme exists
+            let finalMark = null;
+            if (weight) {
+              const codeWeight = weight.code_weight || 0;
+              const videoWeight = weight.video_weight || 0;
+              const reportWeight = weight.report_weight || 0;
+              const vivaWeight = weight.viva_weight || 0;
+
+              const codeMark = marksData.total_code_marks || 0;
+              const videoMark = marksData.total_video_marks || 0;
+              const reportMark = marksData.total_report_marks || 0;
+              const vivaMark = marksData.total_viva_marks || 0;
+
+              finalMark = (
+                (codeMark * codeWeight + 
+                 videoMark * videoWeight + 
+                 reportMark * reportWeight + 
+                 vivaMark * vivaWeight) / 100
+              ).toFixed(2);
+            }
+
             return { 
               ...submission, 
-              email,
+              email: userData.email,
+              studentId: userData.studentId,
+              studentName: userData.studentName,
               reportStatus: reportStatus?.status || null,
               reportMark: reportStatus?.mark || null,
+              code_marks: marksData.total_code_marks || null,
+              video_marks: marksData.total_video_marks || null,
+              viva_marks: marksData.total_viva_marks || null,
+              finalMark: finalMark,
               formattedDate: new Date(submission.created_at).toLocaleString('en-US', {
                 day: '2-digit',
                 month: 'short',
@@ -396,13 +266,88 @@ const ViewSubmissions = () => {
             };
           }),
         );
-        setSubmissions(submissionsWithEmails);
+        setSubmissions(submissionsWithUserData);
+        setFilteredSubmissions(submissionsWithUserData);
       } else {
         setError(data.error || "Failed to fetch submissions.");
       }
     } catch (error) {
       setError("Error fetching submissions: " + error.message);
     }
+  };
+
+  // Calculate statistics
+  const getStatistics = () => {
+    const totalSubmissions = submissions.length;
+    const submissionsWithMarks = submissions.filter(s => s.finalMark !== null);
+    const averageMark = submissionsWithMarks.length > 0 
+      ? (submissionsWithMarks.reduce((sum, s) => sum + parseFloat(s.finalMark), 0) / submissionsWithMarks.length).toFixed(1)
+      : 'N/A';
+    
+    const gradeDistribution = {
+      excellent: submissionsWithMarks.filter(s => parseFloat(s.finalMark) >= 80).length,
+      good: submissionsWithMarks.filter(s => parseFloat(s.finalMark) >= 70 && parseFloat(s.finalMark) < 80).length,
+      satisfactory: submissionsWithMarks.filter(s => parseFloat(s.finalMark) >= 50 && parseFloat(s.finalMark) < 70).length,
+      fail: submissionsWithMarks.filter(s => parseFloat(s.finalMark) < 50).length
+    };
+
+    const completionRate = totalSubmissions > 0 ? 
+      ((submissions.filter(s => s.code_id || s.report_id || s.video_id).length / totalSubmissions) * 100).toFixed(1) : 0;
+
+    const publishedReports = submissions.filter(s => s.reportStatus === 'published').length;
+
+    return {
+      totalSubmissions,
+      averageMark,
+      gradeDistribution,
+      completionRate,
+      publishedReports
+    };
+  };
+
+  // Search and filter functionality
+  useEffect(() => {
+    let filtered = submissions.filter(submission => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        submission.studentName.toLowerCase().includes(searchLower) ||
+        submission.studentId.toLowerCase().includes(searchLower) ||
+        (submission.email && submission.email.toLowerCase().includes(searchLower))
+      );
+    });
+
+    // Apply sorting
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Handle null/undefined values
+        if (aValue === null || aValue === undefined) aValue = '';
+        if (bValue === null || bValue === undefined) bValue = '';
+
+        // Convert to string for comparison
+        aValue = aValue.toString().toLowerCase();
+        bValue = bValue.toString().toLowerCase();
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    setFilteredSubmissions(filtered);
+  }, [searchTerm, submissions, sortConfig]);
+
+  const handleSort = (key) => {
+    setSortConfig(prevConfig => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+    }));
   };
 
   useEffect(() => {
@@ -449,27 +394,79 @@ const ViewSubmissions = () => {
     );
   };
 
+  const exportToCSV = () => {
+    const headers = ['Student ID', 'Student Name', 'Email', 'Submitted', 'Code Mark', 'Video Mark', 'Report Mark', 'Viva Mark', 'Final Mark'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredSubmissions.map(submission => [
+        submission.studentId,
+        `"${submission.studentName}"`,
+        submission.email || 'N/A',
+        `"${submission.formattedDate}"`,
+        submission.code_marks || 'N/A',
+        submission.video_marks || 'N/A',
+        submission.reportMark || 'N/A',
+        submission.viva_marks || 'N/A',
+        submission.finalMark || 'N/A'
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${assignmentName || 'assignment'}_submissions.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const statistics = getStatistics();
+
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-300">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-lg dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700">
         <Header />
       </div>
-      <div className="container px-4 pt-24 pb-8 mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <Button color="light" onClick={handleGoBack} className="mr-4">
-            <HiArrowLeft className="w-5 h-5 mr-2" />
-            Back to Module
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {assignmentName ? `Submissions for "${assignmentName}"` : "Student Submissions"}
-          </h1>
-          {/* Publish All Reports Button */}
-            <div className="flex justify-end mb-4">
+      
+      <div className="container px-4 pt-24 pb-8 mx-auto max-w-7xl">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <Button 
+                color="light" 
+                onClick={handleGoBack} 
+                className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <HiArrowLeft className="w-5 h-5 mr-2" />
+                Back to Module
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                  {assignmentName ? `"${assignmentName}"` : "Assignment Submissions"}
+                </h1>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <HiUsers className="w-4 h-4" />
+                  <span>{filteredSubmissions.length} submission{filteredSubmissions.length !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button
+                color="success"
+                onClick={exportToCSV}
+                disabled={filteredSubmissions.length === 0}
+                className="flex items-center hover:scale-105 transition-transform"
+              >
+                <HiDownload className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
               <Button
                 color="blue"
                 onClick={handlePublishAllReports}
                 disabled={publishLoading}
-                className="flex items-center"
+                className="flex items-center hover:scale-105 transition-transform"
               >
                 {publishLoading ? (
                   <>
@@ -484,10 +481,31 @@ const ViewSubmissions = () => {
                 )}
               </Button>
             </div>
+          </div>
+
+          {/* Search Section - Made Smaller */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-2">
+            <div className="relative w-full md:w-96">
+              <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <TextInput
+                type="text"
+                placeholder="Search students..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+                sizing="md"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+              <HiFilter className="w-4 h-4" />
+              <span>Showing {filteredSubmissions.length} of {submissions.length}</span>
+            </div>
+          </div>
         </div>
 
+        {/* Alerts */}
         {error && (
-          <Alert color="failure" className="mb-6">
+          <Alert color="failure" className="mb-6 shadow-lg">
             <div className="flex items-center">
               <HiExclamation className="w-5 h-5 mr-2" />
               <span>{error}</span>
@@ -496,7 +514,7 @@ const ViewSubmissions = () => {
         )}
 
         {publishSuccess && (
-          <Alert color="success" className="mb-6">
+          <Alert color="success" className="mb-6 shadow-lg">
             <div className="flex items-center">
               <HiCheck className="w-5 h-5 mr-2" />
               <span>{publishSuccess}</span>
@@ -504,142 +522,278 @@ const ViewSubmissions = () => {
           </Alert>
         )}
 
+        {/* Main Content */}
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Spinner size="xl" />
-              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading submissions...</p>
-            </div>
-          </div>
-        ) : submissions.length > 0 ? (
-          <>
-
-            <Card className="overflow-hidden animate-fade-in">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
-                    <tr>
-                      <th scope="col" className="px-6 py-4 font-medium text-center">
-                        Student
-                      </th>
-                      <th scope="col" className="px-6 py-4 font-medium text-center">
-                        Submitted
-                      </th>
-                      <th scope="col" className="px-6 py-4 font-medium text-center">
-                        Report Status
-                      </th>
-                      <th scope="col" className="px-6 py-4 font-medium text-center">
-                        Actions
-                      </th>
-                      <th scope="col" className="px-6 py-4 font-medium text-center">
-                        Viva
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {submissions.map((submission) => (
-                      console.log(submission),
-                      <tr 
-                        key={submission.submission_id} 
-                        className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                          {submission.email || "Unknown Student"}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span>{submission.formattedDate}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex flex-col items-center space-y-1">
-                            {submission.report_id ? (
-                              <>
-                                {getStatusBadge(submission.reportStatus)}
-                                {submission.reportMark && (
-                                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                                    Mark: {submission.reportMark}/100
-                                  </span>
-                                )}
-                              </>
-                            ) : (
-                              <Badge color="gray" size="sm">
-                                No Report
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            {submission.code_id && (
-                              <Button 
-                                size="xs"
-                                color="blue"
-                                onClick={() => getRepoUrl(submission.code_id, submission.submission_id)}
-                                className="flex items-center"
-                              >
-                                <HiOutlineCode className="mr-1 text-sm" />
-                                View Code
-                              </Button>
-                            )}
-                            {submission.report_id && (
-                              <Button
-                                size="xs"
-                                color="green"
-                                onClick={() => navigate(`/view-report/${submission.report_id}`)}
-                                className="flex items-center"
-                              >
-                                <HiDocumentText className="mr-1 text-sm" />
-                                View Report
-                              </Button>
-                            )}
-                            {submission.video_id && (
-                              <Button
-                                size="xs"
-                                color="yellow"
-                                onClick={() =>
-                                  navigate(`/videoSubmission/video-screen`, {
-                                    state: {
-                                      videoId: submission.video_id,
-                                      submissionId: submission.submission_id,
-                                      assignmentId: submission.assignment_id,
-                                    },
-                                  })
-                                }
-                                className="flex items-center"
-                              >
-                                <HiVideoCamera className="mr-1 text-sm" />
-                                View Video
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <Button
-                            size="xs"
-                            color="purple"
-                            onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
-                            className="flex items-center"
-                            pill
-                          >
-                            Viva Dashboard
-                            <HiChevronRight className="ml-1 text-sm" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <Spinner size="xl" className="mb-4" />
+                <p className="text-lg text-gray-600 dark:text-gray-400">Loading submissions...</p>
               </div>
-            </Card>
-          </>
+            </div>
+          </Card>
+        ) : filteredSubmissions.length > 0 ? (
+          <Card className="overflow-hidden shadow-xl border-0 bg-white/95 backdrop-blur-sm dark:bg-gray-800/95">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
+                    <th 
+                      scope="col" 
+                      className="px-4 py-4 font-semibold text-left cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      onClick={() => handleSort('studentId')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Student ID
+                        {sortConfig.key === 'studentId' && (
+                          <span className="text-xs">
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-4 py-4 font-semibold text-left cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      onClick={() => handleSort('studentName')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Student Name
+                        {sortConfig.key === 'studentName' && (
+                          <span className="text-xs">
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-4 py-4 font-semibold text-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      onClick={() => handleSort('created_at')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Submitted
+                        {sortConfig.key === 'created_at' && (
+                          <span className="text-xs">
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                    <th scope="col" className="px-4 py-4 font-semibold text-center border-r border-slate-600">
+                      Component Marks
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-4 py-4 font-semibold text-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      onClick={() => handleSort('finalMark')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Final Mark
+                        {sortConfig.key === 'finalMark' && (
+                          <span className="text-xs">
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                    <th scope="col" className="px-4 py-4 font-semibold text-center border-r border-slate-600">
+                      Actions
+                    </th>
+
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredSubmissions.map((submission, index) => (
+                    <tr 
+                      key={submission.submission_id} 
+                      className={`
+                        ${index % 2 === 0 
+                          ? 'bg-white dark:bg-gray-800' 
+                          : 'bg-gray-50/70 dark:bg-gray-900'
+                        }
+                      `}
+                    >
+                      <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+                          <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent font-bold">
+                            {submission.studentId}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 border-r border-gray-200 dark:border-gray-700">
+                        <div className="font-semibold text-gray-900 dark:text-white">
+                          {submission.studentName}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-center border-r border-gray-200 dark:border-gray-700">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {submission.formattedDate}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 border-r border-gray-200 dark:border-gray-700">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg p-2 text-center shadow-sm">
+                            <div className="font-semibold text-blue-800 dark:text-blue-200">Code</div>
+                            <div className="text-blue-600 dark:text-blue-300 font-bold">{submission.code_marks || 'N/A'}</div>
+                          </div>
+                          <div className="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-lg p-2 text-center shadow-sm">
+                            <div className="font-semibold text-green-800 dark:text-green-200">Video</div>
+                            <div className="text-green-600 dark:text-green-300 font-bold">{submission.video_marks || 'N/A'}</div>
+                          </div>
+                          <div className="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-lg p-2 text-center shadow-sm">
+                            <div className="font-semibold text-purple-800 dark:text-purple-200">Report</div>
+                            <div className="text-purple-600 dark:text-purple-300 font-bold">{submission.reportMark || 'N/A'}</div>
+                          </div>
+                          <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800 rounded-lg p-2 text-center shadow-sm">
+                            <div className="font-semibold text-orange-800 dark:text-orange-200">Viva</div>
+                            <div className="text-orange-600 dark:text-orange-300 font-bold">{submission.viva_marks || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-center border-r border-gray-200 dark:border-gray-700">
+                        {submission.finalMark !== null ? (
+                          <div className="inline-flex items-center">
+                            <Badge 
+                              color={submission.finalMark >= 80 ? "success" : submission.finalMark >= 70 ? "info" : submission.finalMark >= 50 ? "warning" : "failure"} 
+                              size="lg"
+                              className="text-lg font-bold shadow-lg"
+                            >
+                              {submission.finalMark}%
+                            </Badge>
+                          </div>
+                        ) : (
+                          <Badge color="gray" size="sm">
+                            N/A
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 border-r border-gray-200 dark:border-gray-700">
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          {submission.code_id && (
+                            <Button 
+                              size="xs"
+                              color="blue"
+                              onClick={() => getRepoUrl(submission.code_id, submission.submission_id)}
+                              className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                            >
+                              <HiOutlineCode className="mr-1 text-sm" />
+                              Code
+                            </Button>
+                          )}
+                          {submission.report_id && (
+                            <Button
+                              size="xs"
+                              color="success"
+                              onClick={() => navigate(`/view-report/${submission.report_id}`)}
+                              className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                            >
+                              <HiDocumentText className="mr-1 text-sm" />
+                              Report
+                            </Button>
+                          )}
+                          {submission.video_id && (
+                            <Button
+                              size="xs"
+                              color="warning"
+                              onClick={() =>
+                                navigate(`/videoSubmission/video-screen`, {
+                                  state: {
+                                    videoId: submission.video_id,
+                                    submissionId: submission.submission_id,
+                                    assignmentId: submission.assignment_id,
+                                  },
+                                })
+                              }
+                              className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                            >
+                              <HiVideoCamera className="mr-1 text-sm" />
+                              Video
+                            </Button>
+                          )}
+                                                  <Button
+                          size="sm"
+                          color="purple"
+                          onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
+                          className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                          pill
+                        >
+                          Viva Dashboard
+                          <HiChevronRight className="ml-1 text-sm" />
+                        </Button>
+                        </div>
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         ) : (
-          <Card className="flex items-center justify-center h-48">
-            <p className="text-center text-gray-600 dark:text-gray-400">
-              No submissions found for this assignment.
-            </p>
+          <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
+            <div className="flex flex-col items-center justify-center h-48 text-center">
+              <HiUsers className="w-16 h-16 text-gray-400 mb-4" />
+              <p className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">
+                {searchTerm ? 'No submissions match your search' : 'No submissions found'}
+              </p>
+              {searchTerm && (
+                <Button 
+                  color="light" 
+                  onClick={() => setSearchTerm('')}
+                  size="sm"
+                  className="hover:scale-105 transition-transform"
+                >
+                  Clear search
+                </Button>
+              )}
+            </div>
           </Card>
         )}
+
+                  {/* Statistics Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm">Total Submissions</p>
+                  <p className="text-2xl font-bold">{statistics.totalSubmissions}</p>
+                </div>
+                <HiClipboardList className="w-8 h-8 text-blue-200" />
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm">Average Mark</p>
+                  <p className="text-2xl font-bold">{statistics.averageMark}{statistics.averageMark !== 'N/A' ? '%' : ''}</p>
+                </div>
+                <HiAcademicCap className="w-8 h-8 text-green-200" />
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm">Completion Rate</p>
+                  <p className="text-2xl font-bold">{statistics.completionRate}%</p>
+                </div>
+                <HiTrendingUp className="w-8 h-8 text-purple-200" />
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-pink-100 text-sm">Grade A (80%+)</p>
+                  <p className="text-2xl font-bold">{statistics.gradeDistribution.excellent}</p>
+                </div>
+                <HiStar className="w-8 h-8 text-pink-200" />
+              </div>
+            </Card>
+          </div>
       </div>
     </div>
   );
