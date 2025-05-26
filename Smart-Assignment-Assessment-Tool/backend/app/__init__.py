@@ -7,17 +7,18 @@ from firebase_admin import credentials, firestore, initialize_app
 load_dotenv()  # Load environment variables from .env
 
 # Get Firebase credentials path from environment
-firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS")
+firebase_json  = os.getenv("FIREBASE_CREDENTIALS")
 
-if not firebase_credentials_path:
+if not firebase_json :
     raise ValueError("FIREBASE_CREDENTIALS environment variable is not set!")
 
 def create_app():
     app = Flask(__name__)
     CORS(app)
 
+    cred_dict = json.loads(firebase_json)
     # Initialize Firebase Admin SDK (Only Once)
-    cred = credentials.Certificate("firebase-adminsdk.json")
+    cred = credentials.Certificate(cred_dict)
     initialize_app(cred)
 
     app.db = firestore.client()  # Store Firestore client in app context
