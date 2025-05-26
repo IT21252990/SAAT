@@ -71,6 +71,7 @@ function VideoScreen() {
         setVideoUrl(data.video_url || "");
         setSegments(data.segments || []);
         setVideoUserId(data.userId || "");
+        console.log("Video data:", data);
       }
     });
   }, [videoId]);
@@ -87,6 +88,7 @@ function VideoScreen() {
         }
       });
       setComments(loadedComments);
+      console.log("Comments data:", loadedComments);
     });
   }, [videoId]);
 
