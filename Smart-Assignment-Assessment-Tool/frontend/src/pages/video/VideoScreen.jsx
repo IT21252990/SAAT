@@ -63,6 +63,7 @@ function VideoScreen() {
     handleUser();
 
     if (!videoId) return;
+    console.log("Fetching video data for ID:", videoId);
     const videoDocRef = doc(firestore, "videos", videoId);
     return onSnapshot(videoDocRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -71,7 +72,6 @@ function VideoScreen() {
         setVideoUrl(data.video_url || "");
         setSegments(data.segments || []);
         setVideoUserId(data.userId || "");
-        console.log("Video data:", data);
       }
     });
   }, [videoId]);
@@ -88,7 +88,6 @@ function VideoScreen() {
         }
       });
       setComments(loadedComments);
-      console.log("Comments data:", loadedComments);
     });
   }, [videoId]);
 
