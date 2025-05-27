@@ -423,26 +423,26 @@ const ViewSubmissions = () => {
   const statistics = getStatistics();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-300">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-lg dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen transition-all duration-300 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 shadow-lg bg-white/95 backdrop-blur-sm dark:bg-gray-900/95 dark:border-gray-700">
         <Header />
       </div>
       
       <div className="container px-4 pt-24 pb-8 mx-auto max-w-7xl">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <Button 
                 color="light" 
                 onClick={handleGoBack} 
-                className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <HiArrowLeft className="w-5 h-5 mr-2" />
                 Back to Module
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                <h1 className="mb-1 text-3xl font-bold text-gray-900 dark:text-white">
                   {assignmentName ? `"${assignmentName}"` : "Assignment Submissions"}
                 </h1>
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -457,7 +457,7 @@ const ViewSubmissions = () => {
                 color="success"
                 onClick={exportToCSV}
                 disabled={filteredSubmissions.length === 0}
-                className="flex items-center hover:scale-105 transition-transform"
+                className="flex items-center transition-transform hover:scale-105"
               >
                 <HiDownload className="w-4 h-4 mr-2" />
                 Export CSV
@@ -466,7 +466,7 @@ const ViewSubmissions = () => {
                 color="blue"
                 onClick={handlePublishAllReports}
                 disabled={publishLoading}
-                className="flex items-center hover:scale-105 transition-transform"
+                className="flex items-center transition-transform hover:scale-105"
               >
                 {publishLoading ? (
                   <>
@@ -476,7 +476,7 @@ const ViewSubmissions = () => {
                 ) : (
                   <>
                     <HiCheck className="w-4 h-4 mr-2" />
-                    Publish All Report Marks
+                    Publish Marks
                   </>
                 )}
               </Button>
@@ -484,9 +484,9 @@ const ViewSubmissions = () => {
           </div>
 
           {/* Search Section - Made Smaller */}
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-2">
+          <div className="flex flex-col items-center justify-between gap-4 mb-2 md:flex-row">
             <div className="relative w-full md:w-96">
-              <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <HiSearch className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
               <TextInput
                 type="text"
                 placeholder="Search students..."
@@ -496,7 +496,7 @@ const ViewSubmissions = () => {
                 sizing="md"
               />
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-700">
               <HiFilter className="w-4 h-4" />
               <span>Showing {filteredSubmissions.length} of {submissions.length}</span>
             </div>
@@ -524,7 +524,7 @@ const ViewSubmissions = () => {
 
         {/* Main Content */}
         {loading ? (
-          <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <Spinner size="xl" className="mb-4" />
@@ -533,14 +533,14 @@ const ViewSubmissions = () => {
             </div>
           </Card>
         ) : filteredSubmissions.length > 0 ? (
-          <Card className="overflow-hidden shadow-xl border-0 bg-white/95 backdrop-blur-sm dark:bg-gray-800/95">
+          <Card className="overflow-hidden border-0 shadow-xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
+                  <tr className="text-white bg-gradient-to-r from-slate-700 to-slate-800">
                     <th 
                       scope="col" 
-                      className="px-4 py-4 font-semibold text-left cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      className="px-4 py-4 font-semibold text-left transition-colors border-r cursor-pointer hover:bg-slate-600 border-slate-600"
                       onClick={() => handleSort('studentId')}
                     >
                       <div className="flex items-center gap-2">
@@ -554,7 +554,7 @@ const ViewSubmissions = () => {
                     </th>
                     <th 
                       scope="col" 
-                      className="px-4 py-4 font-semibold text-left cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      className="px-4 py-4 font-semibold text-left transition-colors border-r cursor-pointer hover:bg-slate-600 border-slate-600"
                       onClick={() => handleSort('studentName')}
                     >
                       <div className="flex items-center gap-2">
@@ -568,7 +568,7 @@ const ViewSubmissions = () => {
                     </th>
                     <th 
                       scope="col" 
-                      className="px-4 py-4 font-semibold text-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      className="px-4 py-4 font-semibold text-center transition-colors border-r cursor-pointer hover:bg-slate-600 border-slate-600"
                       onClick={() => handleSort('created_at')}
                     >
                       <div className="flex items-center justify-center gap-2">
@@ -585,7 +585,7 @@ const ViewSubmissions = () => {
                     </th>
                     <th 
                       scope="col" 
-                      className="px-4 py-4 font-semibold text-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600"
+                      className="px-4 py-4 font-semibold text-center transition-colors border-r cursor-pointer hover:bg-slate-600 border-slate-600"
                       onClick={() => handleSort('finalMark')}
                     >
                       <div className="flex items-center justify-center gap-2">
@@ -614,10 +614,10 @@ const ViewSubmissions = () => {
                         }
                       `}
                     >
-                      <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700">
+                      <td className="px-4 py-4 font-semibold text-gray-900 border-r border-gray-200 dark:text-white dark:border-gray-700">
                         <div className="flex items-center">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
-                          <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent font-bold">
+                          <div className="w-2 h-2 mr-3 bg-blue-500 rounded-full animate-pulse"></div>
+                          <span className="font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text">
                             {submission.studentId}
                           </span>
                         </div>
@@ -634,21 +634,21 @@ const ViewSubmissions = () => {
                       </td>
                       <td className="px-4 py-4 border-r border-gray-200 dark:border-gray-700">
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg p-2 text-center shadow-sm">
+                          <div className="p-2 text-center rounded-lg shadow-sm bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800">
                             <div className="font-semibold text-blue-800 dark:text-blue-200">Code</div>
-                            <div className="text-blue-600 dark:text-blue-300 font-bold">{submission.code_marks || 'N/A'}</div>
+                            <div className="font-bold text-blue-600 dark:text-blue-300">{submission.code_marks || 'N/A'}</div>
                           </div>
-                          <div className="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-lg p-2 text-center shadow-sm">
+                          <div className="p-2 text-center rounded-lg shadow-sm bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800">
                             <div className="font-semibold text-green-800 dark:text-green-200">Video</div>
-                            <div className="text-green-600 dark:text-green-300 font-bold">{submission.video_marks || 'N/A'}</div>
+                            <div className="font-bold text-green-600 dark:text-green-300">{submission.video_marks || 'N/A'}</div>
                           </div>
-                          <div className="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-lg p-2 text-center shadow-sm">
+                          <div className="p-2 text-center rounded-lg shadow-sm bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800">
                             <div className="font-semibold text-purple-800 dark:text-purple-200">Report</div>
-                            <div className="text-purple-600 dark:text-purple-300 font-bold">{submission.reportMark || 'N/A'}</div>
+                            <div className="font-bold text-purple-600 dark:text-purple-300">{submission.reportMark || 'N/A'}</div>
                           </div>
-                          <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800 rounded-lg p-2 text-center shadow-sm">
+                          <div className="p-2 text-center rounded-lg shadow-sm bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800">
                             <div className="font-semibold text-orange-800 dark:text-orange-200">Viva</div>
-                            <div className="text-orange-600 dark:text-orange-300 font-bold">{submission.viva_marks || 'N/A'}</div>
+                            <div className="font-bold text-orange-600 dark:text-orange-300">{submission.viva_marks || 'N/A'}</div>
                           </div>
                         </div>
                       </td>
@@ -670,13 +670,13 @@ const ViewSubmissions = () => {
                         )}
                       </td>
                       <td className="px-4 py-4 border-r border-gray-200 dark:border-gray-700">
-                        <div className="flex flex-wrap gap-2 justify-center">
+                        <div className="flex flex-wrap justify-center gap-2">
                           {submission.code_id && (
                             <Button 
                               size="xs"
                               color="blue"
                               onClick={() => getRepoUrl(submission.code_id, submission.submission_id)}
-                              className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                              className="flex items-center transition-all duration-200 shadow-md hover:scale-105 hover:shadow-lg"
                             >
                               <HiOutlineCode className="mr-1 text-sm" />
                               Code
@@ -687,7 +687,7 @@ const ViewSubmissions = () => {
                               size="xs"
                               color="success"
                               onClick={() => navigate(`/view-report/${submission.report_id}`)}
-                              className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                              className="flex items-center transition-all duration-200 shadow-md hover:scale-105 hover:shadow-lg"
                             >
                               <HiDocumentText className="mr-1 text-sm" />
                               Report
@@ -706,7 +706,7 @@ const ViewSubmissions = () => {
                                   },
                                 })
                               }
-                              className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                              className="flex items-center transition-all duration-200 shadow-md hover:scale-105 hover:shadow-lg"
                             >
                               <HiVideoCamera className="mr-1 text-sm" />
                               Video
@@ -716,7 +716,7 @@ const ViewSubmissions = () => {
                           size="sm"
                           color="purple"
                           onClick={() => navigate(`/viva-dashboard/${submission.submission_id}`)}
-                          className="flex items-center hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                          className="flex items-center transition-all duration-200 shadow-md hover:scale-105 hover:shadow-lg"
                           pill
                         >
                           Viva Dashboard
@@ -732,10 +732,10 @@ const ViewSubmissions = () => {
             </div>
           </Card>
         ) : (
-          <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <HiUsers className="w-16 h-16 text-gray-400 mb-4" />
-              <p className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">
+              <HiUsers className="w-16 h-16 mb-4 text-gray-400" />
+              <p className="mb-2 text-lg font-medium text-gray-600 dark:text-gray-400">
                 {searchTerm ? 'No submissions match your search' : 'No submissions found'}
               </p>
               {searchTerm && (
@@ -743,7 +743,7 @@ const ViewSubmissions = () => {
                   color="light" 
                   onClick={() => setSearchTerm('')}
                   size="sm"
-                  className="hover:scale-105 transition-transform"
+                  className="transition-transform hover:scale-105"
                 >
                   Clear search
                 </Button>
@@ -753,41 +753,41 @@ const ViewSubmissions = () => {
         )}
 
                   {/* Statistics Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+          <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="text-white border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">Total Submissions</p>
+                  <p className="text-sm text-blue-100">Total Submissions</p>
                   <p className="text-2xl font-bold">{statistics.totalSubmissions}</p>
                 </div>
                 <HiClipboardList className="w-8 h-8 text-blue-200" />
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg">
+            <Card className="text-white border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">Average Mark</p>
+                  <p className="text-sm text-green-100">Average Mark</p>
                   <p className="text-2xl font-bold">{statistics.averageMark}{statistics.averageMark !== 'N/A' ? '%' : ''}</p>
                 </div>
                 <HiAcademicCap className="w-8 h-8 text-green-200" />
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+            <Card className="text-white border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">Completion Rate</p>
+                  <p className="text-sm text-purple-100">Completion Rate</p>
                   <p className="text-2xl font-bold">{statistics.completionRate}%</p>
                 </div>
                 <HiTrendingUp className="w-8 h-8 text-purple-200" />
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0 shadow-lg">
+            <Card className="text-white border-0 shadow-lg bg-gradient-to-br from-pink-500 to-pink-600">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-pink-100 text-sm">Grade A (80%+)</p>
+                  <p className="text-sm text-pink-100">Grade A (80%+)</p>
                   <p className="text-2xl font-bold">{statistics.gradeDistribution.excellent}</p>
                 </div>
                 <HiStar className="w-8 h-8 text-pink-200" />
