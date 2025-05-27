@@ -7,6 +7,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import Header from "../../components/Header.jsx";
+import { useToast } from "../../contexts/ToastContext.jsx";
 // import { ref as dbRef, onValue, set } from 'firebase/database';
 
 function UploadVideo({ onUploadComplete }) {
@@ -16,16 +17,17 @@ function UploadVideo({ onUploadComplete }) {
   const location = useLocation();
   const { moduleId, moduleName } = location.state || {};
   const userId = localStorage.getItem("userId");
+  const {showToast} = useToast();
 
   const handleUpload = () => {
     if (!file) {
-      alert("Please select a video file.");
+      showToast("Please select a video file." , "warning");
       return;
     }
     let fnam = file.name.split(".");
 
-    if (fnam.lenght > 2) {
-      alert('Upload video with a valid name example "text.mp4');
+    if (fnam.length > 2) {
+      showToast('Upload video with a valid name example "text.mp4"', "warning");
       return;
     }
     const storageReference = storageRef(storage, `videos/${file.name}`);
@@ -55,11 +57,11 @@ function UploadVideo({ onUploadComplete }) {
   return (
     <>
       <Header />
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 px-6 dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-100 dark:bg-gray-900">
         <h2 className="mb-10 text-5xl font-bold text-gray-900 dark:text-white">
           Upload Video Assignment
         </h2>
-        <div className="inline-block rounded-lg border border-gray-200 bg-white p-10 text-center shadow-md dark:border-gray-600 dark:bg-gray-700">
+        <div className="inline-block p-10 text-center bg-white border border-gray-200 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-700">
           <h4 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
             Please upload the Assignment to start processing
           </h4>
@@ -70,7 +72,7 @@ function UploadVideo({ onUploadComplete }) {
               setFile(e.target.files[0]);
               setUploadProgress(0); // Reset upload progress
             }}
-            className="mb-5 block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400"
+            className="block w-full mb-5 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400"
           />
           {file && (
             <div className="mb-5 text-gray-600 dark:text-gray-300">
@@ -78,16 +80,16 @@ function UploadVideo({ onUploadComplete }) {
             </div>
           )}
           {uploadProgress > 0 && (
-            <div className="mb-5 h-5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="w-full h-5 mb-5 bg-gray-200 rounded-full dark:bg-gray-700">
               <div
                 style={{ width: `${uploadProgress}%` }}
-                className="h-full rounded-full bg-indigo-600 transition-all duration-500"
+                className="h-full transition-all duration-500 bg-indigo-600 rounded-full"
               ></div>
             </div>
           )}
           <button
             onClick={handleUpload}
-            className="rounded-md bg-indigo-600 px-6 py-3 text-lg font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-800 dark:focus:ring-indigo-800"
+            className="px-6 py-3 text-lg font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-700 dark:hover:bg-indigo-800 dark:focus:ring-indigo-800"
           >
             Upload and Process
           </button>

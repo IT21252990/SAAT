@@ -24,12 +24,13 @@ import {
   HiSave,
   HiX
 } from "react-icons/hi";
+import { useToast } from "../../contexts/ToastContext";
 
 const AddAssignment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { moduleId, moduleName } = location.state || {};
-
+  const {showToast} = useToast();
   const userId = localStorage.getItem("userId");
 
   const [assignmentName, setAssignmentName] = useState("");
@@ -219,7 +220,7 @@ const AddAssignment = () => {
     setError("");
     
     // Show success message
-    alert("Rubric saved successfully! You can now save the assignment.");
+    showToast("Rubric saved successfully! You can now save the assignment.", "success");
   };
 
   const closeModalAndUncheckReport = () => {
@@ -297,7 +298,7 @@ const AddAssignment = () => {
     setError("");
     
     // Show success message
-    alert("Code rubric saved successfully! You can now save the assignment.");
+    showToast("Code rubric saved successfully! You can now save the assignment.", "success");
   };
 
   const closeCodeModalAndUncheck = () => {
@@ -375,7 +376,7 @@ const AddAssignment = () => {
     setError("");
     
     // Show success message
-    alert("Video rubric saved successfully! You can now save the assignment.");
+    showToast("Video rubric saved successfully! You can now save the assignment.", "success");
   };
 
   const closeVideoModalAndUncheck = () => {
@@ -452,7 +453,7 @@ const AddAssignment = () => {
 
     setShowVivaModal(false);
     setError("");
-    alert("Viva rubric saved successfully! You can now save the assignment.");
+    showToast("Viva rubric saved successfully! You can now save the assignment.", "success");
   };
 
   const closeVivaModalAndUncheck = () => {
@@ -731,7 +732,7 @@ const AddAssignment = () => {
 
       // Success notification
       window.scrollTo(0, 0);
-      alert("Assignment added successfully!");
+      showToast("Assignment added successfully!", "success");
       navigate(-1); // Navigate back to the Teacher Module Page
       
     } catch (error) {
@@ -752,7 +753,7 @@ const AddAssignment = () => {
         <Header />
       </div>
 
-      <div className="container px-4 py-8 pt-20 mx-auto">
+      <div className="container px-4 py-8 pt-20 pb-20 mx-auto">
         {/* Back button */}
         <Button 
           color="light" 
@@ -1988,6 +1989,15 @@ const AddAssignment = () => {
           </div>
         </div>
       )}
+      {/* Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white shadow-md dark:bg-gray-900">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} Smart Assignment Assessment Tool. All
+            rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

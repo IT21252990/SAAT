@@ -4,6 +4,7 @@ import AssignmentDetails from "../../components/AssignmentDetails.jsx";
 import Header from "../../components/Header";
 import { Card, Button, Spinner, Alert, Tooltip } from "flowbite-react";
 import { HiArrowLeft, HiPlus, HiPencil, HiDocumentText, HiChevronDown, HiChevronUp, HiX } from "react-icons/hi";
+import { useToast } from "../../contexts/ToastContext";
 
 const TeacherModulePage = () => {
   const { moduleId } = useParams();
@@ -14,7 +15,12 @@ const TeacherModulePage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
+  const {showToast} = useToast();
 
+  
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -96,9 +102,7 @@ const TeacherModulePage = () => {
   };
 
   const deleteAssignment = async (assignmentId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
-    if (!confirmDelete) return;
-
+    setDeleteLoading(true);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/assignment/deleteAssignment/${assignmentId}`,
@@ -111,6 +115,9 @@ const TeacherModulePage = () => {
         // Remove deleted assignment from list
         setAssignments(prev => prev.filter(a => a.assignment_id !== assignmentId));
         setExpandedAssignment(null);
+        setDeleteLoading(false);
+        setAssignmentToDelete(null);
+        showToast("Assignment deleted successfully!", "success");
       } else {
         setError(data.error || "Failed to delete assignment.");
       }
@@ -123,6 +130,60 @@ const TeacherModulePage = () => {
   // Function to dismiss error
   const dismissError = () => {
     setError("");
+  };
+
+  const handleDeleteClick = (assignmentId) => {
+    setAssignmentToDelete(assignmentId);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setShowConfirmation(false);
+    deleteAssignment(assignmentToDelete);
+  };
+
+  const ConfirmationDialog = () => {
+    if (!showConfirmation) return null;
+    
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800 animate-fade-in">
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Confirm Deletion</h3>
+          <p className="mb-6 text-gray-600 dark:text-gray-300">
+            Are you sure you want to delete this assignment? This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                setShowConfirmation(false);
+                setAssignmentToDelete(null);
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-100 rounded-md dark:text-gray-300 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+              disabled={deleteLoading}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              className="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 rounded-md hover:bg-red-700"
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <span className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Deleting...
+                </span>
+              ) : (
+                "Delete"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -212,18 +273,6 @@ const TeacherModulePage = () => {
 
                         {/* Action buttons */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {/* <Tooltip content="Edit this assignment">
-                            <Button
-                              color="warning"
-                              size="sm"
-                              onClick={() => navigate(`/edit-assignment/${assignment.assignment_id}`)}
-                              className="transition-transform duration-300 hover:scale-105"
-                            >
-                              <HiPencil className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                          </Tooltip> */}
-
                           <Tooltip content="View all student submissions">
                             <Button
                               color="success"
@@ -248,8 +297,8 @@ const TeacherModulePage = () => {
                           </div>
 
                           {/* Control panel for expanded assignment */}
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50  dark:bg-gray-700">
-                            <div className="mb-2 ml-2 sm:mb-0 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <div className="flex flex-col items-start justify-between p-2 border border-gray-300 rounded-md sm:flex-row sm:items-center dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                            <div className="mb-2 ml-2 text-sm font-medium text-gray-700 sm:mb-0 dark:text-gray-300">
                               Manage this assignment:
                             </div>
                             <div className="flex gap-3">
@@ -264,7 +313,9 @@ const TeacherModulePage = () => {
                               <Button
                                 color="failure"
                                 size="sm"
-                                onClick={() => deleteAssignment(assignment.assignment_id)}
+                                onClick={() => {
+                                  handleDeleteClick(assignment.assignment_id);
+                                }}
                                 className="transition-transform duration-300 hover:scale-105"
                               >
                                 <HiX className="w-4 h-4 mr-2" />
@@ -274,9 +325,6 @@ const TeacherModulePage = () => {
                           </div>
                         </>
                       )}
-
-
-
                     </Card>
                   ))}
                 </div>
@@ -305,7 +353,18 @@ const TeacherModulePage = () => {
             </>
           )}
         </Card>
+        {/* Confirmation Modal */}
+      <ConfirmationDialog />
       </main>
+      {/* Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white shadow-md dark:bg-gray-900">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} Smart Assignment Assessment Tool. All
+            rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
