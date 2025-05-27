@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'flowbite-react';
 import { HiX, HiCheck, HiExclamation, HiInformationCircle, HiChevronDown, HiChevronUp } from 'react-icons/hi';
+import { useToast } from "../../contexts/ToastContext";
 
 const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
   const [marks, setMarks] = useState({});
@@ -11,7 +12,7 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [existingMarks, setExistingMarks] = useState({});
-
+  const {showToast} = useToast();
 
   // Fetch marking scheme when panel opens
   useEffect(() => {
@@ -160,7 +161,7 @@ const MarkingPanel = ({ isOpen, onClose, submissionData, assignmentId }) => {
   // Enhanced save functionality
   const handleSubmitMarks = async () => {
     if (!submissionData?.id) {
-      alert('No submission data available. Cannot save marks.');
+      showToast("No Submission Data available. Cannot save marks." , "error")
       return;
     }
 

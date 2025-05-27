@@ -4,12 +4,14 @@ import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import saat_logo from "../../asserts/rounded_logo.png";
 import Header from "../../components/Header";
+import { useToast } from "../../contexts/ToastContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const {showToast} = useToast();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -37,7 +39,7 @@ const Login = () => {
         navigate(userRole === "student" ? "/student-home" : "/teacher-home");
       }
     } catch (error) {
-      alert(error.message);
+      showToast(error.message, "error")
     }
   };
 
@@ -58,7 +60,7 @@ const Login = () => {
 
       navigate(userRole === "student" ? "/student-home" : "/teacher-home");
     } catch (error) {
-      alert(error.message);
+      showToast(error.message, "error");
     }
   };
 

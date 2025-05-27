@@ -24,6 +24,7 @@ import {
   HiEye,
   HiOutlineRefresh,
 } from "react-icons/hi";
+import { useToast } from "../../contexts/ToastContext";
 
 const TeacherHome = () => {
   const [year, setYear] = useState("");
@@ -41,6 +42,8 @@ const TeacherHome = () => {
     enroll_key: "",
   });
   const navigate = useNavigate();
+  const {showToast} = useToast();
+
 
   // Function to fetch modules based on selected year and semester
   const handleFetchModules = async () => {
@@ -128,6 +131,7 @@ const TeacherHome = () => {
         setModules([...modules, data.module]);
         setShowModal(false);
         setNewModule({ name: "", year: "", semester: "", enroll_key: "" });
+        showToast("Module created successfully!", "success");
       } else {
         setError(data.error || "Failed to create module");
       }
@@ -486,13 +490,16 @@ const TeacherHome = () => {
           </form>
         </Modal.Body>
       </Modal>
-
-      <button onClick={() => navigate('/TestingProject')}>
-      Go to Testing Project
-    </button>
-
+      {/* Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white shadow-md dark:bg-gray-900">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} Smart Assignment Assessment Tool. All
+            rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
-    
   );
 };
 

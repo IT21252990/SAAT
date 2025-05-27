@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from "../../contexts/ToastContext";
 
 const AddCustomQuestionModal = ({ 
   isOpen, 
@@ -9,10 +10,11 @@ const AddCustomQuestionModal = ({
   const [customQuestion, setCustomQuestion] = useState('');
   const [generatedAnswer, setGeneratedAnswer] = useState('');
   const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
 
   const generateCustomAnswer = async () => {
     if (!customQuestion.trim()) {
-      alert("Please enter a question");
+      showToast("Please enter a question", "error");
       return;
     }
 
@@ -49,7 +51,7 @@ const AddCustomQuestionModal = ({
       setGeneratedAnswer(data.answer || "No answer generated.");
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong. Please try again.");
+      showToast("Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
     }

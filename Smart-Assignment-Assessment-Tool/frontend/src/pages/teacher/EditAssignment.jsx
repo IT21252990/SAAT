@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import { Button, Label, TextInput, Textarea, Checkbox, Card, Spinner, Alert } from "flowbite-react";
 import { HiPencilAlt, HiCalendar, HiDocumentText, HiCode, HiVideoCamera, HiX, HiCheck } from "react-icons/hi";
+import { useToast } from "../../contexts/ToastContext";
 
 const EditAssignment = () => {
   const { assignmentId } = useParams();
@@ -11,6 +12,7 @@ const EditAssignment = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
+  const {showToast} = useToast();
 
   useEffect(() => {
     const fetchAssignmentDetails = async () => {
@@ -80,6 +82,7 @@ const EditAssignment = () => {
         setTimeout(() => {
           navigate(`/teacher-module-page/${assignment.module_id}`);
         }, 1500);
+        showToast("Assignment updated successfully!", "success");
       } else {
         setError(data.error || "Failed to update assignment.");
       }
@@ -293,6 +296,15 @@ const EditAssignment = () => {
         </form>
       </Card>
       </div>
+      {/* Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white shadow-md dark:bg-gray-900">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} Smart Assignment Assessment Tool. All
+            rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

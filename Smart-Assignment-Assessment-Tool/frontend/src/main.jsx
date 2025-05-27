@@ -24,7 +24,6 @@ import ViewReportSubmission from "./pages/teacher/ViewReportSubmission.jsx";
 import GenerateVivaQuestions from "./pages/teacher/viva/GenerateVivaQuestions.jsx";
 import SubmitVideo from "./pages/video/SubmitVideo.jsx";
 import VideoScreen from "./pages/video/VideoScreen.jsx";
-import TestingProject from "./pages/teacher/TestingProject.jsx";
 import SubmissionResultsPage from "./pages/SubmissionResultsPage";
 import ViewReportResult from "./pages/student/ReportSubmit/ViewReportResult.jsx";
 import AdminPanel from "./pages/user/AdminPanel.jsx";
@@ -68,9 +67,6 @@ root.render(
           <Route path="/view-report-results/:reportID" element={<ViewReportResult />} />
           <Route path="/view-code-submission-results" element={<ViewCodeSubmissionResults />} />
 
-          {/* Teacher Testing Project */}
-
-          <Route path="TestingProject" element={<TestingProject />} />
           <Route path="admin-panel" element={<AdminPanel />} />
         </Route>
       </Routes>
