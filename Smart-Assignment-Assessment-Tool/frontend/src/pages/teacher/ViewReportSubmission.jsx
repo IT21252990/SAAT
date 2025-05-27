@@ -303,6 +303,7 @@ const ViewReportSubmission = () => {
                   {analysis_report.feedback}
                 </Typography>
               </Box>
+              
             </>
           )}
         </Paper>
