@@ -9,12 +9,11 @@ export const analyzeReport = async (
   reportText,
   criteria,
   assignmentId,
-  onProgress
+  onProgress,
 ) => {
-
   try {
     console.log("Starting analysis...");
-    console.log("maeking id:",assignmentId)
+    console.log("maeking id:", assignmentId);
     // onProgress(30);
 
     // Validate inputs
@@ -25,9 +24,14 @@ export const analyzeReport = async (
     console.log("Fetching marking scheme from DB...");
     onProgress(50);
 
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignmentId}`);
-    const markingScheme = await response.json(); 
-    console.log("Marking scheme fetched:", markingScheme.marking_schemes[0].criteria.report);
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/marking-scheme/markingScheme/${assignmentId}`,
+    );
+    const markingScheme = await response.json();
+    console.log(
+      "Marking scheme fetched:",
+      markingScheme.marking_schemes[0].criteria.report,
+    );
     const critirions = markingScheme.marking_schemes[0].criteria.report;
 
     if (!markingScheme || !critirions) {
@@ -39,6 +43,9 @@ export const analyzeReport = async (
       return {
         description: criterion.criterion,
         weightage: criterion.weightage,
+        high_description: criterion.high_description,
+        medium_description: criterion.medium_description,
+        low_description: criterion.low_description,
       };
     });
 
@@ -46,7 +53,12 @@ export const analyzeReport = async (
     // onProgress(70);
 
     const prompt = `Analyze this student report according to the following marking scheme.
-                    Your response must be in valid JSON format with the following structure:
+                    Each criterion includes:
+                    - a description
+                    - weightage (out of 100)
+                    - what constitutes high, medium, and low performance.
+
+                    Return your result as valid JSON in the following structure:
                     {
                       "criteria": [
                         {
@@ -67,12 +79,13 @@ export const analyzeReport = async (
                     Student Report:
                     ${reportText}
                     `;
-                  
+
     const completion = await openai.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: "You are an expert academic assessor. Analyze reports and provide structured feedback in JSON format.",
+          content:
+            "You are an expert academic assessor. Analyze reports and provide structured feedback in JSON format.",
         },
         {
           role: "user",
